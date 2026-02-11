@@ -1,0 +1,11 @@
+# IDEA
+.idea/
+
+# Claude Code
+.claude/settings.local.json
+
+# macOS
+.DS_Store
+
+# Node.js
+node_modules/

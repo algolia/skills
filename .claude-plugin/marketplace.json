@@ -1,0 +1,22 @@
+{
+  "name": "algolia-skills",
+  "owner": {
+    "name": "Algolia",
+    "email": "support@algolia.com"
+  },
+  "metadata": {
+    "description": "Skills for interacting with Algolia search and analytics through MCP",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "algolia",
+      "description": "Comprehensive skill for searching, analyzing, and getting recommendations from Algolia indices. Includes commands for connecting to Algolia, searching indices, analyzing metrics, and managing recommendations.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia"
+      ]
+    }
+  ]
+}
