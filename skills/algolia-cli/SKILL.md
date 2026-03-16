@@ -88,9 +88,10 @@ Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [
 1. **Always use non-interactive mode.** Pass all required flags explicitly so the CLI never prompts for input. Use `-y` (or `--confirm`) to skip confirmation prompts.
 2. **ndjson format.** `objects browse`, `objects import`, `rules browse/import`, and `synonyms browse/import` use newline-delimited JSON (one JSON object per line), **not** JSON arrays.
 3. **Profile flag.** Use `-p <profile>` to target a non-default profile. Omit it to use the default.
-4. **Wait flag.** Use `-w` (or `--wait`) when subsequent commands depend on the operation completing (e.g., import then search).
-5. **Pipe between commands.** Copy data across indices: `algolia objects browse SRC | algolia objects import DST -F -`
-6. **JSON output.** Use `--output json` (or `-o json`) when you need machine-readable output.
+4. **Credential precedence.** Environment variables override all other configuration. The resolution order is: **env vars** > **CLI flags** (`--application-id`, `--api-key`) > **profile config file** > **default profile**. Supported env vars: `ALGOLIA_APPLICATION_ID`, `ALGOLIA_API_KEY`, `ALGOLIA_ADMIN_API_KEY`, `ALGOLIA_SEARCH_HOSTS`, `ALGOLIA_CRAWLER_USER_ID`, `ALGOLIA_CRAWLER_API_KEY`. If env vars are set, `--profile`/`-p` is ignored for those credentials.
+5. **Wait flag.** Use `-w` (or `--wait`) when subsequent commands depend on the operation completing (e.g., import then search).
+6. **Pipe between commands.** Copy data across indices: `algolia objects browse SRC | algolia objects import DST -F -`
+7. **JSON output.** Use `--output json` (or `-o json`) when you need machine-readable output.
 
 ## Reference Docs
 
