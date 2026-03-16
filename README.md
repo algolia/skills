@@ -7,12 +7,12 @@ An [Agent Skill](https://agentskills.io/) that connects to Algolia for natural l
 - 🔍 **Natural Language Search** - Search your Algolia indices conversationally
 - 📊 **Analytics Insights** - Get search analytics through simple questions
 - 🎯 **Smart Recommendations** - Product recommendations (bought-together, related, trending, similar)
-- 🚀 **Easy Setup** - Connect in minutes with `/algolia:connect` in Claude Code
-- 📚 **Usage Examples** - Run `/algolia:examples` for copy-paste prompts
+- 🚀 **Easy Setup** - Connect in minutes with `/algolia-mcp:connect` in Claude Code
+- 📚 **Usage Examples** - Run `/algolia-mcp:examples` for copy-paste prompts
 
 ### 🛠️ Usage
 
-The skill gives you `/algolia:connect` and `/algolia:examples` slash commands, plus guided setup and interactive examples.
+The skill gives you `/algolia-mcp:connect` and `/algolia-mcp:examples` slash commands, plus guided setup and interactive examples.
 
 #### Installation
 
@@ -27,13 +27,13 @@ The skill gives you `/algolia:connect` and `/algolia:examples` slash commands, p
 
 2. Install the plugin:
    ```bash
-   /plugin install algolia
+   /plugin install algolia-mcp
    ```
 
 **Or direct install (one step):**
 
 ```bash
-/plugin install algolia@algolia-skills
+/plugin install algolia-mcp@algolia-skills
 ```
 
 ##### Option 2: Via npx
@@ -53,7 +53,7 @@ npx skills add https://github.com/algolia/skills
 2. Copy the skill to your Claude skills directory:
    ```bash
    mkdir -p ~/.claude/skills
-   cp -r skills/algolia ~/.claude/skills/
+   cp -r skills/algolia-mcp ~/.claude/skills/
    ```
 
 3. Restart Claude Code to load the skill.
@@ -64,13 +64,13 @@ npx skills add https://github.com/algolia/skills
 What skills are available?
 ```
 
-You should see `algolia` in the list.
+You should see `algolia-mcp` in the list.
 
 #### Getting Started
 
 Once installed, set up your Algolia MCP connection:
 
-- **If your client supports commands**, run `/algolia:connect` — it will guide you through the entire setup.
+- **If your client supports commands**, run `/algolia-mcp:connect` — it will guide you through the entire setup.
 - **Otherwise**, ask the agent to set up Algolia MCP (e.g. *"Set up Algolia MCP"*) and it will follow the skill's instructions.
 
 Then try:
@@ -83,25 +83,25 @@ Then try:
 
 #### Commands
 
-##### `/algolia:connect`
+##### `/algolia-mcp:connect`
 
 Set up or update your Algolia MCP connection.
 
 ```
-/algolia:connect
+/algolia-mcp:connect
 ```
 
 [Full command documentation](commands/connect.md)
 
-##### `/algolia:examples`
+##### `/algolia-mcp:examples`
 
 Interactive usage examples with copy-paste prompts.
 
 ```
-/algolia:examples                  # All examples
-/algolia:examples search           # Search patterns
-/algolia:examples analytics        # Analytics patterns
-/algolia:examples recommendations  # Recommendations patterns
+/algolia-mcp:examples                  # All examples
+/algolia-mcp:examples search           # Search patterns
+/algolia-mcp:examples analytics        # Analytics patterns
+/algolia-mcp:examples recommendations  # Recommendations patterns
 ```
 
 [Full command documentation](commands/examples.md)

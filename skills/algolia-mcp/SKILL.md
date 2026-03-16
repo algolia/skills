@@ -1,6 +1,6 @@
 ---
-name: algolia
-description: Search Algolia indices, retrieve analytics (top searches, no-result rates, click positions, user counts), and get product recommendations (bought-together, related, trending). Triggers on search, indexing, analytics, Algolia, recommendations.
+name: algolia-mcp
+description: Search Algolia indices via the Algolia MCP server, retrieve analytics (top searches, no-result rates, click positions, user counts), and get product recommendations (bought-together, related, trending). Triggers on search, indexing, analytics, Algolia, recommendations, MCP.
 license: MIT
 metadata:
   author: algolia
@@ -11,7 +11,7 @@ metadata:
 
 ## Connection setup
 
-Use `/algolia:connect` to configure the MCP client with the Algolia MCP server.
+Use `/algolia-mcp:connect` to configure the MCP client with the Algolia MCP server.
 For clients that don't support commands, see [connection-setup](references/connection-setup.md) for manual setup.
 
 ## Tool selection

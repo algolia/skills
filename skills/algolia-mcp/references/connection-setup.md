@@ -8,9 +8,9 @@ The Algolia MCP server is at `https://mcp.algolia.com/mcp` with OAuth authentica
 - Algolia MCP enabled in Dashboard (Generate AI → MCP Servers → Productivity)
 - An MCP-compatible client
 
-## Method 1: `/algolia:connect` command
+## Method 1: `/algolia-mcp:connect` command
 
-Run `/algolia:connect` in a supported client. It detects the client, writes the configuration, starts the OAuth flow, and validates the connection.
+Run `/algolia-mcp:connect` in a supported client. It detects the client, writes the configuration, starts the OAuth flow, and validates the connection.
 
 ## Method 2: Manual configuration
 
