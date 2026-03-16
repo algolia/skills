@@ -114,6 +114,50 @@ Interactive usage examples with copy-paste prompts.
 - **MCP client** - Claude Code (for the full skill experience), or Codex, VS Code, Cursor, etc.
 - **Node.js 18+** - Required for the `mcp-remote` bridge used by non-Claude Code clients
 
+---
+
+## Algolia CLI Skill
+
+Manage Algolia indices, records, settings, rules, and synonyms directly from the terminal using the [Algolia CLI](https://www.algolia.com/doc/tools/cli/get-started).
+
+#### Installation
+
+```bash
+/plugin install algolia-cli@algolia-skills
+```
+
+#### Getting Started
+
+Run `/algolia-cli:setup` to install the CLI and configure your credentials — or ask the agent to set up the Algolia CLI.
+
+Then try:
+
+```
+"List all my Algolia indices"
+"Export all records from the products index"
+"Copy settings from staging to production index"
+```
+
+#### Commands
+
+##### `/algolia-cli:setup`
+
+Install the Algolia CLI and configure a profile.
+
+```
+/algolia-cli:setup
+```
+
+[Full command documentation](commands/setup.md)
+
+#### Prerequisites
+
+- **Algolia account** — [Sign up free](https://www.algolia.com/users/sign_up)
+- **Application ID and Admin API key** — Found in [Dashboard → Settings → API Keys](https://dashboard.algolia.com/account/api-keys/all)
+- **Homebrew** (macOS) or package manager for installation
+
+---
+
 ### 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
