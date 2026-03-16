@@ -41,6 +41,112 @@ algolia profile list
 
 Output columns: NAME, APPLICATION ID, NUMBER OF INDICES, DEFAULT.
 
+### `algolia profile remove`
+
+Remove a profile from the configuration.
+
+```bash
+algolia profile remove <profile> [-y]
+```
+
+| Flag        | Short | Default | Description              |
+|-------------|-------|---------|--------------------------|
+| `--confirm` | `-y`  | `false` | Skip confirmation prompt |
+
+```bash
+# Remove the profile named "staging"
+algolia profile remove staging -y
+```
+
+### `algolia profile setdefault`
+
+Set the default profile.
+
+```bash
+algolia profile setdefault <profile>
+```
+
+```bash
+# Set the default profile to "production"
+algolia profile setdefault production
+```
+
+---
+
+## API Keys
+
+### `algolia apikeys list`
+
+List all API keys for the application.
+
+```bash
+algolia apikeys list
+```
+
+Output columns: KEY, DESCRIPTION, ACL, INDICES, VALIDITY, MAX HITS PER QUERY, MAX QUERIES PER IP PER HOUR, REFERERS, CREATED AT.
+
+**Required ACL:** `admin`
+
+### `algolia apikeys create`
+
+Create a new API key.
+
+```bash
+algolia apikeys create [flags]
+```
+
+| Flag            | Short | Default | Description                                  |
+|-----------------|-------|---------|----------------------------------------------|
+| `--acl`         |       |         | Comma-separated ACLs (search, browse, addObject, deleteObject, listIndexes, deleteIndex, settings, editSettings, analytics, recommendation, usage, logs, seeUnretrievableAttributes) |
+| `--indices`     | `-i`  |         | Index names or patterns (supports `*` wildcard) |
+| `--validity`    | `-u`  | `0`     | Duration after which the key expires (e.g., `1h`, `30m`) |
+| `--referers`    | `-r`  |         | Allowed referrers (supports `*` wildcard)    |
+| `--description` | `-d`  |         | Description to identify the key              |
+
+```bash
+# Create a search-only key for one index
+algolia apikeys create --acl search,browse --indices MOVIES --description "Search & Browse API Key"
+
+# Create a key with multiple indices, a referer restriction, and 1-hour validity
+algolia apikeys create --acl search --indices MOVIES,SERIES --referers "https://example.com" --validity 1h --description "Restricted search key"
+```
+
+**Required ACL:** `admin`
+
+### `algolia apikeys get`
+
+Get details of a specific API key.
+
+```bash
+algolia apikeys get <api-key>
+```
+
+```bash
+# Get API key details
+algolia apikeys get abcdef1234567890
+```
+
+**Output format:** JSON object.
+
+### `algolia apikeys delete`
+
+Delete an API key.
+
+```bash
+algolia apikeys delete <api-key> [-y]
+```
+
+| Flag        | Short | Default | Description              |
+|-------------|-------|---------|--------------------------|
+| `--confirm` | `-y`  | `false` | Skip confirmation prompt |
+
+```bash
+# Delete an API key
+algolia apikeys delete abcdef1234567890 -y
+```
+
+**Required ACL:** `admin`
+
 ---
 
 ## Search

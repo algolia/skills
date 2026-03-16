@@ -1,6 +1,11 @@
 ---
 name: algolia-cli
-description: Manage Algolia indices, records, settings, rules, and synonyms using the Algolia CLI. Triggers on CLI, command-line, algolia, indices, objects, settings, rules, synonyms, import, export.
+description: >-
+  Use when managing Algolia search infrastructure from the command line —
+  creating or configuring profiles, searching indices, importing or exporting
+  records, managing index settings, rules, synonyms, and API keys. Applies
+  even when the user says "search index," "import data," or "update settings"
+  without explicitly mentioning the Algolia CLI.
 license: MIT
 metadata:
   author: algolia
@@ -23,6 +28,17 @@ Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [
 |-------------------------------|------------------------------------------------------------------------------------|
 | Add profile (non-interactive) | `algolia profile add --name "default" --app-id "<ID>" --api-key "<KEY>" --default` |
 | List profiles                 | `algolia profile list`                                                             |
+| Remove a profile              | `algolia profile remove "<name>" -y`                                               |
+| Set default profile           | `algolia profile setdefault "<name>"`                                              |
+
+### API Keys
+
+| Task             | Command                                                                              |
+|------------------|--------------------------------------------------------------------------------------|
+| List API keys    | `algolia apikeys list`                                                               |
+| Create API key   | `algolia apikeys create --acl search,browse --description "..." --indices "idx1,idx2"` |
+| Get API key      | `algolia apikeys get <key>`                                                          |
+| Delete API key   | `algolia apikeys delete <key> -y`                                                    |
 
 ### Search
 
