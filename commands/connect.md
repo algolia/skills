@@ -21,7 +21,7 @@ Before running this command, ensure you have:
 ## Usage
 
 ```
-/algolia:connect
+/algolia-mcp:connect
 ```
 
 ## Step-by-Step Process
@@ -60,7 +60,7 @@ If multiple clients are detected, you'll be asked which one to configure.
 
 ### Step 3: Write Configuration
 
-Apply the configuration from [connection-setup.md](../skills/algolia/references/connection-setup.md#method-2-manual-configuration) for the detected client.
+Apply the configuration from [connection-setup.md](../skills/algolia-mcp/references/connection-setup.md#method-2-manual-configuration) for the detected client.
 
 The command will:
 - Read your existing config (if it exists)

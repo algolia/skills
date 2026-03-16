@@ -7,15 +7,15 @@ Interactive guide to common Algolia MCP usage patterns. Get copy-paste prompts a
 Run the command to see all example categories:
 
 ```
-/algolia:examples
+/algolia-mcp:examples
 ```
 
 Or jump to a specific category:
 
 ```
-/algolia:examples search          # Search patterns and examples
-/algolia:examples analytics       # Analytics usage patterns
-/algolia:examples recommendations # Recommendations examples
+/algolia-mcp:examples search          # Search patterns and examples
+/algolia-mcp:examples analytics       # Analytics usage patterns
+/algolia-mcp:examples recommendations # Recommendations examples
 ```
 
 ## Quick Start Examples

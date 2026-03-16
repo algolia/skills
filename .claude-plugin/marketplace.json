@@ -10,12 +10,12 @@
   },
   "plugins": [
     {
-      "name": "algolia",
-      "description": "Comprehensive skill for searching, analyzing, and getting recommendations from Algolia indices. Includes commands for connecting to Algolia, searching indices, analyzing metrics, and managing recommendations.",
+      "name": "algolia-mcp",
+      "description": "Comprehensive skill for searching, analyzing, and getting recommendations from Algolia indices via the Algolia MCP server. Includes commands for connecting to Algolia, searching indices, analyzing metrics, and managing recommendations.",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/algolia"
+        "./skills/algolia-mcp"
       ]
     }
   ]
