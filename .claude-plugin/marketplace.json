@@ -17,6 +17,15 @@
       "skills": [
         "./skills/algolia-mcp"
       ]
+    },
+    {
+      "name": "algolia-cli",
+      "description": "Skill for managing Algolia indices, records, settings, rules, and synonyms using the Algolia CLI.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-cli"
+      ]
     }
   ]
 }
