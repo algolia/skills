@@ -20,7 +20,7 @@
     },
     {
       "name": "algolia-cli",
-      "description": "Skill for managing Algolia indices, records, settings, rules, and synonyms using the Algolia CLI.",
+      "description": "Use for any hands-on Algolia admin operation: importing/exporting records, backing up indices, managing API keys, editing synonyms, configuring rules, changing settings (facets, searchable attributes), deleting records, copying/migrating indices, or automating Algolia in CI/CD. Contains exact CLI syntax, ndjson format requirements, and flag combinations that are easy to get wrong from memory. Do NOT use for frontend SDK (InstantSearch, React) or Algolia dashboard UI questions — see algolia-mcp for read-only search and analytics.",
       "source": "./",
       "strict": false,
       "skills": [
