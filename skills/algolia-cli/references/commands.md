@@ -372,7 +372,7 @@ algolia objects import MOVIES -F movies.ndjson -w
 Delete records by ID or by filter.
 
 ```bash
-algolia objects delete <index> [--object-ids <ids> | --filters <filter>] [-y] [-w]
+algolia objects delete <index> [--object-ids <ids> | --filters <filter>] [-y] [--wait]
 ```
 
 | Flag           | Short | Default | Description                |
@@ -380,7 +380,7 @@ algolia objects delete <index> [--object-ids <ids> | --filters <filter>] [-y] [-
 | `--object-ids` |       |         | Comma-separated object IDs |
 | `--filters`    |       |         | Filter expression          |
 | `--confirm`    | `-y`  | `false` | Skip confirmation prompt   |
-| `--wait`       | `-w`  | `false` | Wait for completion        |
+| `--wait`       |       | `false` | Wait for completion        |
 
 You must specify either `--object-ids` or `--filters`.
 
@@ -680,21 +680,22 @@ algolia synonyms save <index> --id <id> [--type <type>] [flags]
 | Flag                    | Short | Default   | Description                                                                  |
 |-------------------------|-------|-----------|------------------------------------------------------------------------------|
 | `--id`                  | `-i`  |           | Synonym ID — **required**                                                    |
-| `--type`                | `-t`  | `regular` | Type: `regular`, `oneway`, `altcorrection1`, `altcorrection2`, `placeholder` |
-| `--synonyms`            | `-s`  |           | Comma-separated synonyms (for `regular` and `oneway`)                        |
-| `--input`               | `-n`  |           | Input word (for `oneway`)                                                    |
+| `--type`                | `-t`  | `synonym` | Type: `synonym`, `oneWaySynonym`, `altCorrection1`, `altCorrection2`, `placeholder` |
+| `--synonyms`            | `-s`  |           | Comma-separated synonyms (for `synonym` and `oneWaySynonym`)                 |
+| `--input`               | `-n`  |           | Input word (for `oneWaySynonym`)                                             |
 | `--placeholder`         | `-l`  |           | Placeholder token (for `placeholder`)                                        |
 | `--replacements`        | `-r`  |           | Comma-separated replacements (for `placeholder`)                             |
-| `--word`                | `-w`  |           | Base word (for `altcorrection1`, `altcorrection2`)                           |
-| `--corrections`         | `-c`  |           | Comma-separated corrections (for `altcorrection1`, `altcorrection2`)         |
+| `--word`                | `-w`  |           | Base word (for `altCorrection1`, `altCorrection2`)                           |
+| `--corrections`         | `-c`  |           | Comma-separated corrections (for `altCorrection1`, `altCorrection2`)         |
 | `--forward-to-replicas` | `-f`  | `false`   | Apply to replicas                                                            |
+| `--wait`                |       | `false`   | Wait for completion                                                          |
 
 ```bash
 # Regular two-way synonym
 algolia synonyms save MOVIES --id syn-1 --synonyms film,movie,picture
 
 # One-way synonym
-algolia synonyms save MOVIES --id syn-2 --type oneway --input "JS" --synonyms "JavaScript"
+algolia synonyms save MOVIES --id syn-2 --type oneWaySynonym --input "JS" --synonyms "JavaScript"
 
 # Placeholder
 algolia synonyms save MOVIES --id syn-3 --type placeholder --placeholder "<director>" --replacements "Spielberg,Nolan,Tarantino"

@@ -26,10 +26,10 @@ The skill was evaluated across 3 realistic user scenarios, comparing **with-skil
 | Uses `--attributesToRetrieve` for field selection | FAIL | PASS | PASS |
 | Pipes browse to import with `-F -` | FAIL | PASS | PASS |
 | Uses `--attributesForFaceting` for category facet | PASS | PASS | PASS |
-| Includes `-y` flag on write commands | FAIL | FAIL | PASS |
+| Does NOT use `-y` on `objects import`/`settings set` (unsupported) | PASS | PASS | PASS |
 | Uses `-w` flag to sequence import before settings | FAIL | PASS | PASS |
 
-**Key finding:** Without the skill, Claude exported all fields and filtered with `jq` instead of using `--attributesToRetrieve`. It also used intermediate files instead of piping. The v1→v2 improvement fixed the missing `-y` flag by adding it to the quick reference tables.
+**Key finding:** Without the skill, Claude exported all fields and filtered with `jq` instead of using `--attributesToRetrieve`. It also used intermediate files instead of piping. Note: `objects import` and `settings set` do not support `-y` — they run non-interactively by default.
 
 ### Eval 2: Synonyms and Rules
 
@@ -66,7 +66,7 @@ The skill was evaluated across 3 realistic user scenarios, comparing **with-skil
 The biggest areas where the skill outperforms general knowledge:
 
 1. **ndjson format awareness** — Knowing which commands use newline-delimited JSON vs standard JSON
-2. **Non-interactive flags** — Consistently using `-y` to prevent CLI hangs
+2. **Non-interactive flags** — Knowing which commands need `-y` (destructive ops like `delete`, `clear`, `copy`, `move`, `rules import`) and which don't (`objects import`, `objects update`, `synonyms import`)
 3. **Piping patterns** — Using `-F -` for stdin instead of intermediate files
 4. **Synonym type selection** — Choosing `oneWaySynonym` vs `synonym` based on user intent
 5. **Correct CLI commands** — Preventing hallucinated commands like `algolia rules save --rule`
@@ -86,7 +86,7 @@ Low recall is a systemic limitation — Claude is confident enough in its Algoli
 
 ## Improvements Made (v1 → v2)
 
-1. **Added `-y` flag** to all write commands in quick reference tables
+1. **Corrected `-y` flag usage** — only on commands that actually support it (destructive operations), removed from `objects import`/`objects update`
 2. **New Synonym Type Guide** with decision rules for `synonym` vs `oneWaySynonym`
 3. **Expanded non-interactive convention** listing every command that needs `-y`
 4. **New Common Workflows section** (migrate, backup, restore patterns)
