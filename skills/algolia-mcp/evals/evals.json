@@ -1,0 +1,75 @@
+{
+  "skill_name": "algolia-mcp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to search my 'products' index for shoes under $100 in either red or blue. Show me only the name, price, and color fields. Also, what are the available facet values for the 'brand' attribute?",
+      "expected_output": "Correct MCP tool calls with proper filter syntax, attribute selection, and facet exploration",
+      "files": [],
+      "expectations": [
+        "Calls algolia_search_list_indices first to discover applicationId and verify index name",
+        "Uses algolia_search_index with facetFilters using OR syntax for colors: [[\"color:red\", \"color:blue\"]]",
+        "Uses numericFilters with string syntax: [\"price < 100\"]",
+        "Combines facetFilters AND numericFilters in the same search call",
+        "Sets attributesToRetrieve to [\"name\", \"price\", \"color\"] to limit response",
+        "Uses algolia_search_for_facet_values to explore the 'brand' attribute"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Give me a search quality report for my 'ecommerce' index over the last 30 days — I want to know the no-results rate, top searches that have no clicks, and the click position distribution. Include click-through rates where possible.",
+      "expected_output": "Multiple analytics tool calls with correct date params and clickAnalytics enabled",
+      "files": [],
+      "expectations": [
+        "Calls algolia_search_list_indices first to resolve applicationId",
+        "Uses algolia_analytics_no_results_rate with startDate and endDate in YYYY-MM-DD format spanning 30 days",
+        "Uses algolia_analytics_top_searches_without_clicks for searches with no clicks",
+        "Uses algolia_analytics_click_positions for click position distribution",
+        "Sets clickAnalytics: true on at least one analytics call to include CTR data",
+        "Does NOT use algolia-cli commands — this is a read-only analytics task"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "For product ID 'SKU-1234' in my 'catalog' index, show me frequently bought together items and related products. Also show me what's trending in the 'shoes' category. Use a balanced relevance threshold.",
+      "expected_output": "Three recommendation calls with correct model params and threshold",
+      "files": [],
+      "expectations": [
+        "Calls algolia_search_list_indices first to resolve applicationId",
+        "Uses algolia_recommendations with model 'bought-together' and objectID 'SKU-1234'",
+        "Uses algolia_recommendations with model 'related-products' and objectID 'SKU-1234'",
+        "Uses algolia_recommendations with model 'trending-items' with facetName and facetValue for shoes category",
+        "Sets threshold to 60 (or close) as the balanced default",
+        "Does NOT pass objectID for the trending-items call (trending-items does not require it)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our 'ecommerce' index has a no-results rate of 18%. I need to find the specific queries that are failing, then for the top 3 failing queries, actually run those searches to see what results come back (or don't). Also check if our click-through rates have been improving — compare the last 7 days vs the previous 7 days.",
+      "expected_output": "Multi-step investigation workflow: analytics to find failing queries, then search to diagnose, plus two date-range comparisons",
+      "files": [],
+      "expectations": [
+        "Calls algolia_search_list_indices first to resolve applicationId",
+        "Uses algolia_analytics_searches_no_results to find specific failing queries",
+        "Uses algolia_search_index to test the failing queries and see actual results",
+        "Uses algolia_analytics_top_searches with clickAnalytics: true for BOTH date ranges (last 7 days AND previous 7 days) to compare CTR",
+        "Sets clickAnalytics: true specifically on algolia_analytics_top_searches (not on a tool that doesn't support it)",
+        "Uses correct YYYY-MM-DD date format for all date parameters"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Search my 'events' index for all conferences happening after January 1st 2025. The date is stored as a Unix timestamp field called 'event_date'. Filter to only events in 'technology' or 'science' categories with a ticket price between $50 and $500. Show me page 3 with 20 results per page.",
+      "expected_output": "Search with Unix timestamp numericFilter, facetFilters, pagination, and correct date conversion",
+      "files": [],
+      "expectations": [
+        "Calls algolia_search_list_indices first to resolve applicationId",
+        "Uses numericFilters with Unix timestamp for date: event_date >= 1735689600 (or equivalent for Jan 1 2025)",
+        "Uses facetFilters with OR syntax for categories: [[\"category:technology\", \"category:science\"]]",
+        "Uses numericFilters for price range: [\"price >= 50\", \"price <= 500\"]",
+        "Combines all three filter types (date, category, price) in a single algolia_search_index call",
+        "Sets page to 2 (0-indexed, so page 3 = page parameter 2) and hitsPerPage to 20"
+      ]
+    }
+  ]
+}
