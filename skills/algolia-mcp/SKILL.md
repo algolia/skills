@@ -9,6 +9,8 @@ metadata:
 
 # Algolia Search & Analytics
 
+> **Need to write/modify data?** Use **algolia-cli** instead — it handles imports, exports, backups, settings changes, synonyms, rules, API keys, and all admin operations.
+
 ## Connection setup
 
 Use `/algolia-mcp:connect` to configure the MCP client with the Algolia MCP server.

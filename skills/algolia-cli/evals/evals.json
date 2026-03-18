@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-cli",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to export all records from my 'products' index and import them into a new 'products_v2' index, but only keep the title, price, and category fields. After copying, update the search settings to make 'category' a facet.",
+      "expected_output": "Commands to browse with specific attributes, pipe to import, and set facet settings",
+      "files": [],
+      "expectations": [
+        "Uses 'algolia objects browse' with --attributesToRetrieve to select only title, price, and category",
+        "Pipes the browse output to 'algolia objects import' using -F - for stdin",
+        "Uses 'algolia settings set' with --attributesForFaceting to add 'category' as a facet",
+        "Includes -y flag on commands that require confirmation",
+        "Uses -w (wait) flag on import before running the settings command, or chains them appropriately"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Set up synonyms for my 'ecommerce' index — 'sneakers' and 'trainers' should be equivalent, and searching 'TV' should also match 'television' and 'flat screen'. Also add a rule that boosts products with 'featured:true' to the top.",
+      "expected_output": "Commands or ndjson files to create synonyms and a query rule with boosting",
+      "files": [],
+      "expectations": [
+        "Creates a regular (two-way) synonym linking 'sneakers' and 'trainers'",
+        "Creates a one-way synonym from 'TV' to 'television' and 'flat screen'",
+        "Uses correct synonym types: 'synonym' for two-way and 'oneWaySynonym' for one-way",
+        "Creates an ndjson file for the rule with a condition and consequence that boosts 'featured:true' items",
+        "Uses 'algolia synonyms save' or 'algolia synonyms import' with proper ndjson format",
+        "Uses 'algolia rules import' with -F flag and -y for confirmation"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to back up my entire 'blog_posts' index — all records, settings, rules, and synonyms — to local files. Then I want to create an API key that only allows search access to that specific index.",
+      "expected_output": "Four backup commands (objects, settings, rules, synonyms) plus an API key creation command",
+      "files": [],
+      "expectations": [
+        "Uses 'algolia objects browse blog_posts' and redirects output to a .ndjson file",
+        "Uses 'algolia settings get blog_posts' and redirects output to a .json file",
+        "Uses 'algolia rules browse blog_posts' and redirects output to a .ndjson file",
+        "Uses 'algolia synonyms browse blog_posts' and redirects output to a .ndjson file",
+        "Uses 'algolia apikeys create' with --acl search and --indices blog_posts",
+        "Does NOT use ndjson extension for settings (settings are regular JSON, not ndjson)"
+      ]
+    }
+  ]
+}
