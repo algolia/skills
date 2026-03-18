@@ -10,7 +10,7 @@
         "Uses 'algolia objects browse' with --attributesToRetrieve to select only title, price, and category",
         "Pipes the browse output to 'algolia objects import' using -F - for stdin",
         "Uses 'algolia settings set' with --attributesForFaceting to add 'category' as a facet",
-        "Includes -y flag on commands that require confirmation",
+        "Does NOT include -y flag on 'objects import' or 'settings set' (these commands do not support it)",
         "Uses -w (wait) flag on import before running the settings command, or chains them appropriately"
       ]
     },

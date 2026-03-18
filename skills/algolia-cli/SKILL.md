@@ -85,11 +85,11 @@ Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [
 |----------------------------|---------------------------------------------------------------------|
 | Browse all records         | `algolia objects browse <index>`                                    |
 | Browse specific attributes | `algolia objects browse <index> --attributesToRetrieve title,price` |
-| Import records from file   | `algolia objects import <index> -F data.ndjson -y`                  |
-| Import from stdin          | `cat data.ndjson \| algolia objects import <index> -F - -y`         |
+| Import records from file   | `algolia objects import <index> -F data.ndjson`                     |
+| Import from stdin          | `cat data.ndjson \| algolia objects import <index> -F -`            |
 | Delete by IDs              | `algolia objects delete <index> --object-ids id1,id2 -y`            |
 | Delete by filter           | `algolia objects delete <index> --filters "type:obsolete" -y`       |
-| Partial update             | `algolia objects update <index> -F updates.ndjson -y`               |
+| Partial update             | `algolia objects update <index> -F updates.ndjson`                  |
 
 ### Settings
 
@@ -132,7 +132,7 @@ Choosing the right synonym type matters for search quality:
 
 ## Key Conventions
 
-1. **Always use non-interactive mode.** Every command that writes, deletes, or modifies data needs `-y` (or `--confirm`) to skip confirmation prompts. This includes `objects import`, `objects delete`, `objects update`, `indices delete/clear/copy/move`, `rules import/delete`, `synonyms import/delete`, and `apikeys delete`. Without `-y`, the CLI will hang waiting for user input.
+1. **Always use non-interactive mode.** Destructive commands need `-y` (or `--confirm`) to skip confirmation prompts. This includes `objects delete`, `indices delete/clear/copy/move`, `rules import/delete`, `synonyms delete`, and `apikeys delete`. Without `-y`, the CLI will hang waiting for user input. Note: `objects import`, `objects update`, and `synonyms import` do **not** have a `-y` flag — they run non-interactively by default.
 2. **ndjson format.** `objects browse`, `objects import`, `rules browse/import`, and `synonyms browse/import` use newline-delimited JSON (one JSON object per line), **not** JSON arrays.
 3. **Profile flag.** Use `-p <profile>` to target a non-default profile. Omit it to use the default.
 4. **Credential precedence.** Environment variables override all other configuration. The resolution order is: **env vars** > **CLI flags** (`--application-id`, `--api-key`) > **profile config file** > **default profile**. Supported env vars: `ALGOLIA_APPLICATION_ID`, `ALGOLIA_API_KEY`, `ALGOLIA_ADMIN_API_KEY`, `ALGOLIA_SEARCH_HOSTS`, `ALGOLIA_CRAWLER_USER_ID`, `ALGOLIA_CRAWLER_API_KEY`. If env vars are set, `--profile`/`-p` is ignored for those credentials.
@@ -145,7 +145,7 @@ Choosing the right synonym type matters for search quality:
 ### Migrate records between indices (with field filtering)
 ```bash
 algolia objects browse SOURCE --attributesToRetrieve objectID,title,price \
-  | algolia objects import DEST -F - -y -w
+  | algolia objects import DEST -F - -w
 ```
 
 ### Full index backup
@@ -159,10 +159,10 @@ Note: settings use `.json` (standard JSON), everything else uses `.ndjson` (newl
 
 ### Restore from backup
 ```bash
-algolia objects import MY_INDEX -F my_index_records.ndjson -y -w
-algolia settings import MY_INDEX -F my_index_settings.json -y -w
+algolia objects import MY_INDEX -F my_index_records.ndjson -w
+algolia settings import MY_INDEX -F my_index_settings.json -w
 algolia rules import MY_INDEX -F my_index_rules.ndjson -c -y -w
-algolia synonyms import MY_INDEX -F my_index_synonyms.ndjson -r -y -w
+algolia synonyms import MY_INDEX -F my_index_synonyms.ndjson -r -w
 ```
 
 ## Direct Invocation
