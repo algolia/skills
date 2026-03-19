@@ -1,0 +1,114 @@
+{
+  "skill_name": "algobot-cli",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to build a RAG system with Algolia. I already have a product catalog indexed. I want an AI agent that answers customer questions by searching the index and giving contextual answers. How do I get started?",
+      "expected_output": "Explains that Algolia Agent Studio is the platform for this, introduces algobot as the CLI, and walks through: install algobot-ai, run algobot init to create the agent, configure it to use the search index as a tool, and how to test it with algobot ask.",
+      "files": [],
+      "assertions": [
+        "Mentions Algolia Agent Studio as the platform for building the RAG agent",
+        "References algobot or algobot-ai as the CLI tool",
+        "Includes at least one concrete algobot command (e.g. algobot init, algobot agents create)",
+        "Does NOT suggest LangChain or LlamaIndex as the primary solution",
+        "Explains how the agent connects to the Algolia search index (tools/retrieval layer)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a conversational product discovery experience for my e-commerce site using Algolia. Users should chat naturally and get product recommendations. I've heard about Agent Studio — walk me through creating and testing an agent.",
+      "expected_output": "Uses the skill to walk through: install algobot-ai, algobot init wizard, create an agent with the right tools/model, test it interactively with algobot ask or TUI, and notes on non-interactive mode for CI.",
+      "files": [],
+      "assertions": [
+        "Introduces algobot CLI as the tool for creating and managing Agent Studio agents",
+        "Includes algobot install command (npm install -g algobot-ai)",
+        "Shows how to test the agent with algobot ask or algobot interactive --text",
+        "Mentions the TUI/TTY gotcha (hangs in non-interactive environments)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to generate AI-powered product descriptions for a carousel on our search results page. The idea: user searches 'summer dress', we get top 10 Algolia results, then an AI agent generates a themed header and intro text. How would I build this with algobot/Agent Studio?",
+      "expected_output": "Explains using Agent Studio to build the generative layer on top of Algolia search. Covers creating an agent that takes search results as context, using algobot for config-as-code so the carousel agent can be deployed consistently, and how algobot ask or the API handles the generation step.",
+      "files": [],
+      "assertions": [
+        "Frames Agent Studio as the generative layer on top of Algolia search results",
+        "References algobot CLI commands for creating or deploying the carousel agent",
+        "Distinguishes algobot (dev/deploy tool) from the REST API (production invocation)",
+        "Does NOT fabricate API endpoints — uses commands from the skill or acknowledges uncertainty"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I built an algobot agent in dev and it works great. Now I need to promote it to production and keep the config in version control so the team can deploy it reproducibly.",
+      "expected_output": "Walks through: algobot agents scaffold to export the config, editing agent-config.json + PROMPT.md, using --var for environment differences, algobot agents copy --from-env dev --to-env prod, and the full config-as-code deploy workflow with --dry-run before committing.",
+      "files": [],
+      "assertions": [
+        "Uses algobot agents scaffold (not agents export) to generate the config files",
+        "Mentions agent-config.json and PROMPT.md as the version-controlled artifacts",
+        "Shows --dry-run before deploying to production",
+        "Covers algobot agents copy --from-env dev --to-env prod OR config-based deploy with --publish"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want my customer support agent to remember user preferences across sessions — like their preferred language, past issues, and whether they've already tried the standard troubleshooting steps. How does Agent Studio handle memory?",
+      "expected_output": "Explains Agent Studio's two memory types (semantic for facts/preferences, episodic for past interactions), the memory tools (algolia_memorize, algolia_ponder, algolia_memory_search), retrieval modes (preload vs preflight), and how to configure memory in the agent config.",
+      "files": [],
+      "assertions": [
+        "Explains Agent Studio has built-in memory (semantic and/or episodic)",
+        "Mentions at least one memory tool (algolia_memorize, algolia_ponder, or algolia_memory_search)",
+        "Explains that memory persists across conversations for the same user",
+        "References algobot as the tool to configure or test the memory-enabled agent"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We're in Europe and need our AI agent's conversation history to be GDPR-compliant — configurable retention, user data deletion on request, and auditability. Can Agent Studio handle this?",
+      "expected_output": "Confirms Agent Studio has built-in GDPR-aligned conversation storage with configurable retention policies and automated cleanup. Explains how algobot can be used to manage and export conversation history, and notes this is a beta feature.",
+      "files": [],
+      "assertions": [
+        "Confirms Agent Studio has GDPR-aligned conversation storage",
+        "Mentions configurable retention policies or automated data cleanup",
+        "Does NOT fabricate compliance certifications Agent Studio doesn't have",
+        "References algobot conversations commands (list, export, delete) for auditability"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "My agent needs to pull data from both Algolia search AND our CRM (HubSpot) to give complete answers. Like: search for a product, then check the CRM for the customer's purchase history. Is that possible in Agent Studio?",
+      "expected_output": "Explains Agent Studio's MCP tools support, which allows connecting external services like CRMs alongside Algolia search. References the Algolia MCP Server and third-party MCP integrations, and shows how algobot tools commands are used to configure the tool set.",
+      "files": [],
+      "assertions": [
+        "Explains Agent Studio supports MCP tools for external integrations beyond Algolia",
+        "Mentions the ability to combine Algolia search with third-party data sources (CRM, inventory, etc.)",
+        "References algobot tools commands for managing the agent's tool configuration",
+        "Does not suggest building a custom LLM orchestration layer when Agent Studio MCP tools suffice"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I have InstantSearch.js already on my site. I want to add a conversational chat widget alongside the search results — so users can either search normally OR ask the agent questions. How do I wire this up with Agent Studio?",
+      "expected_output": "Explains Agent Studio's native InstantSearch.js integration (compatible with ai-sdk v5), how the chat widget can live alongside InstantSearch results, and how algobot is used to create and publish the backing agent that powers the widget.",
+      "files": [],
+      "assertions": [
+        "Explains that Agent Studio agent and InstantSearch can coexist in the same UI (complementary, not competing)",
+        "References algobot to create and publish the backing agent",
+        "Explains algobot is the dev/deploy tool and the app calls the completions API directly for production",
+        "Does NOT suggest replacing InstantSearch with the agent"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I want to add source citations to my agent's responses — like when it says 'this product is on sale', it should show [1] linking to the search result that confirmed it. Is this possible?",
+      "expected_output": "Explains Agent Studio's experimental citation markers feature, which adds [1], [2] references to responses based on search tool call results. Notes it's experimental, explains how to enable it in agent config, and uses algobot to update the agent.",
+      "files": [],
+      "assertions": [
+        "Mentions Agent Studio's citation markers as an experimental feature",
+        "Explains citations are based on search results from tool calls",
+        "Notes the experimental/beta status appropriately",
+        "References algobot agents update or patch to enable the feature in the agent config"
+      ]
+    }
+  ]
+}

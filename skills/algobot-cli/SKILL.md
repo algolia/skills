@@ -1,25 +1,37 @@
 ---
 name: algobot-cli
 description: >-
-  Use this skill when a user wants to manage Algolia Agent Studio agents from
-  the terminal — creating, listing, updating, publishing, or deleting agents,
-  testing agents interactively, deploying agents across environments (dev/staging/prod),
-  or automating agent operations in CI/CD pipelines. Also use for config-as-code
-  workflows (scaffolding, mustache templates, dry-run previews) and conversation
-  history management. The key signal is that the user wants to *act on* Agent
-  Studio agents or chat with them via CLI. Do NOT use for Algolia search index
-  operations (records, settings, synonyms, rules) — use algolia-cli instead.
-  Do NOT use for building Agent Studio frontend/UI, or for general LLM/AI tasks
-  unrelated to Algolia Agent Studio.
+  Use this skill whenever a user wants to build or manage AI agents powered by
+  Algolia — including RAG systems, conversational search experiences, genAI
+  content generation (carousels, product descriptions, headers), chatbots,
+  recommendation agents, or any AI feature that uses Algolia as its retrieval
+  backbone. Algolia Agent Studio is the platform for all of these, and algobot
+  is its CLI. Also use when: managing agents (create/list/update/publish/delete),
+  testing agents interactively, deploying across environments (dev/staging/prod),
+  config-as-code workflows, memory/personalization setup, MCP tool integrations
+  (CRM, inventory, external APIs), or automating agent ops in CI/CD. The key
+  signal is building OR managing AI experiences on top of Algolia search or
+  recommendations — even if the user doesn't mention "algobot" or "Agent Studio"
+  by name. Do NOT use for raw Algolia index operations (records, settings,
+  synonyms, rules) — use algolia-cli instead. Do NOT use for pure frontend search
+  UI (InstantSearch components, autocomplete widgets) with no agent layer.
 license: MIT
 metadata:
   author: algolia
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Algobot CLI
 
-Manage and test [Algolia Agent Studio](https://www.algolia.com/products/ai/agent-studio/) agents from the terminal using `algobot`.
+[Algolia Agent Studio](https://www.algolia.com/products/ai/agent-studio/) is Algolia's platform for building AI agents — RAG systems, conversational experiences, genAI content generation — with Algolia search and recommendations as the retrieval backbone. `algobot` (`npm install -g algobot-ai`) is its CLI for creating, testing, and deploying agents.
+
+## When to Use Algobot vs Other Tools
+
+| Need | Use |
+|------|-----|
+| Build/manage AI agents on Algolia (RAG, chatbot, genAI UI) | **algobot-cli** (this skill) |
+| Algolia search index ops (records, settings, synonyms) | **algolia-cli** |
+| Search queries, analytics, recommendations | **algolia-mcp** |
 
 ## Setup
 
@@ -28,36 +40,22 @@ npm install -g algobot-ai
 algobot init                    # Interactive wizard (creates first agent + profile)
 ```
 
-Or add a profile manually:
+Or add a profile manually (CI-safe, non-interactive):
 ```bash
 algobot profiles add --name prod --env prod
-# Then enter App ID + Admin API Key when prompted
 ```
-
-## When to Use Algobot vs Other Tools
-
-| Need | Use |
-|------|-----|
-| Manage/test Agent Studio agents | **algobot-cli** (this skill) |
-| Algolia search index ops (records, settings, synonyms) | **algolia-cli** |
-| Search queries, analytics, recommendations | **algolia-mcp** |
 
 ## Non-Interactive Mode (Critical for Agents)
 
 **The TUI won't render in non-TTY environments** (CI, scripts, agent subprocesses). Use these instead:
 
 ```bash
-# One-shot query
-algobot ask "What is your return policy?"
-
-# Scripted multi-turn with ||| separator
-algobot interactive --text "hello ||| list my orders ||| /context"
-
-# Pipe-friendly JSON
-algobot agents list --jq '.[] | .name'
+algobot ask "What is your return policy?"                    # One-shot
+algobot interactive --text "hello ||| list my orders ||| /context"  # Multi-turn
+algobot agents list --jq '.[] | .name'                       # JSON filtering
 ```
 
-`--jq` is a built-in flag — no need to install jq separately.
+`--jq` is built-in — no need to install jq separately.
 
 ## Core Commands
 
@@ -72,7 +70,6 @@ algobot agents publish <agent-id>
 algobot agents unpublish <agent-id>
 algobot agents delete <agent-id>
 algobot agents copy <id> --from-env dev --to-env prod
-algobot agents export <agent-id>             # Export config to JSON
 ```
 
 ### Chatting with an Agent
@@ -89,41 +86,45 @@ algobot --verbose ask "debug this"           # Show full HTTP traces
 algobot profiles list
 algobot profiles add --name dev --env dev
 algobot profiles setdefault prod
-algobot profiles show prod                   # JSON output
-
-# Per-command override
 algobot --profile prod agents list
-algobot --env dev agents list               # Uses default profile for that env
+algobot --env dev agents list
 ```
 
 ## Config-as-Code Workflow
 
-Version-control agent definitions with mustache templates. Ideal for repeatable deployments (events, teams, multi-region).
+Version-control agent definitions with mustache templates — ideal for repeatable deployments across events, teams, or environments.
 
 ```bash
 # 1. Scaffold from an existing agent
 algobot agents scaffold <agent-id>           # → agent-config.json + PROMPT.md
 
-# 2. Preview resolved config (API-level kill switch — mutations blocked)
+# 2. Preview (API-level kill switch — mutations blocked by construction)
 algobot --dry-run agents create --config agent-config.json --var event="Spring 2026"
 
 # 3. Deploy
-algobot agents create --config agent-config.json --var event_name="Spring 2026" --var event_id="spring-2026"
+algobot agents create --config agent-config.json --var event_name="Spring 2026"
 
 # 4. Update + publish in one step
 algobot agents update <id> --config agent-config.json --var event_name="Summer 2026" --publish
 ```
 
-`--dry-run` is enforced at the API layer, not just a flag check — safe to use in previews.
+`{{key}}` in JSON fields: JSON-safe escaping. In `.md` instructions: raw substitution.
 
-`{{key}}` placeholders resolve differently by field type:
-- JSON config fields: JSON-safe escaping
-- Instructions (`.md` files): raw substitution
+## Agent Studio Capabilities (via agent config)
+
+Beyond basic chat, Agent Studio agents support:
+
+- **Tools**: Algolia Search, Algolia Browse, Algolia Recommend, client-side tools, and [MCP tools](https://www.algolia.com/doc/guides/algolia-ai/agent-studio/how-to/tools/mcp-tools) (connect CRMs, inventory systems, external APIs alongside Algolia). Manage with `algobot tools list/add/remove`
+- **Memory**: Semantic (facts/preferences) and episodic (past interactions) memory across sessions, using `algolia_memorize`, `algolia_ponder`, and `algolia_memory_search` tools. Configure retrieval mode (preload vs preflight) in agent config.
+- **Conversation storage**: Persistent history with configurable retention — see `algobot conversations` for export/delete
+- **Experimental**: Citation markers `[1][2]` on responses, date injection, response caching — enable in agent config
+
+Use `algobot agents scaffold` to inspect/edit these settings, `algobot --dry-run` to preview before applying.
 
 ## Live Development
 
 ```bash
-algobot agents watch patch.json             # Auto-apply patches on file change (like hot reload)
+algobot agents watch patch.json             # Auto-apply patches on file change
 ```
 
 ## Global Flags
@@ -139,12 +140,13 @@ algobot agents watch patch.json             # Auto-apply patches on file change 
 
 ## Gotchas
 
-- **TUI requires TTY.** `algobot` with no args launches the TUI — it hangs in scripts. Always use `ask` or `--text` in non-interactive contexts.
-- **Exit codes are 0/1 only** in v2.0. Can't distinguish "not found" from "auth error" by exit code — parse stderr if needed.
-- **`--output json` missing on most commands** in v2.0. Use `--jq` or rely on JSON-structured stdout where available.
+- **TUI requires TTY.** `algobot` with no args launches the TUI — hangs in scripts. Always use `ask` or `--text` in non-interactive contexts.
+- **Exit codes are 0/1 only** in v2.0. Can't distinguish "not found" from "auth error" — parse stderr if needed.
+- **`--output json` missing on most commands** in v2.0. Use `--jq` or JSON-structured stdout.
 - **`algobot init` is interactive.** Don't use in CI — use `profiles add` with flags instead.
-- **Auth stored in `~/.algobot-cookie`** (AES-256-GCM). Run `algobot auth show` to inspect current credentials.
-- **`--config` auto-discovers `agent-config.json`** in cwd. Explicit path: `--config path/to/config.json`.
+- **Auth stored in `~/.algobot-cookie`** (AES-256-GCM). Inspect with `algobot auth show`.
+- **`--config` auto-discovers `agent-config.json`** in cwd. Explicit: `--config path/to/config.json`.
+- **algobot = dev/deploy tool; REST API = production invocation.** Use algobot to build and publish agents; call the Agent Studio completions API directly from your app. Don't guess the endpoint URL — run `algobot agents get <id>` to retrieve it, or check the Agent Studio dashboard.
 
 ## Reference Docs
 
