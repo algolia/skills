@@ -1,20 +1,23 @@
 ---
 name: algobot-cli
 description: >-
-  Use this skill whenever a user wants to build or manage AI agents powered by
-  Algolia — including RAG systems, conversational search experiences, genAI
-  content generation (carousels, product descriptions, headers), chatbots,
-  recommendation agents, or any AI feature that uses Algolia as its retrieval
-  backbone. Algolia Agent Studio is the platform for all of these, and algobot
-  is its CLI. Also use when: managing agents (create/list/update/publish/delete),
-  testing agents interactively, deploying across environments (dev/staging/prod),
-  config-as-code workflows, memory/personalization setup, MCP tool integrations
-  (CRM, inventory, external APIs), or automating agent ops in CI/CD. The key
-  signal is building OR managing AI experiences on top of Algolia search or
-  recommendations — even if the user doesn't mention "algobot" or "Agent Studio"
-  by name. Do NOT use for raw Algolia index operations (records, settings,
-  synonyms, rules) — use algolia-cli instead. Do NOT use for pure frontend search
-  UI (InstantSearch components, autocomplete widgets) with no agent layer.
+  ALWAYS use this skill when the user mentions Algolia Agent Studio, algobot,
+  or wants any AI agent / RAG / conversational experience built on Algolia.
+  Covers: RAG systems on Algolia, conversational product discovery, genAI
+  content generation from search results (carousels, product descriptions, page
+  headers), chatbots or recommendation agents using Algolia as retrieval,
+  algobot CLI (install, init, ask, interactive), Agent Studio agent
+  create/update/publish/delete, config-as-code workflows, multi-environment
+  deploy (dev/staging/prod), memory and personalization across sessions,
+  MCP tool integrations (CRM or inventory alongside Algolia), conversation
+  history / GDPR retention, or adding a chat widget alongside InstantSearch.
+  Make sure to use this skill any time the user says "algobot", "Agent Studio",
+  "RAG with Algolia", "conversational experience", "AI agent" + Algolia,
+  "genAI carousel", "chat widget", or asks about building AI features on top
+  of Algolia search — even if they don't say "Agent Studio" or "algobot" by name.
+  Do NOT use for raw Algolia index ops (records, synonyms, settings, facets,
+  rankings) — use algolia-cli instead. Do NOT use for pure frontend search UI
+  (InstantSearch components, autocomplete) with no AI/agent layer.
 license: MIT
 metadata:
   author: algolia
