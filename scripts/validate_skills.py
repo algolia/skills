@@ -204,6 +204,24 @@ def validate_marketplace(root: Path) -> None:
     if all_exist:
         report.pass_(ctx, "skill paths exist")
 
+    # Inverse check: every skill on disk must be registered in marketplace.json
+    skills_dir = root / "skills"
+    if skills_dir.exists():
+        registered = set()
+        for plugin in data.get("plugins", []):
+            for skill_path in plugin.get("skills", []):
+                resolved = (root / skill_path).resolve()
+                registered.add(resolved)
+
+        all_registered = True
+        for skill_dir in sorted(d for d in skills_dir.iterdir() if d.is_dir()):
+            if skill_dir.resolve() not in registered:
+                report.fail_(ctx, f"unregistered skill: {skill_dir.name} exists in skills/ but is not listed in marketplace.json")
+                all_registered = False
+
+        if all_registered:
+            report.pass_(ctx, "all skills registered in marketplace.json")
+
 
 def main() -> None:
     root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
