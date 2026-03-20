@@ -12,10 +12,11 @@
 
 ## ✨ Skills
 
-| Skill         | Description                                                       |
-|---------------|-------------------------------------------------------------------|
-| `algolia-mcp` | Search, analytics, and recommendations via the Algolia MCP server |
-| `algolia-cli` | Manage indices, settings, rules, and synonyms via the Algolia CLI |
+| Skill         | Description                                                                   |
+|---------------|-------------------------------------------------------------------------------|
+| `algolia-mcp` | Search, analytics, and recommendations via the Algolia MCP server             |
+| `algolia-cli` | Manage indices, settings, rules, and synonyms via the Algolia CLI             |
+| `algobot-cli` | AI agents, Agent Studio, RAG, and conversational experiences built on Algolia |
 
 ---
 
@@ -25,13 +26,13 @@
 
 ```bash
 /plugin marketplace add algolia/skills
-/plugin install algolia-mcp   # or algolia-cli
+/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli
 ```
 
 Or install directly:
 
 ```bash
-/plugin install algolia-mcp@algolia-skills   # or algolia-cli@algolia-skills
+/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli
 ```
 
 #### npx
@@ -44,7 +45,7 @@ npx skills add https://github.com/algolia/skills
 
 ```bash
 git clone https://github.com/algolia/skills.git
-cp -r skills/algolia-mcp <skills-directory>   # or algolia-cli
+cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli
 ```
 
 <details>
