@@ -175,6 +175,22 @@ def validate_skill(skill_dir: Path) -> None:
     validate_body_length(skill_dir, body)
     validate_links(skill_dir, body)
 
+    # Evals coverage — hard fail if missing entirely
+    evals_file = skill_dir / "evals" / "evals.json"
+    if not evals_file.exists():
+        report.fail_(ctx, "evals/evals.json missing — add at least 1 example prompt (see README)")
+    else:
+        try:
+            data = json.loads(evals_file.read_text(encoding="utf-8"))
+            evals = data.get("evals", data) if isinstance(data, dict) else data
+            count = len(evals) if isinstance(evals, list) else 0
+            if count == 0:
+                report.fail_(ctx, "evals/evals.json has 0 prompts — add at least 1")
+            else:
+                report.pass_(ctx, f"evals ({count} prompt(s))")
+        except (json.JSONDecodeError, Exception) as e:
+            report.fail_(ctx, f"evals/evals.json invalid JSON: {e}")
+
 
 def validate_marketplace(root: Path) -> None:
     ctx = "marketplace.json"
