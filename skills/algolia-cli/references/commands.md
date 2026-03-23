@@ -4,6 +4,133 @@ Complete reference for agent-useful commands. All examples use non-interactive f
 
 ---
 
+## Auth
+
+### `algolia auth login`
+
+Sign in to your Algolia account via OAuth 2.0 with PKCE. Opens the browser for sign-in, starts a local callback server to receive the redirect automatically.
+
+```bash
+algolia auth login [flags]
+```
+
+| Flag             | Default | Description                                          |
+|------------------|---------|------------------------------------------------------|
+| `--app-name`     |         | Auto-select application by name (skips interactive)  |
+| `--profile-name` |         | Name for the CLI profile (defaults to app name)      |
+| `--default`      | `true`  | Set the profile as the default                       |
+| `--no-browser`   | `false` | Print the authorize URL instead of opening browser   |
+
+```bash
+# Sign in interactively (opens browser)
+algolia auth login
+
+# Auto-select an application by name
+algolia auth login --app-name "My App" --default
+
+# SSH / container: print URL, still waits for redirect
+algolia auth login --no-browser
+```
+
+After sign-in, the CLI fetches your applications, lets you pick one (or auto-selects via `--app-name`), and creates a CLI profile with the Admin API key.
+
+### `algolia auth logout`
+
+Sign out by revoking stored OAuth tokens on the server and removing them from the local keychain.
+
+```bash
+algolia auth logout
+```
+
+### `algolia auth signup`
+
+Create a new Algolia account via the browser. Opens the sign-up page, then completes the same OAuth flow as `login`.
+
+```bash
+algolia auth signup [flags]
+```
+
+| Flag             | Default | Description                                          |
+|------------------|---------|------------------------------------------------------|
+| `--app-name`     |         | Name for the first application                       |
+| `--profile-name` |         | Name for the CLI profile (defaults to app name)      |
+| `--default`      | `true`  | Set the profile as the default                       |
+| `--no-browser`   | `false` | Print the authorize URL instead of opening browser   |
+
+```bash
+# Create a new account (opens browser to sign-up page)
+algolia auth signup
+```
+
+---
+
+## Application Management
+
+### `algolia application list`
+
+List all Algolia applications associated with your account. Requires an active OAuth session (`algolia auth login`). Applications that already have a local CLI profile are marked.
+
+```bash
+algolia application list
+```
+
+Aliases: `ls`
+
+In interactive mode, offers to configure unconfigured applications as CLI profiles. Use `-o json` for machine-readable output.
+
+### `algolia application create`
+
+Create a new Algolia application and optionally configure it as a CLI profile. Requires an active OAuth session.
+
+```bash
+algolia application create [flags]
+```
+
+| Flag             | Default                  | Description                                     |
+|------------------|--------------------------|-------------------------------------------------|
+| `--name`         | `My First Application`   | Name for the application                        |
+| `--region`       |                          | Region code (e.g. `CA`, `US`, `EU`)             |
+| `--profile-name` |                          | Name for the CLI profile (defaults to app name) |
+| `--default`      | `false`                  | Set the new profile as the default              |
+| `--dry-run`      | `false`                  | Preview the create request without sending it   |
+
+```bash
+# Create with specific options
+algolia application create --name "My App" --region CA
+
+# Create and set as default profile
+algolia application create --name "My App" --region CA --default
+
+# Preview what would be created
+algolia application create --name "My App" --region CA --dry-run
+```
+
+### `algolia application select`
+
+Select an Algolia application to use as the default CLI profile. If the selected application already has a local profile, it is set as default. Otherwise, a new profile is created.
+
+```bash
+algolia application select [flags]
+```
+
+| Flag         | Default | Description                             |
+|--------------|---------|-----------------------------------------|
+| `--app-name` |         | Select application by name (non-interactive) |
+
+Aliases: `use`
+
+```bash
+# Select interactively
+algolia application select
+
+# Select by name (non-interactive)
+algolia application select --app-name "My App"
+```
+
+**Note:** `--app-name` is required in non-interactive mode.
+
+---
+
 ## Profile Management
 
 ### `algolia profile add`
@@ -702,6 +829,250 @@ algolia synonyms save MOVIES --id syn-3 --type placeholder --placeholder "<direc
 ```
 
 **Required ACL:** `editSettings`
+
+---
+
+## Crawler
+
+Crawler commands require separate authentication: set `ALGOLIA_CRAWLER_USER_ID` and `ALGOLIA_CRAWLER_API_KEY` environment variables, or add `crawler_user_id` and `crawler_api_key` to your profile config file (`~/.config/algolia/config.toml`).
+
+### `algolia crawler list`
+
+List crawlers, optionally filtered by name or application ID.
+
+```bash
+algolia crawler list [flags]
+```
+
+| Flag       | Default | Description       |
+|------------|---------|-------------------|
+| `--name`   |         | Filter by name    |
+| `--app-id` |         | Filter by app ID  |
+
+Aliases: `l`
+
+```bash
+# List all crawlers
+algolia crawler list
+
+# Filter by name
+algolia crawler list --name my-crawler
+
+# Filter by app ID
+algolia crawler list --app-id ABC123
+```
+
+Output columns: ID, NAME, STATUS, LAST REINDEX. Use `-o json` for machine-readable output.
+
+### `algolia crawler get`
+
+Get details of a specific crawler.
+
+```bash
+algolia crawler get <crawler_id> [flags]
+```
+
+| Flag            | Short | Default | Description                       |
+|-----------------|-------|---------|-----------------------------------|
+| `--config-only` | `-c`  | `false` | Display only the crawler config   |
+
+```bash
+# Get full crawler details
+algolia crawler get my-crawler
+
+# Get config only (useful for piping to create)
+algolia crawler get my-crawler --config-only
+```
+
+**Output format:** JSON.
+
+### `algolia crawler create`
+
+Create a new crawler from a configuration file.
+
+```bash
+algolia crawler create <name> -F <file> [flags]
+```
+
+| Flag        | Short | Default | Description                                        |
+|-------------|-------|---------|----------------------------------------------------|
+| `--file`    | `-F`  |         | Path to config file (`-` for stdin) — **required** |
+| `--dry-run` |       | `false` | Preview the create request without sending it      |
+
+Aliases: `new`, `n`, `c`
+
+```bash
+# Create from file
+algolia crawler create my-crawler -F config.json
+
+# Create from another crawler's config
+algolia crawler get other-crawler --config-only | algolia crawler create my-crawler -F -
+
+# Dry run
+algolia crawler create my-crawler -F config.json --dry-run
+```
+
+### `algolia crawler run`
+
+Start or resume a crawler. Previously ongoing crawls will be resumed; otherwise, the crawler waits for its next scheduled run.
+
+```bash
+algolia crawler run <crawler_id> [--dry-run]
+```
+
+| Flag        | Default | Description                                   |
+|-------------|---------|-----------------------------------------------|
+| `--dry-run` | `false` | Preview the run request without sending it    |
+
+```bash
+algolia crawler run my-crawler
+```
+
+### `algolia crawler pause`
+
+Pause one or more crawlers.
+
+```bash
+algolia crawler pause <crawler_id>... [--dry-run]
+```
+
+| Flag        | Default | Description                                     |
+|-------------|---------|-------------------------------------------------|
+| `--dry-run` | `false` | Preview the pause request without sending it    |
+
+```bash
+# Pause one
+algolia crawler pause my-crawler
+
+# Pause multiple
+algolia crawler pause my-crawler-1 my-crawler-2
+```
+
+### `algolia crawler reindex`
+
+Request the specified crawler(s) to start (or restart) crawling.
+
+```bash
+algolia crawler reindex <crawler_id>... [--dry-run]
+```
+
+| Flag        | Default | Description                                       |
+|-------------|---------|---------------------------------------------------|
+| `--dry-run` | `false` | Preview the reindex request without sending it    |
+
+```bash
+# Reindex one
+algolia crawler reindex my-crawler
+
+# Reindex multiple
+algolia crawler reindex my-crawler-1 my-crawler-2
+```
+
+### `algolia crawler unblock`
+
+Unblock a crawler by cancelling the task that is blocking it.
+
+```bash
+algolia crawler unblock <crawler_id> [-y] [--dry-run]
+```
+
+| Flag        | Short | Default | Description                                       |
+|-------------|-------|---------|---------------------------------------------------|
+| `--confirm` | `-y`  | `false` | Skip confirmation prompt                          |
+| `--dry-run` |       | `false` | Preview the unblock request without sending it    |
+
+```bash
+algolia crawler unblock my-crawler -y
+```
+
+### `algolia crawler crawl`
+
+Immediately crawl specific URLs. Records are pushed to the live index (or temporary index if a reindex is ongoing).
+
+```bash
+algolia crawler crawl <crawler_id> --urls <url>,... [flags]
+```
+
+| Flag     | Short | Default | Description                                          |
+|----------|-------|---------|------------------------------------------------------|
+| `--urls` | `-u`  |         | Comma-separated URLs (max 50) — **required**         |
+| `--save` | `-s`  | `false` | Save URLs to `extraUrls` in the crawler config       |
+
+```bash
+# Crawl specific URLs
+algolia crawler crawl my-crawler --urls https://example.com,https://example.com/page2
+
+# Crawl and save to config
+algolia crawler crawl my-crawler --urls https://example.com --save
+```
+
+### `algolia crawler test`
+
+Test a URL against the crawler's configuration and show the extracted records.
+
+```bash
+algolia crawler test <crawler_id> --url <url> [flags]
+```
+
+| Flag       | Short | Default | Description                                            |
+|------------|-------|---------|--------------------------------------------------------|
+| `--url`    | `-u`  |         | The URL to test — **required**                         |
+| `--config` | `-F`  |         | Config file to override the crawler's config (`-` for stdin) |
+| `--dry-run`|       | `false` | Preview the test request without sending it            |
+
+```bash
+# Test a URL
+algolia crawler test my-crawler --url https://example.com
+
+# Test with config override
+algolia crawler test my-crawler --url https://example.com -F config.json
+
+# Dry run
+algolia crawler test my-crawler --url https://example.com --dry-run
+```
+
+**Output format:** JSON.
+
+### `algolia crawler stats`
+
+Get a summary of crawled URL statuses for a crawler.
+
+```bash
+algolia crawler stats <crawler_id>
+```
+
+```bash
+algolia crawler stats my-crawler
+```
+
+Output columns: STATUS, CATEGORY, REASON, COUNT. Use `-o json` for machine-readable output.
+
+---
+
+## Describe
+
+### `algolia describe`
+
+Describe the CLI's command tree in a machine-readable JSON format. Useful for agents and automation to discover available commands and flags.
+
+```bash
+algolia describe [command] [subcommand]...
+```
+
+Aliases: `schema`
+
+```bash
+# Describe the root command (lists all top-level commands)
+algolia describe
+
+# Describe a specific command
+algolia describe search
+
+# Describe a subcommand
+algolia describe objects browse
+```
+
+**Output format:** JSON with `schemaVersion` and `command` fields.
 
 ---
 

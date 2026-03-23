@@ -28,6 +28,7 @@ Manage Algolia search infrastructure from the terminal using the `algolia` CLI.
 |------|-----|
 | Write/modify data (import, delete, update records) | **algolia-cli** (this skill) |
 | Manage configuration (settings, rules, synonyms) | **algolia-cli** (this skill) |
+| Auth (login, logout, signup via OAuth)                 | **algolia-cli** (this skill) |
 | Admin operations (API keys, profiles, index copy/move) | **algolia-cli** (this skill) |
 | Backup/restore indices | **algolia-cli** (this skill) |
 | Search queries and view results | **algolia-mcp** |
@@ -40,7 +41,19 @@ Manage Algolia search infrastructure from the terminal using the `algolia` CLI.
 
 Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [Getting Started](references/getting-started.md).
 
+**Tip:** `algolia auth login` is the easiest way to set up credentials — it handles OAuth sign-in and profile creation in one step. Use `algolia profile add` for non-interactive / CI setups where you already have an API key.
+
 ## Command Quick Reference
+
+### Auth
+
+| Task                        | Command                                            |
+|-----------------------------|----------------------------------------------------|
+| Sign in (opens browser)     | `algolia auth login`                               |
+| Sign in (select app by name)| `algolia auth login --app-name "My App" --default` |
+| Sign in (no browser / SSH)  | `algolia auth login --no-browser`                  |
+| Sign out                    | `algolia auth logout`                              |
+| Create new account          | `algolia auth signup`                              |
 
 ### Profile
 
@@ -50,6 +63,15 @@ Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [
 | List profiles                 | `algolia profile list`                                                             |
 | Remove a profile              | `algolia profile remove "<name>" -y`                                               |
 | Set default profile           | `algolia profile setdefault "<name>"`                                              |
+
+### Application
+
+| Task                              | Command                                                          |
+|-----------------------------------|------------------------------------------------------------------|
+| List applications                 | `algolia application list`                                       |
+| Create application                | `algolia application create --name "My App" --region CA`         |
+| Create (non-interactive, dry-run) | `algolia application create --name "My App" --region CA --dry-run` |
+| Switch active application         | `algolia application select --app-name "My App"`                 |
 
 ### API Keys
 
@@ -119,6 +141,28 @@ Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [
 | Delete synonyms by ID | `algolia synonyms delete <index> --synonym-ids id1,id2 -y`     |
 | Save a single synonym | `algolia synonyms save <index> --id my-syn --synonyms foo,bar` |
 
+### Crawler
+
+| Task                          | Command                                                                 |
+|-------------------------------|-------------------------------------------------------------------------|
+| List crawlers                 | `algolia crawler list`                                                  |
+| List by app                   | `algolia crawler list --app-id <app-id>`                                |
+| Get crawler details           | `algolia crawler get <id>`                                              |
+| Get config only               | `algolia crawler get <id> --config-only`                                |
+| Create crawler                | `algolia crawler create <name> -F config.json`                          |
+| Start/resume crawler          | `algolia crawler run <id>`                                              |
+| Pause crawler(s)              | `algolia crawler pause <id> [<id2> ...]`                                |
+| Reindex crawler(s)            | `algolia crawler reindex <id> [<id2> ...]`                              |
+| Unblock crawler               | `algolia crawler unblock <id> -y`                                       |
+| Crawl specific URLs           | `algolia crawler crawl <id> --urls url1,url2`                           |
+| Test URL against crawler      | `algolia crawler test <id> --url <url>`                                 |
+| Test with config override     | `algolia crawler test <id> --url <url> -F config.json`                  |
+| Get crawl statistics          | `algolia crawler stats <id>`                                            |
+
+Most crawler commands support `--dry-run` to preview the request without sending it: `create`, `run`, `pause`, `reindex`, `unblock`, `test`.
+
+**Auth:** Crawler commands require `ALGOLIA_CRAWLER_USER_ID` and `ALGOLIA_CRAWLER_API_KEY` env vars, or `crawler_user_id`/`crawler_api_key` in the profile config file.
+
 ## Synonym Type Guide
 
 Choosing the right synonym type matters for search quality:
@@ -129,6 +173,14 @@ Choosing the right synonym type matters for search quality:
   Example: "TV" → "television", "flat screen" — searching "TV" finds "television" results, but searching "television" does NOT return "TV" results.
 
 **Rule of thumb:** If the user says "searching X should *also match* Y", that's one-way (`input: X`, `synonyms: [Y]`). If they say "X and Y should be equivalent/interchangeable", that's two-way.
+
+### Describe
+
+| Task                       | Command                          |
+|----------------------------|----------------------------------|
+| Describe root command tree | `algolia describe`               |
+| Describe a command         | `algolia describe search`        |
+| Describe a subcommand      | `algolia describe objects browse` |
 
 ## Key Conventions
 
