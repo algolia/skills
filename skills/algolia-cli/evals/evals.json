@@ -41,6 +41,30 @@
         "Uses 'algolia apikeys create' with --acl search and --indices blog_posts",
         "Does NOT use ndjson extension for settings (settings are regular JSON, not ndjson)"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I just installed the Algolia CLI and need to authenticate. I'm on a remote server over SSH so I can't open a browser. After logging in, I want to make sure my credentials are saved as the default profile.",
+      "expected_output": "Commands to login without browser and verify default profile",
+      "files": [],
+      "expectations": [
+        "Uses 'algolia auth login --no-browser' since the user is on a remote server without browser access",
+        "Uses '--default' flag on the login command to save credentials as the default profile",
+        "Does NOT suggest 'algolia auth login' without --no-browser (would fail on SSH)",
+        "May suggest 'algolia profile list' to verify the profile was created correctly"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to see all my Algolia applications, then create a new one called 'Staging App' in the EU region. After that, switch to it so all future CLI commands use that app.",
+      "expected_output": "Commands to list applications, create a new one, and switch to it",
+      "files": [],
+      "expectations": [
+        "Uses 'algolia application list' to show existing applications",
+        "Uses 'algolia application create --name \"Staging App\" --region EU' to create the new app",
+        "Uses 'algolia application select --app-name \"Staging App\"' to switch to the new app",
+        "Does NOT use --region CA or other incorrect region values when the user specified EU"
+      ]
     }
   ]
 }
