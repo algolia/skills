@@ -1,0 +1,80 @@
+{
+  "skill_name": "instantsearch",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add autocomplete search to this site using Algolia.",
+      "expected_output": "Discovery questions followed by a full-featured autocomplete implementation using EXPERIMENTAL_Autocomplete from react-instantsearch",
+      "files": [],
+      "expectations": [
+        "Asks for Algolia credentials (app ID, API key, index name) before writing any code",
+        "Asks whether a query suggestions index exists",
+        "Inspects the project's styling approach, breakpoints, and framework before building",
+        "Uses EXPERIMENTAL_Autocomplete from react-instantsearch, not @algolia/autocomplete-js",
+        "Uses InstantSearchNext from react-instantsearch-nextjs if the project uses Next.js App Router",
+        "Creates the search client with algoliasearch v5 outside of React components",
+        "Implements multiple sources (query suggestions + products) when a QS index is available",
+        "Implements item navigation with both getURL (keyboard Enter) and clickable links in itemComponent",
+        "Sets detachedMediaQuery for mobile full-viewport overlay",
+        "Applies mobile detached CSS (body lock, fixed container, flex-grow panel, absolute inner layout)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have a Next.js App Router site with Tailwind v4. Add an autocomplete search bar in the header that searches my products index and my query suggestions index. Products should show an image, highlighted name, and price. Clicking a product should go to /shop/[id].",
+      "expected_output": "Autocomplete with two sources, rich product previews, working navigation, correct Next.js and Tailwind v4 handling",
+      "files": [],
+      "expectations": [
+        "Uses InstantSearchNext from react-instantsearch-nextjs, not InstantSearch",
+        "Places the InstantSearchNext provider high in the component tree (layout level), not wrapping only the autocomplete",
+        "Sets routing={true} on the provider",
+        "Sets insights={true} on the provider",
+        "Uses Highlight component for the product name, not raw text",
+        "Sets getURL on showQuerySuggestions to navigate to a search results page",
+        "Places ais-* styles outside of any @layer in the global CSS file (Tailwind v4 purges @layer content for unknown classes)",
+        "Greps node_modules/react-instantsearch for actual ais-* class names before writing CSS instead of guessing"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The autocomplete you built doesn't look right on mobile. The panel is cut off and I can't scroll through results.",
+      "expected_output": "Diagnoses missing mobile detached CSS and applies the correct flex-grow + absolute panel pattern",
+      "files": [],
+      "expectations": [
+        "Identifies that the detached overlay needs explicit CSS for full-viewport layout",
+        "Adds body.ais-Autocomplete--detached styles to lock scroll",
+        "Uses flex-direction: column on the detached container with the panel set to flex-grow: 1",
+        "Uses position: absolute with inset 0 and overflow-y: auto on the inner panel layout",
+        "Does NOT set position: fixed on the panel itself (that breaks the flex layout)",
+        "Verifies the fix at a mobile breakpoint"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to add search to my React app. I have an Algolia index called 'movies' with title, overview, poster_path, release_date, and vote_average fields. No query suggestions index.",
+      "expected_output": "Discovery followed by autocomplete with single source, adapted to movie schema, no fabricated QS source",
+      "files": [],
+      "expectations": [
+        "Does NOT fabricate a query suggestions source when told there is none",
+        "Adapts the result preview to movie attributes (poster image, highlighted title, release date, rating)",
+        "Asks where the autocomplete should be placed in the UI",
+        "Asks what the movie detail page route is (or what attribute to use for the URL slug)",
+        "Uses Highlight on the title attribute",
+        "Provides a no-results component"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Style the autocomplete to match my site's design. I have a dark theme with CSS custom properties for colors and spacing.",
+      "expected_output": "Styling via ais-* CSS selectors in the global stylesheet, using the project's design tokens",
+      "files": [],
+      "expectations": [
+        "Writes CSS targeting ais-* selectors in the global stylesheet",
+        "Greps node_modules/react-instantsearch for actual ais-* class names before writing CSS",
+        "Uses the project's CSS custom properties for colors and spacing",
+        "Matches the dark theme",
+        "Does not guess ais-* class names"
+      ]
+    }
+  ]
+}

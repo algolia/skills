@@ -35,6 +35,15 @@
       "skills": [
         "./skills/algobot-cli"
       ]
+    },
+    {
+      "name": "instantsearch",
+      "description": "Build production-quality search experiences (autocomplete, search results pages, faceted search) using InstantSearch with React, Vue, or vanilla JS. Covers discovery, implementation, styling, and review with expert guidance on widget selection, styling approaches, mobile overlays, and common anti-patterns. Do NOT use for backend index operations — use algolia-cli. Do NOT use for analytics or recommendations — use algolia-mcp. Do NOT use for AI/agent/conversational search — use algobot-cli.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/instantsearch"
+      ]
     }
   ]
 }
