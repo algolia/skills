@@ -12,11 +12,12 @@
 
 ## ✨ Skills
 
-| Skill         | Description                                                                   |
-|---------------|-------------------------------------------------------------------------------|
-| `algolia-mcp` | Search, analytics, and recommendations via the Algolia MCP server             |
-| `algolia-cli` | Manage indices, settings, rules, and synonyms via the Algolia CLI             |
-| `algobot-cli` | AI agents, Agent Studio, RAG, and conversational experiences built on Algolia |
+| Skill           | Description                                                                        |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `algolia-mcp`   | Search, analytics, and recommendations via the Algolia MCP server                  |
+| `algolia-cli`   | Manage indices, settings, rules, and synonyms via the Algolia CLI                  |
+| `algobot-cli`   | AI agents, Agent Studio, RAG, and conversational experiences built on Algolia      |
+| `instantsearch` | Build search UIs (autocomplete, search results, faceted search) with InstantSearch |
 
 ---
 
@@ -26,13 +27,13 @@
 
 ```bash
 /plugin marketplace add algolia/skills
-/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli
+/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
 ```
 
 Or install directly:
 
 ```bash
-/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli
+/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
 ```
 
 #### npx
@@ -45,14 +46,14 @@ npx skills add https://github.com/algolia/skills
 
 ```bash
 git clone https://github.com/algolia/skills.git
-cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli
+cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
 ```
 
 <details>
 <summary>Skills directories by agent</summary>
 
 | Agent        | Directory                    |
-|--------------|------------------------------|
+| ------------ | ---------------------------- |
 | Claude Code  | `~/.claude/skills/`          |
 | Cursor       | `~/.cursor/skills/`          |
 | OpenAI Codex | `~/.codex/skills/`           |
@@ -61,4 +62,3 @@ cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algob
 </details>
 
 Restart your agent to load the skill.
-
