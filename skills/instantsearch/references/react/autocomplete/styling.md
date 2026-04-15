@@ -61,6 +61,7 @@ body.ais-Autocomplete--detached {
   flex-grow: 1;
   position: relative;
   overflow: hidden;
+  top: 0;
 }
 
 /* 6. Inner panel layout scrolls within the flex-grown space */
