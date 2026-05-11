@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "algolia-mcp",
-      "description": "Comprehensive skill for searching, analyzing, and getting recommendations from Algolia indices via the Algolia MCP server. Includes commands for connecting to Algolia, searching indices, analyzing metrics, and managing recommendations.",
+      "description": "Comprehensive skill for searching, analyzing, and getting recommendations from Algolia indices via the Algolia MCP server. Includes connection setup guidance for supported MCP clients.",
       "source": "./",
       "strict": false,
       "skills": [

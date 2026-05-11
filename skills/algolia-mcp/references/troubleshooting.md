@@ -23,32 +23,24 @@
 1. Call `algolia_search_list_indices` to get exact index names (case-sensitive)
 2. Verify your user has access to the application containing the index
 
-## `mcp-remote` bridge errors
-
-### "npx: command not found" / "node: command not found"
-
-1. Install Node.js 18+: `node --version` should return v18.x or higher
-2. Ensure Node.js is in PATH. Some MCP clients use a non-interactive shell that may not include custom PATH entries (e.g., nvm). Add nvm initialization to `~/.bashrc` or `~/.zshrc`:
-   ```bash
-   export NVM_DIR="$HOME/.nvm"
-   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-   ```
+## Authentication and transport errors
 
 ### OAuth flow failed / "Invalid client"
 
-1. Verify `mcp-remote` uses client ID `pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o`
-2. Verify Algolia MCP is enabled in Dashboard
-3. Ensure browser allows pop-ups for the OAuth redirect
+1. Verify the server URL is `https://mcp.algolia.com/mcp`
+2. Use OAuth discovery with empty OAuth client ID and client secret fields
+3. Verify Algolia MCP is enabled in Dashboard
+4. Ensure browser allows pop-ups for the OAuth redirect
 
-### Version incompatibility / "Transport error"
+### Remote HTTP setup
 
-1. Pin a known-working version: replace `mcp-remote` with `mcp-remote@0.1.18` in your config
-2. Clear npx cache: `npx clear-npx-cache` or `rm -rf ~/.npm/_npx`
-3. Verify Node.js is v18+
+1. Verify your MCP client supports remote HTTP MCP servers
+2. Restart or reload the MCP client after changing the configuration
+3. Re-add the server with the client-specific setup in [connection-setup.md](connection-setup.md#method-2-manual-configuration)
 
 ### Claude Code CLI: "MCP server not found" after adding
 
-1. Verify: `claude mcp list` should show `algolia-mcp`
+1. Verify: `claude mcp list` should show `algolia`
 2. Close and reopen terminal, then run `claude` again
 3. Validate JSON: `echo '<your-json>' | python3 -m json.tool`
 
@@ -60,25 +52,15 @@
 
 ### Codex CLI: "Failed to start MCP server"
 
-1. Verify command uses `--` separator: `codex mcp add algolia-mcp -- npx -y mcp-remote ...`
-2. Ensure `-y` flag is included after `npx`
-3. Test `mcp-remote` manually:
+1. Verify the server was added as a remote HTTP server:
    ```bash
-   npx mcp-remote https://mcp.algolia.com/mcp 16453 --static-oauth-client-info '{"client_id":"pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o"}'
+   codex mcp get algolia
    ```
-
-### Claude Desktop: config changes not taking effect
-
-1. Quit Claude Desktop completely (Cmd/Ctrl + Q)
-2. Wait 5 seconds
-3. Reopen Claude Desktop
-
-### Claude Desktop: config file not found
-
-```bash
-mkdir -p ~/.config/claude
-echo '{"mcpServers":{}}' > ~/.config/claude/claude_desktop_config.json
-```
+2. Re-run OAuth login:
+   ```bash
+   codex mcp login algolia
+   ```
+3. Remove and re-add the server with `codex mcp add algolia --url https://mcp.algolia.com/mcp`.
 
 ## Analytics errors
 
@@ -109,7 +91,7 @@ echo '{"mcpServers":{}}' > ~/.config/claude/claude_desktop_config.json
 1. Lower threshold (try 50)
 2. Verify the `objectID` exists in the index
 3. `trending-items` requires the least data — test with that model first
-4. If `trending-items` works but `bought-together` doesn't, more purchase events are needed
+4. Use more purchase events before testing `bought-together`
 
 ## Error message reference
 

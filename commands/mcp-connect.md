@@ -1,10 +1,14 @@
+---
+description: Configure a supported MCP client with the Algolia MCP server.
+---
+
 # Algolia MCP Connection Setup
 
 This command guides you through connecting your MCP client to the Algolia MCP server.
 
 ## What This Command Does
 
-1. **Detects your MCP client** - Finds Claude Desktop, Claude Code, Codex, VS Code, Cursor, or other client
+1. **Detects your MCP client** - Finds Claude Code, Codex, VS Code, Cursor, or Gemini CLI
 2. **Writes configuration** - Automatically updates your config file or runs the appropriate CLI command
 3. **Starts OAuth flow** - Authenticates with your Algolia account
 4. **Validates connection** - Tests that everything works
@@ -15,13 +19,12 @@ Before running this command, ensure you have:
 
 - Algolia account ([sign up free](https://www.algolia.com/users/sign_up))
 - Algolia MCP enabled in Dashboard (Generate AI → MCP Servers → Productivity)
-- MCP client installed (Claude Desktop, Claude Code, Codex, VS Code, Cursor, etc.)
-- For CLI/IDE clients: Node.js 18+ installed (required for `mcp-remote` bridge)
+- Supported MCP client installed: Claude Code, Codex, Cursor, VS Code, or Gemini CLI
 
 ## Usage
 
 ```
-/algolia-mcp:connect
+/algolia-mcp:mcp-connect
 ```
 
 ## Step-by-Step Process
@@ -37,24 +40,23 @@ OAuth-based authentication — no embedded credentials. Disabling the MCP server
 
 The command detects your MCP client by checking:
 
-1. **Claude Desktop**
-   - macOS: `~/.config/claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-   - Linux: `~/.config/claude/claude_desktop_config.json`
-
-2. **Claude Code CLI**
+1. **Claude Code CLI**
    - Detected via `claude` command in PATH
-   - Configured via `claude mcp add-json`
+   - Configured via `claude mcp add --transport http`
 
-3. **Codex CLI**
+2. **Codex CLI**
    - Detected via `codex` command in PATH
-   - Configured via `codex mcp add`
+   - Configured via `codex mcp add --url`
 
-4. **VS Code**
+3. **VS Code**
    - Config: `~/.vscode/mcp.json`
 
-5. **Cursor**
+4. **Cursor**
    - Config: `~/.cursor/mcp.json`
+
+5. **Gemini CLI**
+   - Detected via `gemini` command in PATH
+   - Configured via `gemini mcp add`
 
 If multiple clients are detected, you'll be asked which one to configure.
 
@@ -73,17 +75,12 @@ The command will:
 
 **Important:** You must restart your MCP client for changes to take effect.
 
-**Claude Desktop:**
-1. Quit Claude Desktop (Cmd/Ctrl + Q)
-2. Wait 5 seconds
-3. Reopen Claude Desktop
-
 **VS Code / Cursor:**
 1. Open Command Palette (Cmd/Ctrl + Shift + P)
 2. Type "Reload Window"
 3. Press Enter
 
-**Claude Code / Codex:**
+**Claude Code / Codex / Gemini CLI:**
 - Close and reopen your terminal session
 
 ### Step 5: Authenticate
@@ -94,6 +91,9 @@ When you first use the MCP client:
 2. **Sign in** - Log in with your Algolia account
 3. **Grant permissions** - Approve access to your resources
 4. **Access granted** - MCP inherits your dashboard permissions
+
+Use OAuth discovery for authentication. If your client shows OAuth client ID
+or client secret fields, leave them empty.
 
 ### Step 6: Verify Connection
 
@@ -122,9 +122,9 @@ Test 3: Perform test search ✓
 
 **Solutions:**
 1. Verify MCP client is installed
-2. Manually create config directory:
+2. Manually create the relevant config directory:
    ```bash
-   mkdir -p ~/.config/claude
+   mkdir -p ~/.cursor ~/.vscode ~/.gemini
    ```
 3. Provide custom config file path when prompted
 
@@ -135,13 +135,12 @@ Test 3: Perform test search ✓
 **Solutions:**
 1. Validate JSON syntax:
    ```bash
-   cat ~/.config/claude/claude_desktop_config.json | jq .
+   cat <config-file> | jq .
    ```
 2. Fix syntax errors (missing commas, brackets, quotes)
-3. Or restore backup:
+3. Or restore the backup created by the command:
    ```bash
-   cp ~/.config/claude/claude_desktop_config.json.bak \
-      ~/.config/claude/claude_desktop_config.json
+   cp <config-file>.bak <config-file>
    ```
 
 ### "Connection test failed after restart"
