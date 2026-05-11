@@ -39,7 +39,7 @@ Manage Algolia search infrastructure from the terminal using the `algolia` CLI.
 
 ## Setup
 
-Run `/algolia-cli:setup` to install the CLI and configure a profile, or follow [Getting Started](references/getting-started.md).
+Run `/algolia-cli:cli-setup` to install the CLI and configure a profile, or follow [Getting Started](references/getting-started.md).
 
 **Tip:** `algolia auth login` is the easiest way to set up credentials — it handles OAuth sign-in and profile creation in one step. Use `algolia profile add` for non-interactive / CI setups where you already have an API key.
 
@@ -222,7 +222,7 @@ algolia synonyms import MY_INDEX -F my_index_synonyms.ndjson -r -w
 If the skill doesn't trigger automatically, users can invoke it directly:
 
 - **`/algolia-cli`** — Load the full skill into context for any Algolia CLI task
-- **`/algolia-cli:setup`** — Install the CLI and configure a profile
+- **`/algolia-cli:cli-setup`** — Install the CLI and configure a profile
 
 This is useful when the request is brief (e.g., "import my data into Algolia") and the skill might not auto-trigger.
 

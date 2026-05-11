@@ -13,8 +13,8 @@ metadata:
 
 ## Connection setup
 
-Use `/algolia-mcp:connect` to configure the MCP client with the Algolia MCP server.
-For clients that don't support commands, see [connection-setup](references/connection-setup.md) for manual setup.
+Use `/algolia-mcp:mcp-connect` to configure the MCP client with the Algolia MCP server.
+For manual client setup, see [connection-setup](references/connection-setup.md).
 
 ## Tool selection
 

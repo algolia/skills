@@ -8,9 +8,9 @@ The Algolia MCP server is at `https://mcp.algolia.com/mcp` with OAuth authentica
 - Algolia MCP enabled in Dashboard (Generate AI → MCP Servers → Productivity)
 - An MCP-compatible client
 
-## Method 1: `/algolia-mcp:connect` command
+## Method 1: `/algolia-mcp:mcp-connect` command
 
-Run `/algolia-mcp:connect` in a supported client. It detects the client, writes the configuration, starts the OAuth flow, and validates the connection.
+Run `/algolia-mcp:mcp-connect` in a supported client. It detects the client, writes the configuration, starts the OAuth flow, and validates the connection.
 
 ## Method 2: Manual configuration
 
@@ -22,22 +22,37 @@ Disabling the MCP server stops all connected workflows immediately.
 
 ### Step 2: Configure MCP client
 
-Use the `mcp-remote` bridge (requires Node.js 18+ and `npx`).
+Use the remote HTTP server URL directly:
+
+```text
+https://mcp.algolia.com/mcp
+```
 
 After adding the configuration, restart the MCP client for changes to take effect.
 
-**Node.js version note:** Some clients (Claude Desktop, Cursor) bundle their own Node.js runtime. If you encounter issues, ensure your system Node.js is v18+ or pin `mcp-remote@0.1.18`.
+Use OAuth discovery for authentication. If your client shows OAuth client ID
+or client secret fields, leave them empty.
 
 #### Claude Code CLI
 
 ```bash
-claude mcp add-json algolia-mcp '{"type":"stdio","command":"npx","args":["mcp-remote","https://mcp.algolia.com/mcp","16453","--static-oauth-client-info","{\"client_id\":\"pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o\"}"]}'
+claude mcp add --transport http algolia https://mcp.algolia.com/mcp
 ```
+
+Run `/mcp` in Claude Code and follow the browser login flow.
 
 #### Codex CLI
 
 ```bash
-codex mcp add algolia-mcp -- npx -y mcp-remote https://mcp.algolia.com/mcp 16453 --static-oauth-client-info "{\"client_id\":\"pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o\"}"
+codex mcp add algolia --url https://mcp.algolia.com/mcp
+codex mcp login algolia
+```
+
+Equivalent `~/.codex/config.toml` entry:
+
+```toml
+[mcp_servers.algolia]
+url = "https://mcp.algolia.com/mcp"
 ```
 
 #### VS Code
@@ -46,16 +61,10 @@ Edit `~/.vscode/mcp.json`:
 
 ```json
 {
-  "mcpServers": {
-    "algolia-mcp": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://mcp.algolia.com/mcp",
-        "16453",
-        "--static-oauth-client-info",
-        "{\"client_id\":\"pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o\"}"
-      ]
+  "servers": {
+    "algolia": {
+      "type": "http",
+      "url": "https://mcp.algolia.com/mcp"
     }
   }
 }
@@ -68,64 +77,52 @@ Edit `~/.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
-    "algolia-mcp": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://mcp.algolia.com/mcp",
-        "16453",
-        "--static-oauth-client-info",
-        "{\"client_id\":\"pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o\"}"
-      ]
+    "algolia": {
+      "url": "https://mcp.algolia.com/mcp"
     }
   }
 }
 ```
 
-#### Claude Desktop
+#### Gemini CLI
 
-Edit `~/.config/claude/claude_desktop_config.json`:
+Run the following command:
+
+```bash
+gemini mcp add algolia https://mcp.algolia.com/mcp -s user -t http
+```
+
+Or edit `~/.gemini/settings.json`:
 
 ```json
 {
   "mcpServers": {
-    "algolia-mcp": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://mcp.algolia.com/mcp",
-        "16453",
-        "--static-oauth-client-info",
-        "{\"client_id\":\"pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o\"}"
-      ]
+    "algolia": {
+      "httpUrl": "https://mcp.algolia.com/mcp"
     }
   }
 }
 ```
+
+Sign in when prompted.
 
 ### Step 3: Authenticate
 
 On first use, an OAuth flow opens in the browser. Sign in with your Algolia account and grant permissions. MCP inherits your existing Algolia permissions.
 
-## OAuth client IDs
-
-| Method              | Client ID                                     |
-|---------------------|-----------------------------------------------|
-| `mcp-remote` bridge | `pnIP637iQf9_KY4Nm7rPo5hUH4Oe1njRThXGtz84h_o` |
-
 ## Supported clients
 
-| Client          | Method                               |
-|-----------------|--------------------------------------|
-| Claude Desktop  | `mcp-remote` (`command` + `args`)    |
-| Claude Code CLI | `mcp-remote` (`claude mcp add-json`) |
-| Codex CLI       | `mcp-remote` (`codex mcp add`)       |
-| VS Code         | `mcp-remote` (`command` + `args`)    |
-| Cursor          | `mcp-remote` (`command` + `args`)    |
+| Client          | Method                                   |
+|-----------------|------------------------------------------|
+| Claude Code CLI | HTTP (`claude mcp add --transport http`) |
+| Codex CLI       | HTTP (`codex mcp add --url`)             |
+| VS Code         | HTTP (`type` + `url`)                    |
+| Cursor          | HTTP (`url`)                             |
+| Gemini CLI      | HTTP (`gemini mcp add`)                  |
 
 ## Security
 
-- No credentials stored in config files (OAuth via `mcp-remote` bridge)
+- Config files store the server URL; the MCP client manages OAuth tokens
 - Access inherits from Algolia account permissions
 - Read-only access only
 - HTTPS for all connections
@@ -133,12 +130,11 @@ On first use, an OAuth flow opens in the browser. Sign in with your Algolia acco
 
 ## Config file locations
 
-- **Claude Desktop** (macOS/Linux): `~/.config/claude/claude_desktop_config.json`
-- **Claude Desktop** (Windows): `%APPDATA%\Claude\claude_desktop_config.json`
-- **Claude Code CLI**: Managed via `claude mcp add-json` (stored internally)
+- **Claude Code CLI**: Managed via `claude mcp add` (stored internally)
 - **Codex CLI**: Managed via `codex mcp add` (stored internally)
 - **VS Code**: `~/.vscode/mcp.json`
 - **Cursor**: `~/.cursor/mcp.json`
+- **Gemini CLI**: `~/.gemini/settings.json`
 
 ## Troubleshooting
 

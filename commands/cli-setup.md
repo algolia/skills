@@ -1,7 +1,5 @@
 ---
-name: setup
 description: Install the Algolia CLI and configure a profile with credentials.
-skill: algolia-cli
 ---
 
 # Algolia CLI Setup
