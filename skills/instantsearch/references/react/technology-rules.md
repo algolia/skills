@@ -23,11 +23,12 @@ These rules apply to **all** React InstantSearch patterns, not just autocomplete
 - Set `insights={true}` on the `<InstantSearch>` wrapper to enable click analytics via Algolia Insights.
 - **Set up routing** so the search state is reflected in the URL. Search result URLs must be shareable and bookmarkable. Enable routing by passing `routing` or `routing={true}` on the `<InstantSearch>` (or `<InstantSearchNext>`) wrapper. For further customization, pass an object to `routing` where `router` accepts the same options as `history`, and `stateMapping` accepts the same options as in `InstantSearch`. Read the type definitions for full configuration options.
 - **`future.*` flags must be looked up, not guessed.** Flags like `preserveSharedStateOnUnmount` change semantics across versions. Read `InstantSearchProps['future']` from the installed types and the [Upgrade guides](https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/react.md) before enabling, disabling, or assuming a default.
+- **Use middleware only for what `routing`, `Configure`, and built-in widgets cannot do.** Custom analytics tagging, syncing search state to a non-URL store, or instrumenting refinements are legitimate. Re-implementing URL sync, query persistence, or facet defaults is not. See [middleware.md](middleware.md).
 
 ## Never
 
 - **Never use v6 APIs.** Do not import from `react-instantsearch-dom`, do not use class-based connectors, do not use `connectSearchBox` or similar v6 patterns.
 - **Never guess credentials or index names.** Always ask the user. Never silently use a public demo index.
 - **Never start coding before completing discovery.** You need credentials, schema understanding, rendering preferences, and project design context first.
-- **Never overuse connectors.** If you're reaching for `useSearchBox`, `useHits`, `useRefinementList` etc., first check whether the built-in widget with a `classNames` prop achieves the same result. Custom hooks/connectors are for genuinely custom rendering that widgets cannot handle.
+- **Never overuse connectors.** If you're reaching for `useSearchBox`, `useHits`, `useRefinementList` etc., first check whether the built-in widget with a `classNames` prop achieves the same result. Custom hooks/connectors are for genuinely custom rendering that widgets cannot handle. See [custom-widgets.md](custom-widgets.md) for the contract and when it's justified.
 - **Never guess `renderState` shape.** When using `useInstantSearch()` or any `useXxx` hook, read the hook's return type from `node_modules` before destructuring. Field names and nesting change across versions.
