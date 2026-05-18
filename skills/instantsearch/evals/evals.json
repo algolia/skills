@@ -75,6 +75,82 @@
         "Matches the dark theme",
         "Does not guess ais-* class names"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a search results page at /search for my Next.js App Router site. Users should be able to filter by brand and category, sort by price ascending or descending, and paginate. The index has replicas products_price_asc and products_price_desc.",
+      "expected_output": "A results page using InstantSearchNext with the canonical widget tree, refinements, sort, pagination, routing, insights, and a no-results boundary, with all non-trivial props sourced from installed types",
+      "files": [],
+      "expectations": [
+        "Uses InstantSearchNext from react-instantsearch-nextjs at the layout level, not wrapping a single page",
+        "Sets routing={true} and insights={true} on the provider",
+        "Uses Configure to set hitsPerPage, attributesToHighlight, and attributesToSnippet",
+        "Uses RefinementList for brand and HierarchicalMenu (or RefinementList/Menu, justified) for category",
+        "Uses SortBy with the provided replica index names (products, products_price_asc, products_price_desc)",
+        "Uses Pagination, not InfiniteHits, since the user did not ask for infinite scroll",
+        "Renders a NoResultsBoundary using useInstantSearch().results.nbHits",
+        "Uses Highlight on hit text attributes; does not render raw strings",
+        "Reads RefinementList and SortBy props from node_modules/react-instantsearch/dist/es/widgets before writing prop values it has not used before",
+        "Does NOT add getServerState (App Router handles SSR via InstantSearchNext)",
+        "Does NOT combine Pagination with InfiniteHits"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I want a searchable refinement list for brand (so the user can type to filter brands) and active filter chips that show as removable pills at the top of the results.",
+      "expected_output": "RefinementList with searchable + searchablePlaceholder configured from the type, plus CurrentRefinements wired with widget-aware classNames for the chip layout",
+      "files": [],
+      "expectations": [
+        "Reads RefinementList .d.ts to confirm the searchable, searchablePlaceholder, limit, and showMore props before using them",
+        "Adds searchable={true} and a searchablePlaceholder on RefinementList",
+        "Uses CurrentRefinements (not a custom hook) for the active-filter chips",
+        "Pairs CurrentRefinements with ClearRefinements where appropriate, with excludedAttributes considered when needed",
+        "Greps installed source for ais-CurrentRefinements-* class names before writing chip CSS",
+        "Does not rebuild a refinement list with useRefinementList when RefinementList suffices"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add SSR to my React InstantSearch results page. I'm using Next.js Pages Router (not App Router).",
+      "expected_output": "Pages Router SSR using getServerState plus InstantSearchSSRProvider, with the same widget tree on server and client",
+      "files": [],
+      "expectations": [
+        "Uses getServerState from react-instantsearch/server inside getServerSideProps",
+        "Wraps the widget tree in InstantSearchSSRProvider with serverState",
+        "Passes renderToString from react-dom/server into getServerState",
+        "Configures routing with a serverUrl (or framework equivalent) so the server-side router can resolve URL state",
+        "Declares the searchClient at module scope, not inside getServerSideProps",
+        "Renders the same widget tree on server and client",
+        "Does NOT use InstantSearchNext (that's App Router only)",
+        "Reads getServerState.d.ts and InstantSearchSSRProvider.d.ts from node_modules before wiring props"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I need a custom widget that renders the available brands as round colored chips with each brand's logo, instead of the default checkbox list. Selecting a chip refines the results.",
+      "expected_output": "A custom widget built with useRefinementList that renders chips, with renderState fields read from the hook's installed type",
+      "files": [],
+      "expectations": [
+        "Uses useRefinementList from react-instantsearch (not useConnector with a raw connector, since a hook exists)",
+        "Reads node_modules/react-instantsearch/dist/es/connectors/useRefinementList.d.ts to learn the return type before destructuring",
+        "Calls refine(item.value) on chip click",
+        "Renders accessibility attributes (role, aria-pressed) explicitly since the built-in widget's accessibility is lost",
+        "Considers transformItems on RefinementList as a lighter-weight alternative before going custom",
+        "Does NOT rebuild refinement state from useHits + useState"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Set up my React InstantSearch project with the correct future flags so it's ready for the next major release.",
+      "expected_output": "Future flags applied based on installed types and the live Upgrade guides, not training-data recall",
+      "files": [],
+      "expectations": [
+        "Reads InstantSearchProps['future'] from node_modules/react-instantsearch types to enumerate available flags",
+        "Fetches https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/react to confirm current recommended flags and defaults",
+        "Applies flags on the InstantSearch (or InstantSearchNext) provider with values matching the installed package version",
+        "Does NOT enable a flag that does not appear in the installed type",
+        "Asks the user before enabling any flag whose default cannot be determined from types or docs"
+      ]
     }
   ]
 }
