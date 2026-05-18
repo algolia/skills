@@ -41,36 +41,25 @@ Read the type definition **before** writing the prop. Do not copy a prop from tr
 
 Live docs cover behavior, defaults, and recently shipped widgets that may not be in your training data. Use the canonical URL patterns:
 
-| Topic                         | URL pattern                                                                          |
-| ----------------------------- | ------------------------------------------------------------------------------------ |
-| Widget reference              | `https://www.algolia.com/doc/api-reference/widgets/<widget-slug>/react`              |
-| Hook / connector reference    | `https://www.algolia.com/doc/api-reference/widgets/<widget-slug>/react/#hook`        |
-| Guides (concepts, patterns)   | `https://www.algolia.com/doc/guides/building-search-ui/<topic>/react`                |
-| Custom widgets                | `https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/react` |
-| Routing                       | `https://www.algolia.com/doc/guides/building-search-ui/going-further/routing-urls/react` |
-| SSR                           | `https://www.algolia.com/doc/guides/building-search-ui/going-further/server-side-rendering/react` |
-| Upgrade guides / future flags | `https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/react`         |
+| Topic                         | URL pattern                                                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| Widget reference              | `https://www.algolia.com/doc/api-reference/widgets/<widget-slug>/react.md`                       |
+| Hook / connector reference    | `https://www.algolia.com/doc/api-reference/widgets/<widget-slug>/react.md#hook`                  |
+| Guides (concepts, patterns)   | `https://www.algolia.com/doc/guides/building-search-ui/<topic>/react.md`                         |
+| Custom widgets                | `https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/react.md` |
+| Routing                       | `https://www.algolia.com/doc/guides/building-search-ui/going-further/routing-urls/react.md`      |
+| SSR                           | `https://www.algolia.com/doc/guides/building-search-ui/going-further/server-side-rendering/react.md` |
+| Upgrade guides / future flags | `https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/react.md`                  |
+
+Append `.md` to the URL so the agent fetches the markdown source instead of the rendered HTML page (saves tokens, no layout chrome).
 
 The widget slug is the kebab-case form of the widget name: `<RefinementList>` -> `refinement-list`, `<HierarchicalMenu>` -> `hierarchical-menu`, `<CurrentRefinements>` -> `current-refinements`.
 
 If the URL 404s, search `site:algolia.com/doc <widget>` as a fallback. Do not invent URLs.
 
-## 3. Grep installed CSS / source for class names
+## 3. Grep installed source for class names
 
-`ais-*` class names are CamelCase and easy to get wrong. Always grep for the actual rendered classes before writing CSS:
-
-```bash
-rg -o 'ais-[A-Za-z]+(-[a-z]+)?' node_modules/react-instantsearch | sort -u
-rg -o 'ais-[A-Za-z]+(-[a-z]+)?' node_modules/instantsearch.js | sort -u
-```
-
-Scope by widget when you only care about one:
-
-```bash
-rg -o 'ais-[A-Za-z]+(-[a-z]+)?' node_modules/instantsearch.js/es/widgets/refinement-list | sort -u
-```
-
-For Tailwind v4 specifics, see [styling.md](styling.md).
+For `ais-*` CSS class names you intend to style, follow [styling.md](styling.md). The same rule applies here: grep installed source, never guess.
 
 ## 4. Only then write code
 
