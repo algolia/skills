@@ -79,7 +79,7 @@
         "Replaces DefaultSearchClient.create() with new SearchClient(...) inside try-with-resources",
         "Removes initIndex() and the index variable; generic type now passed per-method",
         "Replaces index.search() with client.searchSingleIndex('products', new SearchParamsObject().setQuery('laptop'), Hit.class)",
-        "Replaces index.saveObjects(products).waitTask() with client.saveObjects('products', products, true) where the third boolean argument enables built-in task waiting"
+        "Replaces index.saveObjects(products).waitTask() with client.saveObjects(\"products\", products, true, null) — the 4-arg overload where the third boolean enables built-in task waiting and the fourth is RequestOptions"
       ]
     },
     {
