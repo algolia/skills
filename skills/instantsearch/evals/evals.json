@@ -151,6 +151,36 @@
         "Does NOT enable a flag that does not appear in the installed type",
         "Asks the user before enabling any flag whose default cannot be determined from types or docs"
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "Add an autocomplete search bar to my Vue 3 app. I'm using vue-instantsearch elsewhere on the site for a results page. The autocomplete should query my products index and clicking a result should navigate to /products/[objectID].",
+      "expected_output": "Autocomplete built with @algolia/autocomplete-js mounted from a Vue component (onMounted/onBeforeUnmount), reusing the module-level searchClient",
+      "files": [],
+      "expectations": [
+        "Picks @algolia/autocomplete-js as the autocomplete library, NOT a vue-instantsearch widget such as <ais-search-box> or <ais-autocomplete>",
+        "Does NOT treat @algolia/autocomplete-js as an anti-pattern (it is the recommended path for Vue, unlike React)",
+        "Mounts autocomplete inside a Vue component via onMounted with a ref to the host element, and calls instance.destroy() in onBeforeUnmount",
+        "Declares the searchClient at module scope (outside the component), reusing the same one used by vue-instantsearch where applicable",
+        "Configures getSources with an Algolia source that uses algoliasearch v5's search method shape",
+        "Wires getItemUrl and a templates.item that links to /products/[objectID]",
+        "Confirms the autocomplete options shape (getSources, templates) against the live Algolia docs or installed types before scaffolding"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Add autocomplete search to a vanilla JS site. The page already mounts an InstantSearch.js results page. The autocomplete should sit in the header and link to product detail pages.",
+      "expected_output": "Autocomplete built with @algolia/autocomplete-js, separate from the instantsearch.js widget tree, sharing the same module-level searchClient",
+      "files": [],
+      "expectations": [
+        "Picks @algolia/autocomplete-js as the autocomplete library, NOT the instantsearch.js searchBox widget for autocomplete behavior",
+        "Does NOT treat @algolia/autocomplete-js as an anti-pattern (it is the recommended path for vanilla JS, unlike React)",
+        "Calls autocomplete({ container, getSources, ... }) once and saves the returned instance for later destroy() on teardown",
+        "Reuses the module-level searchClient already used by instantsearch.js, declared outside any function",
+        "Uses algoliasearch v5's search method shape inside getSources",
+        "Imports @algolia/autocomplete-theme-classic (or documents the chosen theme) so the dropdown is styled",
+        "Confirms the autocomplete options shape against the live Algolia docs or installed types before scaffolding"
+      ]
     }
   ]
 }
