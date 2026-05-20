@@ -17,7 +17,7 @@ Confirm before scaffolding:
 
 ## Canonical widget tree
 
-This is the structural skeleton. Wire props from types and live docs.
+This is the structural skeleton. Resolve any non-trivial prop via the [Source-of-truth check](../source-of-truth.md).
 
 ```tsx
 import {
@@ -90,7 +90,7 @@ function Hit({ hit }: { hit: Record<string, unknown> & { objectID: string } }) {
 }
 ```
 
-The `<NoResultsBoundary>` shape is the version-stable pattern from the official guide. Confirm `useInstantSearch` return fields against installed types before destructuring.
+The `<NoResultsBoundary>` shape is the version-stable pattern from the official guide. Confirm `useInstantSearch` return fields before destructuring (per the intro source-of-truth rule).
 
 ## Refinement widgets: which one when
 
@@ -105,16 +105,12 @@ The `<NoResultsBoundary>` shape is the version-stable pattern from the official 
 | Active-filter chips                   | `<CurrentRefinements />`                | Renders all active refinements as removable chips. Useful at the top of results.                     |
 | Clear-all button                      | `<ClearRefinements />`                  | Pairs with `<CurrentRefinements />`. Look up `excludedAttributes` to keep some refinements pinned.   |
 
-For every prop beyond `attribute` / `attributes`, **read the widget's `.d.ts`** before writing. Names and accepted shapes change across versions.
-
 ## Pagination vs. infinite scroll
 
 Two mutually exclusive options:
 
 - `<Pagination />`: shareable URL state per page. Default for results pages.
-- `<InfiniteHits />`: replaces both `<Hits>` and `<Pagination>`. Loads more on scroll or on a "Load more" button. Read `<InfiniteHits>`'s `.d.ts` for `showPrevious`, `translations`, and how it interacts with `routing`.
-
-Do not combine both.
+- `<InfiniteHits />`: replaces both `<Hits>` and `<Pagination>`. Loads more on scroll or on a "Load more" button. Look up `showPrevious` and `translations` if you need them, and verify the widget's interaction with `routing`.
 
 ## Sort
 
