@@ -208,7 +208,7 @@ await client.chunkedBatch({
 });
 ```
 
-**`accountCopyIndex`** (no longer needs `@algolia/client-account`):
+**`accountCopyIndex`** (no longer needs separate `@algolia/client-account` package — available on the `algoliasearch` meta-package client):
 ```js
 await client.accountCopyIndex({
   sourceIndexName: "SOURCE",

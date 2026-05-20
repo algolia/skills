@@ -102,11 +102,11 @@ await client.SetSettingsAsync("INDEX_NAME",
 ```csharp
 // copy
 await client.OperationIndexAsync("SOURCE",
-    new OperationIndexParams { Operation = "copy", Destination = "DEST" });
+    new OperationIndexParams { Operation = OperationType.Copy, Destination = "DEST" });
 
 // move / rename
 await client.OperationIndexAsync("SOURCE",
-    new OperationIndexParams { Operation = "move", Destination = "DEST" });
+    new OperationIndexParams { Operation = OperationType.Move, Destination = "DEST" });
 ```
 
 ## Wait pattern
@@ -139,16 +139,16 @@ await client.ReplaceAllObjectsAsync(
 
 - `SaveObjects`: `autoGenerateObjectId` removed; objects must include `ObjectID`
 - `PartialUpdateObjects`: `createIfNotExists` required (no default)
-- `BrowseObjects` / `BrowseRules` / `BrowseSynonyms`: no longer return iterators; use aggregator action
+- `BrowseObjects` / `BrowseRules` / `BrowseSynonyms`: return `IEnumerable<T>` — use a for-each loop
 
-## Browse aggregator
+## Browse (IEnumerable pattern)
 
 ```csharp
 var objects = new List<MyModel>();
-await client.BrowseObjectsAsync<MyModel>(
-    new BrowseObjectsParams { IndexName = "INDEX_NAME" },
-    response => objects.AddRange(response.Hits)
-);
+foreach (var hit in await client.BrowseObjectsAsync<MyModel>("INDEX_NAME", new BrowseParamsObject()))
+{
+    objects.Add(hit);
+}
 ```
 
 ## New helpers in v7

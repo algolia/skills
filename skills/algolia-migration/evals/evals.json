@@ -91,7 +91,7 @@
         "Updates package to Algolia.Search version 7.*",
         "Removes var index = client.InitIndex() and the index variable",
         "Replaces index.Search<Order>() with await client.SearchSingleIndexAsync<Hit>(\"orders\", new SearchParams(new SearchParamsObject { Query = \"pending\" }))",
-        "Replaces index.SaveObjects().Wait() with var response = await client.SaveObjectsAsync(...) followed by await client.WaitForTaskAsync(\"orders\", response.TaskID)",
+        "Replaces index.SaveObjects().Wait() with await client.SaveObjectsAsync(\"orders\", orders, waitForTasks: true) — SaveObjectsAsync returns List<BatchResponse> so use the built-in waitForTasks parameter rather than chaining WaitForTaskAsync",
         "Replaces [JsonProperty(\"order_id\")] with [JsonPropertyName(\"order_id\")] from System.Text.Json.Serialization"
       ]
     },

@@ -43,7 +43,7 @@ index = client.init_index("INDEX_NAME")
 index.search("QUERY")
 
 # v4
-from algoliasearch.search.models.search_params import SearchParams
+from algoliasearch.search.models import SearchParams
 client.search_single_index(
     index_name="INDEX_NAME",
     search_params=SearchParams(query="QUERY"),

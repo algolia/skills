@@ -97,9 +97,12 @@ $client->operationIndex(
 // v3
 $index->saveObjects($records)->wait();
 
-// v4
-$response = $client->saveObjects('INDEX_NAME', $records);
+// v4 — single object (saveObject returns a response with taskID directly)
+$response = $client->saveObject('INDEX_NAME', $record);
 $client->waitForTask('INDEX_NAME', $response['taskID']);
+
+// v4 — multiple objects with built-in waiting (third arg = waitForTasks)
+$client->saveObjects('INDEX_NAME', $records, true);
 ```
 
 Three helpers: `waitForTask`, `waitForAppTask`, `waitForApiKey`.
@@ -120,18 +123,20 @@ $client->replaceAllObjects('INDEX_NAME', $objects, [
 | `saveObjects` | `autoGenerateObjectIDIfNotExist` removed; every object needs `objectID` |
 | `partialUpdateObjects` | `createIfNotExists` is now an explicit parameter |
 | `deleteObjects` | Gained `waitForTasks` and `batchSize` parameters |
-| `browseObjects` / `browseRules` / `browseSynonyms` | `$indexName` now explicit first parameter |
+| `browseObjects` / `browseRules` / `browseSynonyms` | Returns `ObjectIterator` — use `foreach` loop |
 | `indexExists` | Renamed from `exists()` on index object |
 | `chunkedBatch` | Now public; default action is `'addObject'` |
 | `generateSecuredApiKey` | Accepts typed `SecuredApiKeyRestrictions` model |
 
-## Browse aggregator
+## Browse (ObjectIterator)
+
+`browseObjects` returns an `ObjectIterator` — iterate with `foreach`. The iterator yields individual records (not page responses):
 
 ```php
 $objects = [];
-$client->browseObjects('INDEX_NAME', function ($response) use (&$objects) {
-    $objects = array_merge($objects, $response->getHits());
-});
+foreach ($client->browseObjects('INDEX_NAME') as $hit) {
+    $objects[] = $hit;
+}
 ```
 
 ## Model classes vs arrays

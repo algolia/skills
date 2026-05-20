@@ -108,9 +108,9 @@ client.replace_all_objects("INDEX_NAME", objects)
 ## Browse
 
 ```ruby
-# v3 — aggregator receives the full page response
-client.browse_objects("INDEX_NAME") do |response|
-  response.hits.each { |hit| process(hit) }
+# v3 — block receives individual hits (not the page response)
+client.browse_objects("INDEX_NAME") do |hit|
+  process(hit)
 end
 ```
 
