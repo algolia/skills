@@ -1,0 +1,14 @@
+# Anti-patterns (Vue)
+
+These supplement the [technology rules](technology-rules.md). Coverage in this skill is limited; reach for the [Source-of-truth check](source-of-truth.md) for anything not listed here.
+
+| Anti-pattern                                                            | Why it's wrong                                                              | What to do instead                                                                            |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Using `vue-instantsearch/vue2` imports in a Vue 3 project (or vice versa) | Component implementations differ; runtime errors on slot APIs               | Match the entry point to the Vue version the project uses                                     |
+| Building search with `algoliasearch` client directly                    | Bypasses the widget tree and state management                               | Use `<ais-instant-search>` and the InstantSearch widgets                                      |
+| Hardcoding an index name like `instant_search`                          | Likely a demo index from training data                                      | Ask the user                                                                                  |
+| Guessing scoped slot prop names                                         | Slot prop names differ per widget and per InstantSearch version             | Read the component source under `node_modules/vue-instantsearch/vue<N>/es/src/components/` first |
+| Guessing `ais-*` class names                                            | CamelCase, easy to get wrong, no error on miss                              | Grep `node_modules/vue-instantsearch` and `node_modules/instantsearch.js` for actual names    |
+| Re-implementing pagination, refinements, or sort with composables and refs | Loses URL sync, accessibility, edge-case handling                           | Use `<ais-pagination>`, `<ais-refinement-list>`, `<ais-sort-by>`. Slot-override for visuals    |
+| Writing a custom widget via `createWidgetMixin` when slot overrides suffice | Adds maintenance burden; widget already supports the rendering you need     | Use the widget's scoped slots first; reach for mixins only when slots cannot express the UI   |
+| Mixing `vue-instantsearch` autocomplete with `<ais-search-box>` to build search-as-you-type | Conflicting state owners; flaky UI                                          | Pick one: `@algolia/autocomplete-js` for true autocomplete, `<ais-search-box>` for results-page input |
