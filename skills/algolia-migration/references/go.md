@@ -201,13 +201,32 @@ key, err := client.GenerateSecuredApiKey("parentApiKey", &search.SecuredApiKeyRe
 
 ## Cross-app copy (`AccountClient` removed)
 
-```go
-src, _ := search.NewClient("SRC_APP_ID", "SRC_API_KEY")
-dst, _ := search.NewClient("DST_APP_ID", "DST_API_KEY")
+`GetSettings` returns `*SettingsResponse`; `SetSettings` takes `*IndexSettings`. The two types have identical fields (both generated from the same spec) but are distinct — convert via JSON round-trip:
 
-settings, _ := src.GetSettings(src.NewApiGetSettingsRequest("SRC_INDEX"))
-dst.SetSettings(dst.NewApiSetSettingsRequest("DST_INDEX", *settings.IndexSettings))
-// repeat for rules, synonyms, then saveObjects / replaceAllObjects for records
+```go
+import "encoding/json"
+
+src, err := search.NewClient("SRC_APP_ID", "SRC_API_KEY")
+if err != nil {
+    panic(err)
+}
+dst, err := search.NewClient("DST_APP_ID", "DST_API_KEY")
+if err != nil {
+    panic(err)
+}
+
+settingsResp, err := src.GetSettings(src.NewApiGetSettingsRequest("SRC_INDEX"))
+if err != nil {
+    panic(err)
+}
+settingsJSON, _ := json.Marshal(settingsResp)
+var indexSettings search.IndexSettings
+json.Unmarshal(settingsJSON, &indexSettings)
+_, err = dst.SetSettings(dst.NewApiSetSettingsRequest("DST_INDEX", &indexSettings))
+if err != nil {
+    panic(err)
+}
+// repeat for rules, synonyms, then replaceAllObjects for records
 ```
 
 ## Transformation helpers (new in v4)

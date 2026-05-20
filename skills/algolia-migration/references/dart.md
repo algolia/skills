@@ -69,11 +69,23 @@ await client.deleteObject(indexName: 'INDEX_NAME', objectID: '1');
 ## Wait pattern
 
 ```dart
-final response = await client.saveObjects(
+// Single object — saveObject returns SaveObjectResponse which carries taskID
+final response = await client.saveObject(
   indexName: 'INDEX_NAME',
-  objects: records,
+  body: {'objectID': '1', 'name': 'Record'},
 );
 await client.waitForTask(indexName: 'INDEX_NAME', taskID: response.taskID);
+
+// Multiple objects — use batch() with BatchWriteParams (no saveObjects helper)
+final batchResponse = await client.batch(
+  indexName: 'INDEX_NAME',
+  batchWriteParams: BatchWriteParams(
+    requests: records
+        .map((r) => BatchRequest(action: Action.addObject, body: r))
+        .toList(),
+  ),
+);
+await client.waitForTask(indexName: 'INDEX_NAME', taskID: batchResponse.taskID);
 ```
 
 ## Settings
