@@ -189,7 +189,7 @@ err := client.BrowseObjects("INDEX_NAME", search.BrowseParamsObject{},
 
 ```go
 res, err := client.ChunkedBatch("INDEX_NAME", objects, search.ACTION_ADD_OBJECT,
-    search.WithChunkedBatchWaitForTasks(true))
+    search.WithWaitForTasks(true))
 ```
 
 ## Secured API key
@@ -240,8 +240,8 @@ if err != nil {
 
 ```go
 res, err := client.SaveObjectsWithTransformation("INDEX_NAME", objects,
-    search.WithChunkedBatchWaitForTasks(true))
+    search.WithWaitForTasks(true))
 
 res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
-    search.WithReplaceAllObjectsBatchSize(1000))
+    search.WithBatchSize(1000))
 ```
