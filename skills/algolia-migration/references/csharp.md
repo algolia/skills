@@ -153,4 +153,4 @@ foreach (var hit in await client.BrowseObjectsAsync<MyModel>("INDEX_NAME", new B
 
 ## New helpers in v7
 
-`WaitForAppTask`, `WaitForApiKey`, `GetSecuredApiKeyRemainingValidity`, `IndexExists`, `ChunkedBatch` (public), and transformation methods.
+`WaitForAppTaskAsync`, `WaitForApiKeyAsync`, `GetSecuredApiKeyRemainingValidity`, `IndexExistsAsync`, `ChunkedBatchAsync` (public), and transformation methods.

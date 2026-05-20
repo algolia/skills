@@ -184,8 +184,11 @@ client.chunked_batch(
 
 ## Transformation helpers (new in v4)
 
-Require `transformation_region` at client init:
+Require a `TransformationOptions(region=...)` configured on the client before calling:
 ```python
+from algoliasearch.search.config import TransformationOptions
+
+client.set_transformation_options(TransformationOptions(region="us"))
 client.save_objects_with_transformation(index_name="INDEX_NAME", objects=my_objects)
 client.replace_all_objects_with_transformation(index_name="INDEX_NAME", objects=my_objects)
 client.partial_update_objects_with_transformation(index_name="INDEX_NAME", objects=my_objects)

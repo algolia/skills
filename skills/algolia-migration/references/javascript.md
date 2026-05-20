@@ -49,7 +49,8 @@ const { hits } = await client.searchSingleIndex({
 | `client.copyIndex()` / `moveIndex()` / `copyRules()` / `copySynonyms()` / `copySettings()` | `client.operationIndex()` |
 | `index.exists()` | `client.indexExists({ indexName })` |
 | `index.delete()` | `client.deleteIndex({ indexName })` |
-| `replaceAllRules()` / `replaceAllSynonyms()` | `saveRules()` / `saveSynonyms()` with `clearExistingRules: true` |
+| `replaceAllRules()` | `saveRules()` with `clearExistingRules: true` |
+| `replaceAllSynonyms()` | `saveSynonyms()` with `replaceExistingSynonyms: true` |
 | `getFrequentlyBoughtTogether()` / `getLookingSimilar()` / `getRelatedProducts()` / `getTrendingFacets()` / `getTrendingItems()` | `getRecommendations()` |
 | `clearDictionaryEntries()` / `deleteDictionaryEntries()` / `replaceDictionaryEntries()` / `saveDictionaryEntries()` | `batchDictionaryEntries()` |
 

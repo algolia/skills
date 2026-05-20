@@ -126,7 +126,7 @@ $client->replaceAllObjects('INDEX_NAME', $objects, [
 | `browseObjects` / `browseRules` / `browseSynonyms` | Returns `ObjectIterator` — use `foreach` loop |
 | `indexExists` | Renamed from `exists()` on index object |
 | `chunkedBatch` | Now public; default action is `'addObject'` |
-| `generateSecuredApiKey` | Accepts typed `SecuredApiKeyRestrictions` model |
+| `generateSecuredApiKey` | Static method; `$restrictions` is a plain associative array |
 
 ## Browse (ObjectIterator)
 
