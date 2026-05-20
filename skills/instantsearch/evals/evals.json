@@ -75,6 +75,19 @@
         "Matches the dark theme",
         "Does not guess ais-* class names"
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "Set up my React InstantSearch project with the correct future flags so it's ready for the next major release.",
+      "expected_output": "Future flags applied based on installed types and the live Upgrade guides, not training-data recall",
+      "files": [],
+      "expectations": [
+        "Reads InstantSearchProps['future'] from node_modules/react-instantsearch types to enumerate available flags",
+        "Fetches https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/react to confirm current recommended flags and defaults",
+        "Applies flags on the InstantSearch (or InstantSearchNext) provider with values matching the installed package version",
+        "Does NOT enable a flag that does not appear in the installed type",
+        "Asks the user before enabling any flag whose default cannot be determined from types or docs"
+      ]
     }
   ]
 }

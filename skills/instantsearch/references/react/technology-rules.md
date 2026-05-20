@@ -4,8 +4,15 @@ These rules apply to **all** React InstantSearch patterns, not just autocomplete
 
 ## Always
 
+- **Before using any widget, hook, connector, prop, middleware, or `future.*` flag not explicitly documented in this skill, complete the [Source-of-truth check](source-of-truth.md).** Read the installed types, fetch the live Algolia docs, grep installed CSS for class names. Do not write code from training-data recall alone.
 - If `react-instantsearch` and `algoliasearch` are not already installed, install the latest versions and **wait for the install to complete** before proceeding. If using Next.js App Router, also install `react-instantsearch-nextjs`. Use the same package manager as the rest of the project (npm, yarn, pnpm, bun, etc.). If the project uses a CDN (e.g., jsDelivr with script tags), follow that pattern instead. Do not read types or import from packages until the install has finished. Do not fetch types from the web (unpkg, GitHub, etc.).
-- Use `react-instantsearch` v7. Import from `react-instantsearch`, never from `react-instantsearch-dom`. **If using Next.js App Router**, use `InstantSearchNext` from `react-instantsearch-nextjs` instead of `<InstantSearch>`. The props are the same.
+- Use `react-instantsearch` v7. Import from `react-instantsearch`, never from `react-instantsearch-dom`. **For Next.js, pick the provider by router**:
+  - **App Router**: use `<InstantSearchNext>` from `react-instantsearch-nextjs` instead of `<InstantSearch>`. It already handles SSR — do not add `getServerState` on top.
+  - **Pages Router**: use `<InstantSearch>` together with `getServerState` and `<InstantSearchSSRProvider>` from `react-instantsearch`. Do not use `react-instantsearch-router-nextjs`.
+  - **Remix or other React frameworks with SSR**: same as Pages Router (`getServerState` + `<InstantSearchSSRProvider>`).
+  - **CSR-only React (Vite, CRA-style)**: plain `<InstantSearch>`. Do not add SSR helpers.
+
+  The props of `<InstantSearch>` and `<InstantSearchNext>` match.
 - **Place the `<InstantSearch>` (or `<InstantSearchNext>`) provider high in the component tree**. At the layout level, not wrapping a single widget. Other widgets (search results, facets, etc.) will need to be nested inside it later. Decouple the provider from any specific widget.
 - Use `algoliasearch` v5 (the latest) to create the search client. Do not use older v4/v3 patterns. If already installed, check `package.json` for the version. The API changed between v4 and v5. If not installed, install the latest version. For web applications, prefer the lite client for a smaller bundle: `import { liteClient as algoliasearch } from "algoliasearch/lite";`
 - **Declare the search client outside of React components.** The client's reference must remain stable to preserve its internal cache. Do not inline `algoliasearch(...)` inside the `searchClient` prop, and do not create it inside a component with `useCallback` or `useMemo` unless there is no alternative.
@@ -15,6 +22,7 @@ These rules apply to **all** React InstantSearch patterns, not just autocomplete
 - **Follow the [styling guide](styling.md) for all widget styling.** Write CSS targeting `ais-*` selectors. Grep for actual class names before writing CSS.
 - Set `insights={true}` on the `<InstantSearch>` wrapper to enable click analytics via Algolia Insights.
 - **Set up routing** so the search state is reflected in the URL. Search result URLs must be shareable and bookmarkable. Enable routing by passing `routing` or `routing={true}` on the `<InstantSearch>` (or `<InstantSearchNext>`) wrapper. For further customization, pass an object to `routing` where `router` accepts the same options as `history`, and `stateMapping` accepts the same options as in `InstantSearch`. Read the type definitions for full configuration options.
+- **`future.*` flags must be looked up, not guessed.** Flags like `preserveSharedStateOnUnmount` change semantics across versions. Read `InstantSearchProps['future']` from the installed types and the [Upgrade guides](https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/react.md) before enabling, disabling, or assuming a default.
 
 ## Never
 
@@ -22,3 +30,4 @@ These rules apply to **all** React InstantSearch patterns, not just autocomplete
 - **Never guess credentials or index names.** Always ask the user. Never silently use a public demo index.
 - **Never start coding before completing discovery.** You need credentials, schema understanding, rendering preferences, and project design context first.
 - **Never overuse connectors.** If you're reaching for `useSearchBox`, `useHits`, `useRefinementList` etc., first check whether the built-in widget with a `classNames` prop achieves the same result. Custom hooks/connectors are for genuinely custom rendering that widgets cannot handle.
+- **Never guess `renderState` shape.** When using `useInstantSearch()` or any `useXxx` hook, read the hook's return type from `node_modules` before destructuring. Field names and nesting change across versions.
