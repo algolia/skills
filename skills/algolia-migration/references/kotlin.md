@@ -233,12 +233,17 @@ val remaining: Duration = securedApiKeyRemainingValidity("my-key")
 val src = SearchClient("SRC_APP_ID", "SRC_API_KEY")
 val dst = SearchClient("DST_APP_ID", "DST_API_KEY")
 
+// Settings — getSettings/setSettings work directly
 val settings = src.getSettings(indexName = "SOURCE_INDEX")
 dst.setSettings(indexName = "DEST_INDEX", indexSettings = settings)
 
-val rules = mutableListOf<Rule>()
-src.browseRules(indexName = "SOURCE_INDEX", searchRulesParams = SearchRulesParams(),
-    aggregator = { rules.addAll(it.hits) })
-if (rules.isNotEmpty()) dst.saveRules(indexName = "DEST_INDEX", rules = rules)
-// repeat for synonyms and objects
+// Objects — browseObjects extension helper is available
+val objects = mutableListOf<JsonObject>()
+src.browseObjects(indexName = "SOURCE_INDEX", params = BrowseParamsObject(),
+    aggregator = { objects.addAll(it.hits) })
+dst.replaceAllObjects(indexName = "DEST_INDEX", objects = objects)
+
+// Rules/Synonyms — no browseRules/browseSynonyms extension helpers in v3;
+// paginate manually via searchRules/searchSynonyms or use the Algolia CLI
+// for cross-app rule/synonym migration.
 ```

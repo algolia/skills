@@ -158,11 +158,26 @@ try await client.replaceAllObjects(
 )
 ```
 
+## `saveObjects` helper
+
+```swift
+// Save multiple objects with built-in task waiting
+try await client.saveObjects(
+    indexName: "INDEX_NAME",
+    objects: myObjects,
+    waitForTasks: true
+)
+```
+
 ## Browse aggregator
 
 ```swift
 var objects: [MyModel] = []
-try await client.browseObjects(indexName: "INDEX_NAME") { response in
-    objects.append(contentsOf: response.hits)
-}
+try await client.browseObjects(
+    indexName: "INDEX_NAME",
+    browseParams: BrowseParamsObject(),
+    aggregator: { response in
+        objects.append(contentsOf: response.hits)
+    }
+)
 ```

@@ -131,7 +131,7 @@ err = index.WaitTask(res.TaskID)
 // v4
 response, err := client.SaveObject(
     client.NewApiSaveObjectRequest("INDEX_NAME", map[string]any{"objectID": "1"}))
-resp, err := client.WaitForTask("INDEX_NAME", *response.TaskID)
+resp, err := client.WaitForTask("INDEX_NAME", response.TaskID)
 ```
 
 `WaitForTask` returns `*search.GetTaskResponse` (not just `error`).
