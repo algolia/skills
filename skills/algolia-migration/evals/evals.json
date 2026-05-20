@@ -24,7 +24,7 @@
         "Replaces SearchClient.create() with SearchClientSync('APP_ID', 'API_KEY')",
         "Removes client.init_index() and the index variable",
         "Replaces index.search() with client.search_single_index(index_name='catalog', search_params=SearchParams(query='laptop', filters='brand:Dell')) or equivalent dict",
-        "Replaces index.save_objects() with client.save_objects(index_name='catalog', body=objects)",
+        "Replaces index.save_objects() with client.save_objects(index_name='catalog', objects=objects)",
         "Notes that autoGenerateObjectIDIfNotExist is removed and every object needs an objectID"
       ]
     },
@@ -79,7 +79,7 @@
         "Replaces DefaultSearchClient.create() with new SearchClient(...) inside try-with-resources",
         "Removes initIndex() and the index variable; generic type now passed per-method",
         "Replaces index.search() with client.searchSingleIndex('products', new SearchParamsObject().setQuery('laptop'), Hit.class)",
-        "Replaces index.saveObjects().waitTask() with client.saveObject() followed by client.waitForTask('products', response.getTaskID())"
+        "Replaces index.saveObjects(products).waitTask() with client.saveObjects('products', products, true) where the third boolean argument enables built-in task waiting"
       ]
     },
     {

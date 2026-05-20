@@ -54,7 +54,7 @@ index.search(Query("QUERY"))
 // v3
 client.searchSingleIndex(
     indexName = "INDEX_NAME",
-    searchParamsObject = SearchParamsObject(query = "QUERY")
+    searchParams = SearchParamsObject(query = "QUERY")
 )
 ```
 

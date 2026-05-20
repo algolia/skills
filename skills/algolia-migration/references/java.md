@@ -160,29 +160,25 @@ Three helpers: `waitForTask`, `waitForAppTask`, `waitForApiKey`.
 
 ```java
 client.replaceAllObjects(
-    new ReplaceAllObjectsParams()
-        .setIndexName("INDEX_NAME")
-        .setObjects(objects)
-        .setScopes(List.of(ScopeType.SETTINGS, ScopeType.RULES, ScopeType.SYNONYMS))
+    "INDEX_NAME",
+    objects,
+    1000,
+    List.of(ScopeType.SETTINGS, ScopeType.RULES, ScopeType.SYNONYMS)
 );
 ```
 
 ## Helper changes
 
-- `saveObjects`: `autoGenerateObjectID` removed; objects must include `objectID`. Optional: `waitForTasks`, `batchSize`
+- `saveObjects`: `autoGenerateObjectID` removed; objects must include `objectID`. Optional: `waitForTasks` (bool), `batchSize` (int)
 - `partialUpdateObjects`: `createIfNotExists` required (no default)
-- `browseObjects`: returns aggregator callback instead of iterable
+- `browseObjects`: returns `Iterable<T>` — use a for-each loop, no aggregator callback
 
-## Browse aggregator
+## Browse (Iterable pattern)
 
 ```java
-List<Object> objects = new ArrayList<>();
-client.browseObjects(
-    "INDEX_NAME",
-    new BrowseParamsObject(),
-    MyObject.class,
-    response -> objects.addAll(response.getHits())
-);
+for (MyObject hit : client.browseObjects("INDEX_NAME", new BrowseParamsObject(), MyObject.class)) {
+    objects.add(hit);
+}
 ```
 
 ## `chunkedBatch` (now public)

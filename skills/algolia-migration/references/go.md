@@ -219,9 +219,14 @@ settingsResp, err := src.GetSettings(src.NewApiGetSettingsRequest("SRC_INDEX"))
 if err != nil {
     panic(err)
 }
-settingsJSON, _ := json.Marshal(settingsResp)
+settingsJSON, err := json.Marshal(settingsResp)
+if err != nil {
+    panic(err)
+}
 var indexSettings search.IndexSettings
-json.Unmarshal(settingsJSON, &indexSettings)
+if err = json.Unmarshal(settingsJSON, &indexSettings); err != nil {
+    panic(err)
+}
 _, err = dst.SetSettings(dst.NewApiSetSettingsRequest("DST_INDEX", &indexSettings))
 if err != nil {
     panic(err)

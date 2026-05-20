@@ -97,12 +97,12 @@ Three helpers: `wait_for_task`, `wait_for_app_task`, `wait_for_api_key`.
 ## `replace_all_objects`
 
 ```ruby
-# v3 — safe removed; scopes required
-client.replace_all_objects(
-  "INDEX_NAME",
-  objects,
-  scopes: ["settings", "rules", "synonyms"]
-)
+# v3 — safe removed; scopes positional arg (not keyword)
+# Default scopes already include settings, rules, synonyms — pass all four positional args to override:
+client.replace_all_objects("INDEX_NAME", objects, 1000, ["settings", "rules", "synonyms"])
+
+# Or rely on defaults:
+client.replace_all_objects("INDEX_NAME", objects)
 ```
 
 ## Browse
