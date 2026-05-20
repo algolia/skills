@@ -77,9 +77,12 @@ All index copy and move operations, including scoped copies (`copyRules`, `copyS
 
 The `safe` option is removed. Pass `scopes: ["settings", "rules", "synonyms"]` explicitly (or whichever subset you want to carry over).
 
-### 6. Browse helpers use aggregator callbacks
+### 6. Browse helpers change pattern
 
-Iterator / for-loop patterns over `browseObjects`, `browseRules`, and `browseSynonyms` are replaced by an `aggregator` callback that receives each page response.
+The old iterator/chained patterns are gone. The new pattern **varies by language** — check the reference file:
+
+- **Aggregator callback** (JS, Python, Go, Ruby, Kotlin, Scala, Swift): pass an `aggregator` function that receives each page response
+- **Iterable / foreach** (Java, C#, PHP): the method returns `Iterable<T>` / `IEnumerable<T>` / `ObjectIterator` — iterate with a for-each loop
 
 ### 7. `AccountClient` is gone
 
