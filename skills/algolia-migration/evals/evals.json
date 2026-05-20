@@ -1,0 +1,72 @@
+{
+  "skill_name": "algolia-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm upgrading our Node.js backend from algoliasearch v4 to v5. We have this code throughout the codebase:\n\n```js\nconst index = client.initIndex('products');\nconst { hits } = await index.search(query, { facetFilters: ['category:shoes'] });\nawait index.saveObjects(records).wait();\n```\n\nUpdate it for v5.",
+      "expected_output": "Updated JavaScript code removing initIndex, using searchSingleIndex and saveObjects with explicit waitForTask",
+      "files": [],
+      "expectations": [
+        "Removes client.initIndex() and the index variable",
+        "Replaces index.search() with client.searchSingleIndex({ indexName: 'products', searchParams: { query, facetFilters: [...] } })",
+        "Replaces index.saveObjects(records).wait() with const { taskID } = await client.saveObjects(...) followed by client.waitForTask({ indexName: 'products', taskID })",
+        "Does NOT use the old .wait() chaining pattern",
+        "Advises running grep -r 'initIndex' to find all other call sites"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're migrating our Python backend from algoliasearch v3 to v4. Here's our current setup:\n\n```python\nfrom algoliasearch.search_client import SearchClient\nclient = SearchClient.create(APP_ID, API_KEY)\nindex = client.init_index('catalog')\nresults = index.search('laptop', {'filters': 'brand:Dell'})\nindex.save_objects(objects)\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated Python code with new imports, SearchClientSync, removed init_index, using search_single_index and save_objects on client directly",
+      "files": [],
+      "expectations": [
+        "Updates import to: from algoliasearch.search.client import SearchClientSync",
+        "Replaces SearchClient.create() with SearchClientSync('APP_ID', 'API_KEY')",
+        "Removes client.init_index() and the index variable",
+        "Replaces index.search() with client.search_single_index(index_name='catalog', search_params=SearchParams(query='laptop', filters='brand:Dell')) or equivalent dict",
+        "Replaces index.save_objects() with client.save_objects(index_name='catalog', body=objects)",
+        "Notes that autoGenerateObjectIDIfNotExist is removed and every object needs an objectID"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our Go service uses v3 of the Algolia client. We need to upgrade to v4. Current code:\n\n```go\nclient := search.NewClient(appID, apiKey)\nindex := client.InitIndex(\"orders\")\nres, err := index.SaveObjects(orders)\nif err != nil { panic(err) }\nerr = index.WaitTask(res.TaskID)\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated Go code with v4 import path, error-returning NewClient, removed InitIndex, SaveObjects on client, WaitForTask",
+      "files": [],
+      "expectations": [
+        "Updates import path from v3 to v4: github.com/algolia/algoliasearch-client-go/v4/algolia/search",
+        "Updates client, err := search.NewClient(...) and handles the error",
+        "Removes index := client.InitIndex() and the index variable",
+        "Calls client.SaveObjects with the indexName as part of the request struct",
+        "Replaces index.WaitTask() with client.WaitForTask('orders', taskID)",
+        "Notes that WaitForTask returns (*GetTaskResponse, error) not just error"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need to migrate a PHP application from Algolia v3 to v4. The code copies an index and waits for the task:\n\n```php\n$client->copyIndex('products', 'products_backup');\n$response = $client->moveIndex('products_staging', 'products');\n$client->waitTask('products', $response['taskID']);\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated PHP code using operationIndex for copy/move and waitForTask",
+      "files": [],
+      "expectations": [
+        "Replaces copyIndex() with operationIndex() using operation: 'copy'",
+        "Replaces moveIndex() with operationIndex() using operation: 'move'",
+        "Replaces waitTask() with waitForTask()",
+        "Uses correct namespace Algolia\\AlgoliaSearch\\Api\\SearchClient",
+        "Uses OperationIndexParams model or associative array with setOperation/setDestination"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We're upgrading our Ruby app from the algoliasearch gem (v2) to algolia gem (v3). The code uses bang methods and the index object:\n\n```ruby\nclient = Algolia::Search::Client.create(app_id, api_key)\nindex  = client.init_index('inventory')\nindex.save_objects!(objects)\nresults = index.search('widget')\n```\n\nUpdate it for v3.",
+      "expected_output": "Updated Ruby code with flattened module name, removed init_index, removed bang method, using client methods directly",
+      "files": [],
+      "expectations": [
+        "Updates client to Algolia::SearchClient.create(app_id, api_key) (flattened module path)",
+        "Removes index = client.init_index() and the index variable",
+        "Replaces save_objects! (bang method) with client.save_objects('inventory', objects, true) — third argument true for wait",
+        "Replaces index.search() with client.search_single_index('inventory', Algolia::Search::SearchParamsObject.new(query: 'widget'))",
+        "Notes the gem name changed from algoliasearch to algolia"
+      ]
+    }
+  ]
+}
