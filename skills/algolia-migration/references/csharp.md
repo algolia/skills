@@ -74,7 +74,7 @@ var results = client.SearchSingleIndex<Hit>("INDEX_NAME", searchParams);
 | `index.GetSettings()` | `client.GetSettingsAsync("INDEX_NAME")` |
 | `index.SaveRules()` | `client.SaveRulesAsync("INDEX_NAME", rules)` |
 | `index.SaveSynonyms()` | `client.SaveSynonymsAsync("INDEX_NAME", synonyms)` |
-| `client.CopyIndex()` / `MoveIndex()` | `client.OperationIndexAsync()` with `Operation = "Copy"` / `"Move"` |
+| `client.CopyIndex()` / `MoveIndex()` | `client.OperationIndexAsync()` with `Operation = OperationType.Copy` / `OperationType.Move` |
 | `index.Exists()` | `client.IndexExistsAsync("INDEX_NAME")` |
 | `.Wait()` chaining | `client.WaitForTaskAsync("INDEX_NAME", taskID)` |
 | `GenerateSecuredApiKeys` (plural) | `GenerateSecuredApiKey` (singular) |
