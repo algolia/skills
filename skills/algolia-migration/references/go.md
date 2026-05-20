@@ -148,23 +148,21 @@ resp, err := client.WaitForTask("INDEX_NAME", taskID,
 ## `ReplaceAllObjects`
 
 ```go
-res, err := client.ReplaceAllObjects(search.ReplaceAllObjectsParams{
-    IndexName: "INDEX_NAME",
-    Objects:   objects,
-    Scopes:    []search.ScopeType{search.SCOPETYPE_SETTINGS, search.SCOPETYPE_RULES},
-})
+res, err := client.ReplaceAllObjects("INDEX_NAME", objects,
+    search.WithScopes([]search.ScopeType{
+        search.SCOPETYPE_SETTINGS,
+        search.SCOPETYPE_RULES,
+        search.SCOPETYPE_SYNONYMS,
+    }))
 ```
 
 ## `PartialUpdateObjects` — default changed
 
-`opt.CreateIfNotExists()` (v3 default: `false`) is now an explicit field (v4 default: `true`). Set explicitly to avoid surprises:
+`opt.CreateIfNotExists()` (v3 default: `false`) is now a variadic option (v4 default: `true`). Set explicitly to avoid surprises:
 
 ```go
-res, err := client.PartialUpdateObjects(search.PartialUpdateObjectsParams{
-    IndexName:         "INDEX_NAME",
-    Objects:           objects,
-    CreateIfNotExists: algoliaUtils.ToPtr(false),
-})
+res, err := client.PartialUpdateObjects("INDEX_NAME", objects,
+    search.WithCreateIfNotExists(false))
 ```
 
 ## Browse aggregator
@@ -173,14 +171,18 @@ res, err := client.PartialUpdateObjects(search.PartialUpdateObjectsParams{
 // v3 — ObjectIterator
 iterator, err := index.BrowseObjects(nil)
 
-// v4 — aggregator callback
+// v4 — aggregator passed as a variadic option; callback receives (any, error)
 objects := []map[string]any{}
-_, err := client.BrowseObjects(search.BrowseObjectsParams{
-    IndexName: "INDEX_NAME",
-    Aggregator: func(response *search.BrowseResponse) {
-        objects = append(objects, response.Hits...)
-    },
-})
+err := client.BrowseObjects("INDEX_NAME", search.BrowseParamsObject{},
+    search.WithAggregator(func(res any, err error) {
+        if err != nil {
+            return
+        }
+        if r, ok := res.(*search.BrowseResponse); ok {
+            objects = append(objects, r.Hits...)
+        }
+    }),
+)
 ```
 
 ## `ChunkedBatch` (now public)
