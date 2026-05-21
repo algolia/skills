@@ -81,8 +81,8 @@ The `safe` option is removed. Pass `scopes: ["settings", "rules", "synonyms"]` e
 
 The old iterator/chained patterns are gone. The new pattern **varies by language** — check the reference file:
 
-- **Aggregator callback** (JS, Python, Go, Ruby, Kotlin, Scala, Swift): pass an `aggregator` function that receives each page response
-- **Iterable / foreach** (Java, C#, PHP): the method returns `Iterable<T>` / `IEnumerable<T>` / `ObjectIterator` — iterate with a for-each loop
+- **Aggregator callback** (JS, Python, Go, Ruby, Kotlin, Scala, Swift, C#): pass an `aggregator` function that receives each page response
+- **Iterable / foreach** (Java, PHP): the method returns `Iterable<T>` / `ObjectIterator` — iterate with a for-each loop
 
 ### 7. `AccountClient` is gone
 

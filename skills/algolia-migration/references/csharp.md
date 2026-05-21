@@ -139,16 +139,16 @@ await client.ReplaceAllObjectsAsync(
 
 - `SaveObjects`: `autoGenerateObjectId` removed; objects must include `ObjectID`
 - `PartialUpdateObjects`: `createIfNotExists` required (no default)
-- `BrowseObjects` / `BrowseRules` / `BrowseSynonyms`: return `IEnumerable<T>` — use a for-each loop
+- `BrowseObjects` / `BrowseRules` / `BrowseSynonyms`: no longer return iterator types; accept an `aggregator` action invoked with each page of results
 
-## Browse (IEnumerable pattern)
+## Browse aggregator
 
 ```csharp
 var objects = new List<MyModel>();
-foreach (var hit in await client.BrowseObjectsAsync<MyModel>("INDEX_NAME", new BrowseParamsObject()))
-{
-    objects.Add(hit);
-}
+await client.BrowseObjectsAsync<MyModel>(
+    new BrowseObjectsParams { IndexName = "INDEX_NAME" },
+    response => objects.AddRange(response.Hits)
+);
 ```
 
 ## New helpers in v7
