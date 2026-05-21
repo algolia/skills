@@ -19,7 +19,6 @@ Package moved from `com.algolia.search` to `com.algolia.client`. Type wrappers (
 import com.algolia.search.model.ApplicationID
 import com.algolia.search.model.APIKey
 import com.algolia.search.model.IndexName
-import com.algolia.search.model.ObjectID
 import com.algolia.search.dsl.query
 import com.algolia.search.dsl.settings
 
@@ -30,61 +29,53 @@ import com.algolia.client.model.search.*
 
 ## Client initialization
 
+`ClientSearch` is renamed to `SearchClient`:
+
 ```kotlin
 // v2
-val client = ClientSearch(
-    ApplicationID("APP_ID"),
-    APIKey("API_KEY")
-)
+val client = ClientSearch(ApplicationID("APP_ID"), APIKey("API_KEY"))
 
-// v3 — class renamed; plain strings
-val client = SearchClient(
-    appId = "APP_ID",
-    apiKey = "API_KEY"
-)
+// v3
+val client = SearchClient(appId = "APP_ID", apiKey = "API_KEY")
 ```
 
-## `initIndex` removal
+## Remove `initIndex`
+
+v3 has no index object. Pass `indexName` to every client method. The query DSL is also removed — use typed data classes:
 
 ```kotlin
 // v2
 val index = client.initIndex(IndexName("INDEX_NAME"))
-index.search(Query("QUERY"))
+index.search(query { query = "QUERY" })
 
 // v3
 client.searchSingleIndex(
     indexName = "INDEX_NAME",
-    searchParams = SearchParamsObject(query = "QUERY")
+    searchParamsObject = SearchParamsObject(query = "QUERY")
 )
 ```
 
-## DSL replacement
-
-v3 uses plain data classes instead of DSL builders:
+DSL replacement examples:
 
 ```kotlin
 // v2 — query DSL
 val query = query {
-    attributesToRetrieve { +"color"; +"category" }
+    attributesToRetrieve { +"color" }
     filters { and { facet("color", "red") } }
 }
 
 // v3 — data class + filter string
 val params = SearchParamsObject(
     query = "QUERY",
-    attributesToRetrieve = listOf("color", "category"),
+    attributesToRetrieve = listOf("color"),
     filters = "color:red"
 )
-```
 
-```kotlin
 // v2 — settings DSL
 val settings = settings { searchableAttributes { +"title"; +"author" } }
 
 // v3 — data class
-val settings = IndexSettings(
-    searchableAttributes = listOf("title", "author")
-)
+val settings = IndexSettings(searchableAttributes = listOf("title", "author"))
 ```
 
 ## Method renames
@@ -97,12 +88,14 @@ val settings = IndexSettings(
 | `index.saveObject()` | `client.saveObject(indexName, body)` |
 | `index.partialUpdateObject()` | `client.partialUpdateObject(indexName, objectID, attrs)` |
 | `index.deleteObject()` | `client.deleteObject(indexName, objectID)` |
+| `index.replaceAllRules()` | `client.saveRules()` |
+| `index.replaceAllSynonyms()` | `client.saveSynonyms()` |
 | `client.copyIndex()` / `moveIndex()` | `client.operationIndex()` |
 | `index.exists()` | `client.indexExists(indexName)` |
 | `index.waitTask()` | `client.waitForTask(indexName, taskID)` |
 | `ClientAccount.copyIndex()` | compose across two clients manually |
 | `generateAPIKey` | `generateSecuredApiKey` |
-| `getSecuredApiKeyRemainingValidity` (on client) | `securedApiKeyRemainingValidity` (top-level function) |
+| `getSecuredApiKeyRemainingValidity` (on client) | `securedApiKeyRemainingValidity` (top-level fn) |
 
 ## Multiple index search
 
@@ -120,7 +113,7 @@ val results = client.search(
 ## Indexing
 
 ```kotlin
-// objectID is now a plain String, not ObjectID()
+// objectID is a plain String, not ObjectID()
 client.saveObject(
     indexName = "INDEX_NAME",
     body = buildJsonObject { put("objectID", "1"); put("name", "Record") }
@@ -158,10 +151,13 @@ val response = client.saveObject(indexName = "INDEX_NAME", body = record)
 client.waitForTask(indexName = "INDEX_NAME", taskID = response.taskID)
 ```
 
-## `replaceAllObjects`
+`taskID` is a `Long`, not the v2 `TaskID` wrapper type.
+
+## Helper method changes
+
+**`replaceAllObjects`** — serializer dropped; objects as `List<JsonObject>`; `scopes` required:
 
 ```kotlin
-// v3 — serializer dropped; objects as List<JsonObject>; scopes required
 client.replaceAllObjects(
     indexName = "INDEX_NAME",
     objects = myObjects.map { Json.encodeToJsonElement(it).jsonObject },
@@ -169,27 +165,20 @@ client.replaceAllObjects(
 )
 ```
 
-## `saveObjects` / `deleteObjects`
+**`saveObjects` / `deleteObjects`** — serializer dropped; `waitForTasks` available:
 
 ```kotlin
-// v3 — serializer dropped; waitForTasks available
 client.saveObjects(
     indexName = "INDEX_NAME",
     objects = myObjects.map { Json.encodeToJsonElement(it).jsonObject },
     waitForTasks = true
 )
-
-client.deleteObjects(
-    indexName = "INDEX_NAME",
-    objectIDs = listOf("id1", "id2"),
-    waitForTasks = true
-)
+client.deleteObjects(indexName = "INDEX_NAME", objectIDs = listOf("id1", "id2"), waitForTasks = true)
 ```
 
-## `partialUpdateObjects` — `createIfNotExists` required
+**`partialUpdateObjects`** — `createIfNotExists` is now required (no default):
 
 ```kotlin
-// v2 defaulted to true; v3 requires explicit value
 client.partialUpdateObjects(
     indexName = "INDEX_NAME",
     objects = myObjects.map { Json.encodeToJsonElement(it).jsonObject },
@@ -197,7 +186,7 @@ client.partialUpdateObjects(
 )
 ```
 
-## Browse aggregator
+**`browseObjects`** — uses aggregator callback; `browseRules`/`browseSynonyms` have no dedicated extension helpers in v3 — paginate via `searchRules`/`searchSynonyms`:
 
 ```kotlin
 val hits = mutableListOf<JsonObject>()
@@ -208,7 +197,7 @@ client.browseObjects(
 )
 ```
 
-## Secured API key
+**`generateSecuredApiKey`** — returns plain `String`, not `APIKey`:
 
 ```kotlin
 // v2
@@ -217,7 +206,7 @@ val key: APIKey = client.generateAPIKey(
     restriction = SecuredAPIKeyRestriction(validUntil = 1893456000)
 )
 
-// v3 — returns plain String
+// v3
 val key: String = client.generateSecuredApiKey(
     parentApiKey = "parentApiKey",
     restrictions = SecuredApiKeyRestrictions(validUntil = 1893456000)
@@ -227,23 +216,31 @@ val key: String = client.generateSecuredApiKey(
 val remaining: Duration = securedApiKeyRemainingValidity("my-key")
 ```
 
-## Cross-app copy (`ClientAccount` removed)
+## Method changes reference
 
-```kotlin
-val src = SearchClient("SRC_APP_ID", "SRC_API_KEY")
-val dst = SearchClient("DST_APP_ID", "DST_API_KEY")
-
-// Settings — getSettings/setSettings work directly
-val settings = src.getSettings(indexName = "SOURCE_INDEX")
-dst.setSettings(indexName = "DEST_INDEX", indexSettings = settings)
-
-// Objects — browseObjects extension helper is available
-val objects = mutableListOf<JsonObject>()
-src.browseObjects(indexName = "SOURCE_INDEX", params = BrowseParamsObject(),
-    aggregator = { objects.addAll(it.hits) })
-dst.replaceAllObjects(indexName = "DEST_INDEX", objects = objects)
-
-// Rules/Synonyms — no browseRules/browseSynonyms extension helpers in v3;
-// paginate manually via searchRules/searchSynonyms or use the Algolia CLI
-// for cross-app rule/synonym migration.
-```
+| v2 | v3 |
+|----|----|
+| `ClientSearch(ApplicationID, APIKey)` | `SearchClient(appId, apiKey)` |
+| `client.initIndex()` | removed — pass `indexName` to each method |
+| `index.search()` | `client.searchSingleIndex()` |
+| `client.multipleQueries()` | `client.search()` |
+| `index.searchForFacets()` | `client.searchForFacetValues()` |
+| `index.saveObject()` | `client.saveObject(indexName, body)` |
+| `index.saveObjects(serializer, objects)` | `client.saveObjects(indexName, objects)` |
+| `index.partialUpdateObject()` | `client.partialUpdateObject()` |
+| `index.partialUpdateObjects()` | `client.partialUpdateObjects(createIfNotExists = ...)` |
+| `index.deleteObject()` | `client.deleteObject()` |
+| `index.deleteObjects()` | `client.deleteObjects()` |
+| `index.replaceAllObjects(serializer, objects)` | `client.replaceAllObjects(objects, scopes)` |
+| `index.replaceAllRules()` | `client.saveRules()` |
+| `index.replaceAllSynonyms()` | `client.saveSynonyms()` |
+| `index.getSettings()` | `client.getSettings()` |
+| `index.setSettings()` | `client.setSettings()` |
+| `index.searchRules()` | `client.searchRules()` |
+| `index.searchSynonyms()` | `client.searchSynonyms()` |
+| `index.exists()` | `client.indexExists()` |
+| `index.waitTask(TaskID)` | `client.waitForTask(indexName, taskID: Long)` |
+| `client.copyIndex()` / `moveIndex()` | `client.operationIndex()` |
+| `ClientAccount.copyIndex()` | compose manually across two `SearchClient` instances |
+| `generateAPIKey` | `generateSecuredApiKey` (returns `String`) |
+| `getSecuredApiKeyRemainingValidity` (client method) | `securedApiKeyRemainingValidity` (top-level fn) |

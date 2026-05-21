@@ -22,6 +22,8 @@ libraryDependencies += "com.algolia" %% "algoliasearch-client-scala" % "[2,)"
 <version>[2,)</version>
 ```
 
+Supports Scala 2.13 and Scala 3.
+
 ## Import changes
 
 ```scala
@@ -35,6 +37,8 @@ import algoliasearch.api.SearchClient
 
 ## Client initialization
 
+v1 used the `new` keyword; v2 uses a factory method:
+
 ```scala
 // v1
 val client = new AlgoliaClient("APP_ID", "API_KEY")
@@ -43,12 +47,28 @@ val client = new AlgoliaClient("APP_ID", "API_KEY")
 val client = SearchClient(appId = "APP_ID", apiKey = "API_KEY")
 ```
 
+## Remove `initIndex`
+
+There is no `initIndex` step. Pass `indexName` directly to every method call.
+
+## Method renames
+
+| v1 | v2 |
+|----|----|
+| `execute { search into }` | `client.searchSingleIndex()` |
+| `execute { index into ... objects }` | `client.saveObjects()` |
+| `execute { index into ... object }` | `client.saveObject()` |
+| `execute { delete from }` | `client.deleteObject()` |
+| `execute { settings of }` | `client.getSettings()` |
+| `execute { setSettings of }` | `client.setSettings()` |
+| `execute { copy index }` | `client.operationIndex()` |
+| `execute { move index }` | `client.operationIndex()` |
+
 ## DSL removal — the major change
 
 v1 used an `execute { ... }` DSL for all operations. v2 replaces every DSL block with direct method calls and named parameters.
 
-## Search
-
+**Search:**
 ```scala
 // v1
 client.execute { search into "INDEX_NAME" query Query(query = Some("QUERY")) }
@@ -60,27 +80,20 @@ client.searchSingleIndex(
 )
 ```
 
-## Indexing
-
+**Indexing:**
 ```scala
 // v1 — single
 client.execute { index into "INDEX_NAME" `object` Record("name", "1") }
-
-// v2 — single
-client.saveObject(
-  indexName = "INDEX_NAME",
-  body = JObject(List(JField("objectID", JString("1")), JField("name", JString("Record"))))
-)
-
 // v1 — batch
 client.execute { index into "INDEX_NAME" objects Seq(Record("name", "1")) }
 
+// v2 — single
+client.saveObject(indexName = "INDEX_NAME", body = JObject(...))
 // v2 — batch
 client.saveObjects(indexName = "INDEX_NAME", objects = Seq(...))
 ```
 
-## Delete
-
+**Delete:**
 ```scala
 // v1
 client.execute { delete from "INDEX_NAME" objectId "1" }
@@ -89,8 +102,7 @@ client.execute { delete from "INDEX_NAME" objectId "1" }
 client.deleteObject(indexName = "INDEX_NAME", objectID = "1")
 ```
 
-## Settings
-
+**Settings:**
 ```scala
 // v1
 client.execute { settings of "INDEX_NAME" }
@@ -124,30 +136,55 @@ client.operationIndex(
 // v1 — blocking wait
 Await.ready(indexing, Duration.Inf)
 
-// v2 — explicit wait helpers; all operations return Future[...]
+// v2 — explicit wait helpers; all methods return Future[...]
 result.flatMap { r =>
   client.waitForTask(indexName = "INDEX_NAME", taskID = r.taskID)
 }
 ```
 
-New wait helpers: `waitForTask`, `waitForAppTask`, `waitForApiKey`.
+New wait helpers in v2: `waitForTask`, `waitForAppTask`, `waitForApiKey`.
 
-## New helpers in v2
+## Helper method changes
 
-| Helper | Description |
-|--------|-------------|
+New helpers added in v2 that have no v1 equivalent:
+
+| Helper | Notes |
+|--------|-------|
+| `indexExists` | Returns `Future[Boolean]` |
 | `replaceAllObjects` | Atomically replaces all objects |
 | `saveObjects` | Batches automatically |
 | `deleteObjects` | Batches automatically |
-| `browseObjects` | Aggregator callback |
+| `browseObjects` | Aggregator callback: `BrowseResponse => Unit` |
 | `browseRules` | Aggregator callback |
 | `browseSynonyms` | Aggregator callback |
-| `indexExists` | Returns `Future[Boolean]` |
 | `generateSecuredApiKey` | Instance method with typed `restrictions` |
+| `getSecuredApiKeyRemainingValidity` | New helper |
 
-## Gotchas
+**`browseObjects` example:**
+```scala
+val hits = scala.collection.mutable.ListBuffer.empty[JObject]
+client.browseObjects(
+  indexName = "INDEX_NAME",
+  aggregator = response => hits.addAll(response.hits)
+)
+```
 
-- No separate `initIndex` step — pass `indexName` to every method
-- All methods return `Future[...]`; use `flatMap` / `for`-comprehension or `Await` for blocking
-- Response objects contain raw JSON; parse with json4s or similar
-- DSL expressions like `search into`, `index into`, `delete from` must all be replaced with direct method calls
+## Method changes reference
+
+| v1 DSL | v2 |
+|--------|----|
+| `execute { search into "I" query Q }` | `client.searchSingleIndex(indexName, searchParams)` |
+| `execute { index into "I" objects Seq(...) }` | `client.saveObjects(indexName, objects)` |
+| `execute { index into "I" object r }` | `client.saveObject(indexName, body)` |
+| `execute { delete from "I" objectId "1" }` | `client.deleteObject(indexName, objectID)` |
+| `execute { settings of "I" }` | `client.getSettings(indexName)` |
+| `execute { setSettings of "I" with S }` | `client.setSettings(indexName, indexSettings)` |
+| `execute { copy index "S" to "D" }` | `client.operationIndex(indexName, OperationIndexParams(...))` |
+| `execute { move index "S" to "D" }` | `client.operationIndex(indexName, OperationIndexParams(...))` |
+| `Await.ready(op, Duration.Inf)` | `client.waitForTask(indexName, taskID)` |
+| n/a | `client.indexExists(indexName)` |
+| n/a | `client.replaceAllObjects(indexName, objects)` |
+| n/a | `client.browseObjects(indexName, aggregator)` |
+| n/a | `client.browseRules(indexName, aggregator)` |
+| n/a | `client.browseSynonyms(indexName, aggregator)` |
+| n/a | `client.generateSecuredApiKey(parentApiKey, restrictions)` |

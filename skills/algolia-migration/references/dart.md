@@ -1,15 +1,12 @@
 # Dart / Flutter
 
-## Status
-
-The Dart client (`algoliasearch`) is a **new-generation client** built from scratch. There is no legacy version to migrate from. If your project is currently using a community package (e.g., `dart_algolia`), this is a full replacement, not an incremental upgrade.
-
 ## Install
+
+The `algoliasearch` Dart client is a new-generation client built from scratch. There is no official legacy version. If your project is currently using a community package (e.g., `dart_algolia`), this is a full replacement, not an incremental upgrade.
 
 ```sh
 dart pub add 'algoliasearch:^1.0'
-# or in pubspec.yaml:
-# algoliasearch: ^1.0
+# or in pubspec.yaml: algoliasearch: ^1.0
 ```
 
 For Flutter:
@@ -17,9 +14,9 @@ For Flutter:
 flutter pub add 'algoliasearch:^1.0'
 ```
 
-## Package structure
+## Import changes
 
-The `algoliasearch` meta-package exposes sub-packages per API. You can depend on the meta-package or import only what you need:
+The `algoliasearch` meta-package exposes sub-packages per API. Import the meta-package or only what you need:
 
 | Sub-package | Purpose |
 |-------------|---------|
@@ -30,17 +27,25 @@ The `algoliasearch` meta-package exposes sub-packages per API. You can depend on
 | `algolia_client_insights` | Insights events |
 | `algolia_client_ingestion` | Data ingestion / connectors |
 
+```dart
+import 'package:algolia_client_search/algolia_client_search.dart';
+```
+
 ## Client initialization
 
 ```dart
-import 'package:algolia_client_search/algolia_client_search.dart';
-
 final client = SearchClient(appId: 'APP_ID', apiKey: 'API_KEY');
 ```
 
-## Search
+## No `initIndex` pattern
 
-No `initIndex` pattern — `indexName` is always an explicit parameter:
+There is no `initIndex` and no index object. Pass `indexName` as an explicit parameter to every method call.
+
+## Method renames
+
+Not applicable — this is a new client with no prior official version to rename from.
+
+## Search
 
 ```dart
 final response = await client.searchSingleIndex(
@@ -51,32 +56,17 @@ final response = await client.searchSingleIndex(
 
 ## Indexing
 
-```dart
-await client.saveObject(
-  indexName: 'INDEX_NAME',
-  body: {'objectID': '1', 'name': 'Record'},
-);
-
-await client.partialUpdateObject(
-  indexName: 'INDEX_NAME',
-  objectID: '1',
-  attributesToUpdate: {'name': 'Updated'},
-);
-
-await client.deleteObject(indexName: 'INDEX_NAME', objectID: '1');
-```
-
-## Wait pattern
+`saveObject` returns `SaveObjectResponse` which carries `taskID`. There is **no `saveObjects` helper** — use `batch()` with `BatchWriteParams` for multiple objects:
 
 ```dart
-// Single object — saveObject returns SaveObjectResponse which carries taskID
+// Single object
 final response = await client.saveObject(
   indexName: 'INDEX_NAME',
   body: {'objectID': '1', 'name': 'Record'},
 );
 await client.waitForTask(indexName: 'INDEX_NAME', taskID: response.taskID);
 
-// Multiple objects — use batch() with BatchWriteParams (no saveObjects helper)
+// Multiple objects — batch() required
 final batchResponse = await client.batch(
   indexName: 'INDEX_NAME',
   batchWriteParams: BatchWriteParams(
@@ -88,10 +78,21 @@ final batchResponse = await client.batch(
 await client.waitForTask(indexName: 'INDEX_NAME', taskID: batchResponse.taskID);
 ```
 
+```dart
+await client.partialUpdateObject(
+  indexName: 'INDEX_NAME',
+  objectID: '1',
+  attributesToUpdate: {'name': 'Updated'},
+);
+
+await client.deleteObject(indexName: 'INDEX_NAME', objectID: '1');
+```
+
 ## Settings
 
 ```dart
 final settings = await client.getSettings(indexName: 'INDEX_NAME');
+
 await client.setSettings(
   indexName: 'INDEX_NAME',
   indexSettings: IndexSettings(searchableAttributes: ['title']),
@@ -109,6 +110,28 @@ await client.operationIndex(
   ),
 );
 ```
+
+## Helper method changes
+
+Not applicable — this is a new client. Notable absences compared to other Algolia clients:
+- No `saveObjects` bulk helper — use `batch()` with `BatchWriteParams`
+- No `replaceAllObjects` helper
+- No `browseObjects` / `browseRules` / `browseSynonyms` aggregator helpers
+
+## Method changes reference
+
+| Community package pattern | Official client (`algoliasearch`) |
+|--------------------------|----------------------------------|
+| `algolia.instance('INDEX_NAME')` | `SearchClient(appId, apiKey)` — no index object |
+| `index.search(query)` | `client.searchSingleIndex(indexName, searchParams)` |
+| `index.addObject(data)` | `client.saveObject(indexName, body)` |
+| `index.addObjects(data)` | `client.batch(indexName, batchWriteParams)` |
+| `index.updateObject(data)` | `client.partialUpdateObject(indexName, objectID, attrs)` |
+| `index.deleteObject(id)` | `client.deleteObject(indexName, objectID)` |
+| n/a | `client.waitForTask(indexName, taskID)` |
+| n/a | `client.getSettings(indexName)` |
+| n/a | `client.setSettings(indexName, indexSettings)` |
+| n/a | `client.operationIndex(indexName, operationIndexParams)` |
 
 ## Resources
 
