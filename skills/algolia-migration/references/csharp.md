@@ -1,240 +1,741 @@
-# C#: v6 → v7
+# Upgrade the C# API client to version 7
 
-## Install
+> Keep your C# API client up to date to benefit from improvements and bug fixes.
 
-```sh
+The latest major version of the `Algolia.Search` package is version 7.
+This page helps you upgrade from version 6
+and explains the breaking changes you need to address.
+
+Algolia generates the version 7 clients from OpenAPI specifications,
+which provides consistent behavior across all languages and up-to-date API coverage.
+The main architectural change is the removal of the `InitIndex` pattern:
+all methods are now on the `client` instance directly, with `indexName` as a parameter.
+
+For the full list of changes, see the [C# changelog](/doc/libraries/sdk/changelog/csharp).
+
+## Update your dependencies
+
+Update the `Algolia.Search` package to version 7:
+
+```sh Command line icon=square-terminal theme={"system"}
 dotnet add package Algolia.Search --version "7.*"
 ```
 
-**Critical:** v7 replaces `Newtonsoft.Json` with `System.Text.Json`. All custom serialization must be updated.
+<Note>
+  Version 7 replaces the `Newtonsoft.Json` dependency with `System.Text.Json`.
+  If your project relies on Newtonsoft-specific attributes or converters,
+  see [Update the serialization library](#update-the-serialization-library) for migration guidance.
+</Note>
 
-## Serialization migration (Newtonsoft → System.Text.Json)
+## Update imports
 
-```csharp
-// v6 (Newtonsoft.Json)
-[JsonProperty("name")]
-public string Name { get; set; }
+The package name remains `Algolia.Search`,
+but several model types have been renamed.
+For example, the `Query` class no longer exists.
+It's replaced by `SearchParams` and `SearchParamsObject`.
 
-[JsonIgnore]
-public string Internal { get; set; }
+```cs C# icon=code theme={"system"}
+// version 6
+using Algolia.Search.Clients;
+using Algolia.Search.Models.Search;
 
-// v7 (System.Text.Json — same attribute names, different namespace)
-[JsonPropertyName("name")]
-public string Name { get; set; }
-
-[JsonIgnore]
-public string Internal { get; set; }
+// version 7
+using Algolia.Search.Clients;
+using Algolia.Search.Models.Search;
 ```
 
-Enums default to serializing as `int` in v7. For string serialization:
-```csharp
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum MyEnum { MyValue1, MyValue2 }
+The `SearchClient` class stays in the same namespace.
+As you update your code, your IDE will flag missing types and suggest the correct `using` directives
+for the new model classes.
+
+## Update client initialization
+
+Client creation is unchanged.
+The constructor still accepts your application ID and API key:
+
+```cs C# icon=code theme={"system"}
+// version 6
+var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
+
+// version 7
+var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 ```
 
-Custom converters (`JsonConverter<T>` subclasses) must be rewritten for `System.Text.Json`.
+The other major change concerns what follows initialization:
+`InitIndex` no longer exists.
 
-## Client initialization
+## Synchronous and asynchronous methods
 
-Client init is unchanged. Both sync and async methods are available; async (`Async` suffix, returns `Task<T>`) is recommended.
+Version 7 includes both synchronous and asynchronous variants for every API method.
+Asynchronous methods have an `Async` suffix and return a `Task<T>`.
+Synchronous methods keep the base name.
 
-```csharp
-var client = new SearchClient("APP_ID", "API_KEY");
+```cs C# icon=code theme={"system"}
+// Asynchronous (recommended)
+var results = await client.SearchSingleIndexAsync<Hit>("INDEX_NAME", searchParams);
+
+// Synchronous
+var results = client.SearchSingleIndex<Hit>("INDEX_NAME", searchParams);
 ```
 
-`Query` class is removed — use `SearchParamsObject` inside `SearchParams`.
+The code examples in this guide use the asynchronous variants.
+If you prefer synchronous calls, drop the `Async` suffix and the `await` keyword.
 
 ## Remove `InitIndex`
 
-```csharp
-// v6
+This is the most significant change when upgrading.
+Version 6 relied on an index object with methods called on it.
+In version 7, all methods belong to the `client` instance,
+with `indexName` as a parameter.
+
+```cs C# icon=code highlight={6-10} theme={"system"}
+// version 6
+var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 var index = client.InitIndex("INDEX_NAME");
 var results = index.Search<Contact>(new Query("QUERY"));
 
-// v7
+// version 7
+var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 var results = await client.SearchSingleIndexAsync<Hit>(
     "INDEX_NAME",
     new SearchParams(new SearchParamsObject { Query = "QUERY" })
 );
 ```
 
-## Method renames
+<Tip>
+  If you have many files to update,
+  search your codebase for `InitIndex` or `.InitIndex(` to find every place that needs changing.
+</Tip>
 
-| v6 | v7 |
-|----|----|
-| `client.MultipleQueries()` | `client.SearchAsync()` |
-| `index.Search()` | `client.SearchSingleIndexAsync("INDEX_NAME", ...)` |
-| `index.SearchForFacetValues()` | `client.SearchForFacetValuesAsync("INDEX_NAME", ...)` |
-| `index.Exists()` | `client.IndexExistsAsync("INDEX_NAME")` |
-| `index.ReplaceAllRules()` | `client.SaveRulesAsync()` with `clearExistingRules` |
-| `index.ReplaceAllSynonyms()` | `client.SaveSynonymsAsync()` with `clearExistingSynonyms` |
-| `client.CopyIndex()` / `MoveIndex()` | `client.OperationIndexAsync()` |
-| `.Wait()` chaining | `client.WaitForTaskAsync("INDEX_NAME", taskID)` |
-| `GenerateSecuredApiKeys` (plural) | `GenerateSecuredApiKey` (singular) |
+## Update search calls
 
-## Multiple index search
+### Search a single index
 
-```csharp
-var results = await client.SearchAsync<Hit>(new SearchMethodParams {
-    Requests = new List<SearchQuery> {
-        new SearchQuery(new SearchForHits { IndexName = "INDEX_1", Query = "QUERY" }),
-        new SearchQuery(new SearchForHits { IndexName = "INDEX_2", Query = "QUERY" })
-    }
+The `index.Search()` method is now [`client.SearchSingleIndexAsync()`](/doc/libraries/sdk/methods/search/search-single-index).
+Pass the index name and search parameters directly:
+
+```cs C# icon=code highlight={7-12} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+var results = await index.SearchAsync<Contact>(new Query("QUERY")
+{
+    FacetFilters = new List<string> { "category:Book" }
 });
+
+// version 7
+var results = await client.SearchSingleIndexAsync<Hit>(
+    "INDEX_NAME",
+    new SearchParams(new SearchParamsObject
+    {
+        Query = "QUERY",
+        FacetFilters = new FacetFilters(new List<string> { "category:Book" })
+    })
+);
 ```
 
-## Indexing
+### Search multiple indices
 
-```csharp
+The `client.MultipleQueries()` method is now [`client.SearchAsync()`](/doc/libraries/sdk/methods/search/search).
+Each request in the collection requires an `IndexName`:
+
+```cs C# icon=code highlight={8-16} theme={"system"}
+// version 6
+var results = await client.MultipleQueriesAsync<Hit>(
+    new List<MultipleQueriesQuery>
+    {
+        new MultipleQueriesQuery { IndexName = "INDEX_1", Params = new Query("QUERY") },
+        new MultipleQueriesQuery { IndexName = "INDEX_2", Params = new Query("QUERY") }
+    }
+);
+
+// version 7
+var results = await client.SearchAsync<Hit>(
+    new SearchMethodParams
+    {
+        Requests = new List<SearchQuery>
+        {
+            new SearchQuery(new SearchForHits { IndexName = "INDEX_1", Query = "QUERY" }),
+            new SearchQuery(new SearchForHits { IndexName = "INDEX_2", Query = "QUERY" })
+        }
+    }
+);
+```
+
+### Search for facet values
+
+The `index.SearchForFacetValues()` method becomes `client.SearchForFacetValuesAsync()`
+with an `indexName` parameter:
+
+```cs C# icon=code highlight={5-10} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+var results = await index.SearchForFacetValueAsync("category", "book");
+
+// version 7
+var results = await client.SearchForFacetValuesAsync(
+    "INDEX_NAME",
+    "category",
+    new SearchForFacetValuesRequest { FacetQuery = "book" }
+);
+```
+
+## Update indexing operations
+
+In version 7, indexing methods are on the client instead of the index object,
+with `indexName` as a parameter.
+
+### Add or replace records
+
+```cs C# icon=code highlight={6-7,10-13} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+await index.SaveObjectAsync(new { ObjectID = "1", Name = "Record" });
+await index.SaveObjectsAsync(new List<object> { new { ObjectID = "1", Name = "Record" } });
+
+// version 7
 await client.SaveObjectAsync("INDEX_NAME", new { ObjectID = "1", Name = "Record" });
-await client.PartialUpdateObjectAsync("INDEX_NAME", "1", new { Name = "Updated" });
+// SaveObjectsAsync works the same way:
+// (note: pass a list of objects for the batch version)
+await client.SaveObjectsAsync(
+    "INDEX_NAME",
+    new List<object> { new { ObjectID = "1", Name = "Record" } }
+);
+```
+
+### Partially update records
+
+```cs C# icon=code highlight={5-9} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+await index.PartialUpdateObjectAsync(new { ObjectID = "1", Name = "Updated" });
+
+// version 7
+await client.PartialUpdateObjectAsync(
+    "INDEX_NAME",
+    "1",
+    new { Name = "Updated" }
+);
+```
+
+### Delete records
+
+```cs C# icon=code highlight={5} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+await index.DeleteObjectAsync("1");
+
+// version 7
 await client.DeleteObjectAsync("INDEX_NAME", "1");
 ```
 
-## `OperationIndexAsync` (copy / move)
+## Update settings, synonyms, and rules
 
-```csharp
-// copy
-await client.OperationIndexAsync("SOURCE",
-    new OperationIndexParams { Operation = OperationType.Copy, Destination = "DEST" });
+### Get and set settings
 
-// move
-await client.OperationIndexAsync("SOURCE",
-    new OperationIndexParams { Operation = OperationType.Move, Destination = "DEST" });
-
-// copy with scope
-await client.OperationIndexAsync("SOURCE", new OperationIndexParams {
-    Operation = OperationType.Copy, Destination = "DEST",
-    Scope = new List<ScopeType> { ScopeType.Rules, ScopeType.Settings }
+```cs C# icon=code highlight={6-13} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+var settings = await index.GetSettingsAsync();
+await index.SetSettingsAsync(new IndexSettings
+{
+    SearchableAttributes = new List<string> { "title", "author" }
 });
 
-// check if index exists (new in v7)
-bool exists = await client.IndexExistsAsync("INDEX_NAME");
+// version 7
+var settings = await client.GetSettingsAsync("INDEX_NAME");
+await client.SetSettingsAsync(
+    "INDEX_NAME",
+    new IndexSettings
+    {
+        SearchableAttributes = new List<string> { "title", "author" }
+    }
+);
 ```
 
-## Wait pattern
+### Save synonyms and rules
 
-```csharp
-// v6
+```cs C# icon=code highlight={5-12} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+await index.SaveSynonymsAsync(synonyms);
+await index.SaveRulesAsync(rules);
+
+// version 7
+await client.SaveSynonymsAsync(
+    "INDEX_NAME",
+    synonyms
+);
+await client.SaveRulesAsync(
+    "INDEX_NAME",
+    rules
+);
+```
+
+<Note>
+  In version 6, `index.ReplaceAllRules()` and `index.ReplaceAllSynonyms()` replaced all rules or synonyms.
+  In version 7, use `client.SaveRulesAsync()` or `client.SaveSynonymsAsync()` with the `clearExistingRules` or `clearExistingSynonyms` parameter set to `true`.
+</Note>
+
+## Update index management
+
+The `CopyIndex`, `MoveIndex`, `CopyRules`, `CopySynonyms`, and `CopySettings`
+methods are all replaced by [`OperationIndexAsync`](/doc/rest-api/search/operation-index).
+
+### Copy an index
+
+```cs C# icon=code highlight={4-10} theme={"system"}
+// version 6
+await client.CopyIndexAsync("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
+
+// version 7
+await client.OperationIndexAsync(
+    "SOURCE_INDEX_NAME",
+    new OperationIndexParams
+    {
+        Operation = Enum.Parse<OperationType>("Copy"),
+        Destination = "DESTINATION_INDEX_NAME"
+    }
+);
+```
+
+### Move (rename) an index
+
+```cs C# icon=code highlight={4-10} theme={"system"}
+// version 6
+await client.MoveIndexAsync("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
+
+// version 7
+await client.OperationIndexAsync(
+    "SOURCE_INDEX_NAME",
+    new OperationIndexParams
+    {
+        Operation = Enum.Parse<OperationType>("Move"),
+        Destination = "DESTINATION_INDEX_NAME"
+    }
+);
+```
+
+### Copy only rules or settings
+
+In version 7, use the `Scope` parameter to limit the operation to specific data:
+
+```cs C# icon=code theme={"system"}
+// version 7 -- copy only rules and settings from one index to another
+await client.OperationIndexAsync(
+    "SOURCE_INDEX_NAME",
+    new OperationIndexParams
+    {
+        Operation = Enum.Parse<OperationType>("Copy"),
+        Destination = "DESTINATION_INDEX_NAME",
+        Scope = new List<ScopeType> { ScopeType.Rules, ScopeType.Settings }
+    }
+);
+```
+
+### Check if an index exists
+
+In version 6, you could check if an index existed using the `Exists` method on the index object.
+In version 7, use the [`IndexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+
+```cs C# icon=code highlight={5-6} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
+index.Exists();
+
+// version 7
+await client.IndexExistsAsync("INDEX_NAME");
+```
+
+## Update task handling
+
+Version 6 supported chaining `.Wait()` on operations.
+Version 7 replaces this pattern with dedicated wait helpers.
+
+```cs C# icon=code highlight={5-7} theme={"system"}
+// version 6
+var index = client.InitIndex("INDEX_NAME");
 index.SaveObjects(records).Wait();
 
-// v7
+// version 7
 var response = await client.SaveObjectsAsync("INDEX_NAME", records);
 await client.WaitForTaskAsync("INDEX_NAME", response.TaskID);
-
-// new helpers
-await client.WaitForAppTaskAsync(taskId: taskID);
-await client.WaitForApiKeyAsync("my-api-key", ApiKeyOperation.Add);
-await client.WaitForApiKeyAsync("my-api-key", ApiKeyOperation.Update,
-    apiKey: new ApiKey { Acl = new List<Acl> { Acl.Search } });
 ```
+
+Version 7 includes three wait helpers:
+
+* [`WaitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
+* [`WaitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
+* [`WaitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+
+## Update the serialization library
+
+The `Algolia.Search` package no longer depends on `Newtonsoft.Json` for request serialization and response deserialization.
+Version 7 uses .NET's official `System.Text.Json` package instead.
+
+This is a significant change if your project relies on `Newtonsoft.Json` attributes
+(such as `[JsonProperty]`) for custom serialization of your Algolia records.
+
+If you were using the `Newtonsoft.Json` package for custom serialization,
+see [Migrate from Newtonsoft.Json to System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/migrate-from-newtonsoft?pivots=dotnet-9-0)
+in Microsoft's documentation.
+
+<Tip>
+  Common attribute replacements when migrating from `Newtonsoft.Json`:
+
+* `[JsonProperty("name")]` becomes `[JsonPropertyName("name")]`
+* `[JsonIgnore]` keeps the same name but moves to the `System.Text.Json.Serialization` namespace
+* Custom `JsonConverter` implementations need rewriting for `System.Text.Json`
+  </Tip>
+
+## Update enumeration serialization
+
+To keep the serialization of enumeration types consistent with previous versions of the .NET API client,
+they're serialized as `int` by default.
+
+To serialize enumeration types as strings, use the `JsonStringEnumConverter` attribute from `System.Text.Json.Serialization`:
+
+```cs C# icon=code theme={"system"}
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum MyEnum
+{
+    MyValue1,
+    MyValue2
+}
+
+public class MyModel
+{
+    public MyEnum MyProperty { get; set; }
+}
+
+await client.SaveObjectAsync("INDEX_NAME", new MyModel { MyProperty = MyEnum.MyValue2 });
+```
+
+With this attribute, `MyProperty` serializes as the string `"MyValue2"` instead of the integer `1`.
 
 ## Helper method changes
 
-- **`ReplaceAllObjectsAsync`**: `safe` removed; scopes required:
-```csharp
-await client.ReplaceAllObjectsAsync(indexName: "INDEX_NAME", objects: objects,
-    scopes: new List<ScopeType> { ScopeType.Settings, ScopeType.Rules, ScopeType.Synonyms });
-```
-- **`SaveObjectsAsync`**: `autoGenerateObjectId` removed; objects must include `ObjectID`; use `ChunkedBatchAsync` with `Action.AddObject` for auto-ID
-- **`PartialUpdateObjectsAsync`**: `createIfNotExists` required (no default)
-- **`DeleteObjectsAsync`**: new `waitForTasks` and `batchSize` params
-- **`BrowseObjectsAsync` / `BrowseRulesAsync` / `BrowseSynonymsAsync`**: no longer return iterators; accept an aggregator action:
-```csharp
-// v6 — iterator
-var iterator = index.Browse<MyModel>(new BrowseIndexQuery("query"));
-foreach (var obj in iterator) { Process(obj); }
+The following sections document breaking changes in helper method signatures and behavior between version 6 and version 7.
 
-// v7 — aggregator action
+### `ReplaceAllObjects`
+
+The `safe` parameter has been removed. In version 6, `safe: true` caused the helper to wait after each step. In version 7, the helper always waits—equivalent to the previous `safe: true` behavior.
+
+The `scopes` parameter is now required and must be passed explicitly.
+
+```csharp C# icon=code highlight={4-9} theme={"system"}
+// version 6
+await index.ReplaceAllObjectsAsync(objects, safe: true);
+
+// version 7
+await client.ReplaceAllObjectsAsync(
+    indexName: "INDEX_NAME",
+    objects: objects,
+    scopes: new List<ScopeType> { ScopeType.Settings, ScopeType.Rules, ScopeType.Synonyms }
+);
+```
+
+### `SaveObjects`
+
+The `autoGenerateObjectId` parameter has been removed. In version 7, every object must include an `ObjectID`. To have the API generate object IDs, use the `ChunkedBatch` helper with `Action.AddObject`.
+
+```csharp C# icon=code highlight={3-6} theme={"system"}
+// version 6
+await index.SaveObjectsAsync(objects, autoGenerateObjectId: true);
+
+// version 7
+// Objects must include ObjectID, or use ChunkedBatch with Action.AddObject
+await client.SaveObjectsAsync(indexName: "INDEX_NAME", objects: objects);
+```
+
+### `PartialUpdateObjects`
+
+The `createIfNotExists` parameter is now a required argument—it no longer has a default value.
+
+```csharp C# icon=code highlight={4-11} theme={"system"}
+// version 6
+// createIfNotExists defaulted to false
+await index.PartialUpdateObjectsAsync(objects, createIfNotExists: true);
+
+// version 7
+// createIfNotExists is now required
+await client.PartialUpdateObjectsAsync(
+    indexName: "INDEX_NAME",
+    objects: objects,
+    createIfNotExists: true
+);
+```
+
+### `GenerateSecuredApiKey`
+
+The method was renamed from the plural `GenerateSecuredApiKeys` to the singular `GenerateSecuredApiKey`.
+
+```csharp C# icon=code highlight={4-5} theme={"system"}
+// version 6
+var key = SearchClient.GenerateSecuredApiKeys("parentApiKey", new SecuredApiKeyRestriction { ... });
+
+// version 7
+var key = SearchClient.GenerateSecuredApiKey("parentApiKey", new SecuredApiKeyRestriction { ... });
+```
+
+### `BrowseObjects`, `BrowseRules`, `BrowseSynonyms`
+
+These helpers no longer return iterator types (`IndexIterator<T>`, `RulesIterator`, `SynonymsIterator`). In version 7, they accept an `aggregator` action invoked with each page of results.
+
+```csharp C# icon=code highlight={8-14} theme={"system"}
+// version 6
+var iterator = index.Browse<MyModel>(new BrowseIndexQuery("query"));
+foreach (var obj in iterator)
+{
+    Process(obj);
+}
+
+// version 7
 var objects = new List<MyModel>();
+
 await client.BrowseObjectsAsync<MyModel>(
     new BrowseObjectsParams { IndexName = "INDEX_NAME" },
-    response => objects.AddRange(response.Hits));
+    response => objects.AddRange(response.Hits)
+);
 ```
-- **`GenerateSecuredApiKey`**: renamed from `GenerateSecuredApiKeys` (plural → singular)
-- **`GetSecuredApiKeyRemainingValidity`** (new):
-```csharp
+
+### `DeleteObjects`
+
+Two new optional parameters are available:
+
+* `waitForTasks` (default `false`)
+* `batchSize` (default `1,000`)
+
+```csharp C# icon=code highlight={3-9} theme={"system"}
+// version 6
+await index.DeleteObjectsAsync(new List<string> { "id1", "id2" });
+
+// version 7
+await client.DeleteObjectsAsync(
+    indexName: "INDEX_NAME",
+    objectIDs: new List<string> { "id1", "id2" },
+    waitForTasks: true
+);
+```
+
+### `WaitForTask`
+
+The method was renamed from `WaitTask` to `WaitForTask`. It now returns `GetTaskResponse` instead of `void`, adds explicit `maxRetries` (default `50`) and a `timeout` function (default: exponential backoff capped at 5 seconds) instead of the `timeToWait` integer.
+
+```csharp C# icon=code highlight={5-11} theme={"system"}
+// version 6
+// Returns void; flat timeToWait in milliseconds
+await index.WaitTaskAsync(taskID, timeToWait: 100);
+
+// version 7
+// Returns GetTaskResponse; exponential backoff by default
+var taskResponse = await client.WaitForTaskAsync(
+    indexName: "INDEX_NAME",
+    taskId: taskID,
+    maxRetries: 50
+);
+```
+
+### `WaitForAppTask`
+
+This is a new helper in version 7.
+
+```csharp C# icon=code theme={"system"}
+var taskResponse = await client.WaitForAppTaskAsync(taskId: taskID);
+```
+
+### `WaitForApiKey`
+
+This is a new standalone helper in version 7.
+
+```csharp C# icon=code theme={"system"}
+// Wait for a key to be created:
+await client.WaitForApiKeyAsync("my-api-key", ApiKeyOperation.Add);
+
+// Wait for a key update (pass the expected final state):
+await client.WaitForApiKeyAsync(
+    "my-api-key",
+    ApiKeyOperation.Update,
+    apiKey: new ApiKey { Acl = new List<Acl> { Acl.Search } }
+);
+```
+
+### `GetSecuredApiKeyRemainingValidity`
+
+This helper is new in version 7.
+
+```csharp C# icon=code theme={"system"}
 TimeSpan remaining = client.GetSecuredApiKeyRemainingValidity(securedApiKey: key);
 ```
-- **`ChunkedBatchAsync`** (now public):
-```csharp
-var responses = await client.ChunkedBatchAsync<MyModel>(
-    indexName: "INDEX_NAME", objects: myObjects, action: Action.AddObject, waitForTasks: true);
+
+### `IndexExists`
+
+This helper is new in version 7.
+
+```csharp C# icon=code theme={"system"}
+bool exists = await client.IndexExistsAsync(indexName: "INDEX_NAME");
 ```
 
-## Cross-app copy (`AccountClient` removed)
+### `ChunkedBatch`
 
-```csharp
+`ChunkedBatch` is now a public helper. In version 6, chunking was an internal detail of `SaveObjects`. The `waitForTasks` parameter defaults to `false` and `batchSize` defaults to `1,000`.
+
+```csharp C# icon=code theme={"system"}
+var responses = await client.ChunkedBatchAsync<MyModel>(
+    indexName: "INDEX_NAME",
+    objects: myObjects,
+    action: Action.AddObject,
+    waitForTasks: true
+);
+```
+
+### `CopyIndexBetweenApplications`
+
+In version 6, `AccountClient` provided `CopyIndex<T>` and `CopyIndexAsync<T>` for copying an index between two different Algolia applications. It accepted two `ISearchIndex` objects.
+
+In version 7, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
+
+```csharp C# icon=code expandable highlight={4-27} theme={"system"}
+// version 6
+var response = await AccountClient.CopyIndexAsync<MyModel>(sourceIndex, destinationIndex);
+
+// version 7
 var src = new SearchClient("SRC_APP_ID", "SRC_API_KEY");
 var dst = new SearchClient("DST_APP_ID", "DST_API_KEY");
 
+// Copy settings
 var settings = await src.GetSettingsAsync("SOURCE_INDEX");
 await dst.SetSettingsAsync("DEST_INDEX", settings);
 
+// Copy rules
 var rules = new List<Rule>();
 await src.BrowseRulesAsync("SOURCE_INDEX", r => rules.AddRange(r.Hits));
-if (rules.Any()) await dst.SaveRulesAsync("DEST_INDEX", rules);
+if (rules.Any())
+    await dst.SaveRulesAsync("DEST_INDEX", rules);
 
-// repeat for synonyms, then BrowseObjectsAsync + ReplaceAllObjectsAsync
+// Copy synonyms
+var synonyms = new List<SynonymHit>();
+await src.BrowseSynonymsAsync("SOURCE_INDEX", r => synonyms.AddRange(r.Hits));
+if (synonyms.Any())
+    await dst.SaveSynonymsAsync("DEST_INDEX", synonyms);
+
+// Copy objects
+var objects = new List<MyModel>();
+await src.BrowseObjectsAsync<MyModel>("SOURCE_INDEX", r => objects.AddRange(r.Hits));
+await dst.ReplaceAllObjectsAsync("DEST_INDEX", objects);
 ```
 
-## Transformation helpers (new in v7)
+### `SaveObjectsWithTransformation`
 
-```csharp
-await client.SaveObjectsWithTransformationAsync("INDEX_NAME", objects);
-await client.ReplaceAllObjectsWithTransformationAsync("INDEX_NAME", objects);
-await client.PartialUpdateObjectsWithTransformationAsync("INDEX_NAME", objects);
+New in version 7. Routes objects through the Algolia Push connector. Requires the transformation region to be set at client initialization.
+
+```csharp C# icon=code theme={"system"}
+var responses = await client.SaveObjectsWithTransformationAsync(
+    indexName: "INDEX_NAME",
+    objects: myObjects,
+    waitForTasks: false,
+    batchSize: 1000
+);
+```
+
+### `ReplaceAllObjectsWithTransformation`
+
+New in version 7. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the transformation region to be set at client initialization.
+
+```csharp C# icon=code theme={"system"}
+var response = await client.ReplaceAllObjectsWithTransformationAsync(
+    indexName: "INDEX_NAME",
+    objects: myObjects,
+    batchSize: 1000,
+    scopes: new List<ScopeType> { ScopeType.Settings, ScopeType.Rules, ScopeType.Synonyms }
+);
+```
+
+### `PartialUpdateObjectsWithTransformation`
+
+New in version 7. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
+
+```csharp C# icon=code theme={"system"}
+var responses = await client.PartialUpdateObjectsWithTransformationAsync(
+    indexName: "INDEX_NAME",
+    objects: myObjects,
+    createIfNotExists: false,
+    waitForTasks: false,
+    batchSize: 1000
+);
 ```
 
 ## Method changes reference
 
-| v6 | v7 |
-|----|----|
-| `client.MultipleQueries()` | `client.SearchAsync()` |
-| `client.CopyIndex()` | `client.OperationIndexAsync()` |
-| `client.MoveIndex()` | `client.OperationIndexAsync()` |
-| `client.GenerateSecuredApiKeys()` | `client.GenerateSecuredApiKey()` |
-| `index.Batch()` | `client.BatchAsync("INDEX_NAME", ...)` |
-| `index.Browse()` | `client.BrowseObjectsAsync("INDEX_NAME", ..., aggregator)` |
-| `index.BrowseRules()` | `client.BrowseRulesAsync("INDEX_NAME", ...)` |
-| `index.BrowseSynonyms()` | `client.BrowseSynonymsAsync("INDEX_NAME", ...)` |
-| `index.ClearObjects()` | `client.ClearObjectsAsync("INDEX_NAME")` |
-| `index.ClearRules()` | `client.ClearRulesAsync("INDEX_NAME")` |
-| `index.ClearSynonyms()` | `client.ClearSynonymsAsync("INDEX_NAME")` |
-| `index.Delete()` | `client.DeleteIndexAsync("INDEX_NAME")` |
-| `index.DeleteBy()` | `client.DeleteByAsync("INDEX_NAME", ...)` |
-| `index.DeleteObject()` | `client.DeleteObjectAsync("INDEX_NAME", id)` |
-| `index.DeleteObjects()` | `client.DeleteObjectsAsync("INDEX_NAME", ids)` |
-| `index.DeleteRule()` | `client.DeleteRuleAsync("INDEX_NAME", id)` |
-| `index.DeleteSynonym()` | `client.DeleteSynonymAsync("INDEX_NAME", id)` |
-| `index.Exists()` | `client.IndexExistsAsync("INDEX_NAME")` |
-| `index.GetObject()` | `client.GetObjectAsync("INDEX_NAME", id)` |
-| `index.GetObjects()` | `client.GetObjectsAsync(...)` |
-| `index.GetRule()` | `client.GetRuleAsync("INDEX_NAME", id)` |
-| `index.GetSettings()` | `client.GetSettingsAsync("INDEX_NAME")` |
-| `index.GetSynonym()` | `client.GetSynonymAsync("INDEX_NAME", id)` |
-| `index.GetTask()` | `client.GetTaskAsync("INDEX_NAME", taskId)` |
-| `index.PartialUpdateObject()` | `client.PartialUpdateObjectAsync("INDEX_NAME", ...)` |
-| `index.PartialUpdateObjects()` | `client.PartialUpdateObjectsAsync("INDEX_NAME", ...)` |
-| `index.ReplaceAllObjects()` | `client.ReplaceAllObjectsAsync(...)` |
-| `index.ReplaceAllRules()` | `client.SaveRulesAsync("INDEX_NAME", rules)` |
-| `index.ReplaceAllSynonyms()` | `client.SaveSynonymsAsync("INDEX_NAME", synonyms)` |
-| `index.SaveObject()` | `client.SaveObjectAsync("INDEX_NAME", obj)` |
-| `index.SaveObjects()` | `client.SaveObjectsAsync("INDEX_NAME", objs)` |
-| `index.SaveRule()` | `client.SaveRuleAsync("INDEX_NAME", ...)` |
-| `index.SaveRules()` | `client.SaveRulesAsync("INDEX_NAME", rules)` |
-| `index.SaveSynonym()` | `client.SaveSynonymAsync("INDEX_NAME", ...)` |
-| `index.SaveSynonyms()` | `client.SaveSynonymsAsync("INDEX_NAME", synonyms)` |
-| `index.Search()` | `client.SearchSingleIndexAsync("INDEX_NAME", ...)` |
-| `index.SearchForFacetValues()` | `client.SearchForFacetValuesAsync("INDEX_NAME", ...)` |
-| `index.SearchRules()` | `client.SearchRulesAsync("INDEX_NAME", ...)` |
-| `index.SearchSynonyms()` | `client.SearchSynonymsAsync("INDEX_NAME", ...)` |
-| `index.SetSettings()` | `client.SetSettingsAsync("INDEX_NAME", ...)` |
-| `index.{op}.Wait()` | `client.WaitForTaskAsync("INDEX_NAME", taskId)` |
+The following tables list all method names that changed between version 6 and version 7.
 
-Recommend API renames:
+### Search API client
 
-| v6 | v7 |
-|----|----|
-| `recommend.GetFrequentlyBoughtTogether()` | `recommend.GetRecommendations()` |
-| `recommend.GetRelatedProducts()` | `recommend.GetRecommendations()` |
+| Version 6 (legacy)                          |   | Version 7 (current)                        |
+| ------------------------------------------- | - | ------------------------------------------ |
+| `client.AddApiKey`                          | → | `client.AddApiKey`                         |
+| `client.AddApiKey.Wait`                     | → | `client.WaitForApiKey`                     |
+| `DictionaryClient.ClearDictionaryEntries`   | → | `client.BatchDictionaryEntries`            |
+| `client.CopyIndex`                          | → | `client.OperationIndex`                    |
+| `client.CopyRules`                          | → | `client.OperationIndex`                    |
+| `client.CopySynonyms`                       | → | `client.OperationIndex`                    |
+| `client.DeleteApiKey`                       | → | `client.DeleteApiKey`                      |
+| `DictionaryClient.DeleteDictionaryEntries`  | → | `client.BatchDictionaryEntries`            |
+| `client.GenerateSecuredApiKey`              | → | `client.GenerateSecuredApiKey`             |
+| `client.GetApiKey`                          | → | `client.GetApiKey`                         |
+| `client.GetSecuredApiKeyRemainingValidity`  | → | `client.GetSecuredApiKeyRemainingValidity` |
+| `client.ListApiKeys`                        | → | `client.ListApiKeys`                       |
+| `client.ListIndices`                        | → | `client.ListIndices`                       |
+| `client.MoveIndex`                          | → | `client.OperationIndex`                    |
+| `client.MultipleBatch`                      | → | `client.MultipleBatch`                     |
+| `client.MultipleQueries`                    | → | `client.Search`                            |
+| `DictionaryClient.ReplaceDictionaryEntries` | → | `client.BatchDictionaryEntries`            |
+| `client.RestoreApiKey`                      | → | `client.RestoreApiKey`                     |
+| `DictionaryClient.SaveDictionaryEntries`    | → | `client.BatchDictionaryEntries`            |
+| `client.UpdateApiKey`                       | → | `client.UpdateApiKey`                      |
+| `index.Batch`                               | → | `client.Batch`                             |
+| `index.Browse`                              | → | `client.BrowseObjects`                     |
+| `index.BrowseRules`                         | → | `client.BrowseRules`                       |
+| `index.BrowseSynonyms`                      | → | `client.BrowseSynonyms`                    |
+| `index.ClearObjects`                        | → | `client.ClearObjects`                      |
+| `index.ClearRules`                          | → | `client.ClearRules`                        |
+| `index.ClearSynonyms`                       | → | `client.ClearSynonyms`                     |
+| `index.CopySettings`                        | → | `client.OperationIndex`                    |
+| `index.Delete`                              | → | `client.DeleteIndex`                       |
+| `index.DeleteBy`                            | → | `client.DeleteBy`                          |
+| `index.DeleteObject`                        | → | `client.DeleteObject`                      |
+| `index.DeleteObjects`                       | → | `client.DeleteObjects`                     |
+| `index.DeleteRule`                          | → | `client.DeleteRule`                        |
+| `index.DeleteSynonym`                       | → | `client.DeleteSynonym`                     |
+| `index.Exists`                              | → | `client.IndexExists`                       |
+| `index.FindObject`                          | → | `client.SearchSingleIndex`                 |
+| `index.GetObject`                           | → | `client.GetObject`                         |
+| `index.GetObjects`                          | → | `client.GetObjects`                        |
+| `index.GetRule`                             | → | `client.GetRule`                           |
+| `index.GetSettings`                         | → | `client.GetSettings`                       |
+| `index.GetSynonym`                          | → | `client.GetSynonym`                        |
+| `index.GetTask`                             | → | `client.GetTask`                           |
+| `index.PartialUpdateObject`                 | → | `client.PartialUpdateObject`               |
+| `index.PartialUpdateObjects`                | → | `client.PartialUpdateObjects`              |
+| `index.ReplaceAllObjects`                   | → | `client.ReplaceAllObjects`                 |
+| `index.ReplaceAllRules`                     | → | `client.SaveRules`                         |
+| `index.ReplaceAllSynonyms`                  | → | `client.SaveSynonyms`                      |
+| `index.SaveObject`                          | → | `client.SaveObject`                        |
+| `index.SaveObjects`                         | → | `client.SaveObjects`                       |
+| `index.SaveRule`                            | → | `client.SaveRule`                          |
+| `index.SaveRules`                           | → | `client.SaveRules`                         |
+| `index.SaveSynonym`                         | → | `client.SaveSynonym`                       |
+| `index.SaveSynonyms`                        | → | `client.SaveSynonyms`                      |
+| `index.Search`                              | → | `client.SearchSingleIndex`                 |
+| `index.SearchForFacetValues`                | → | `client.SearchForFacetValues`              |
+| `index.SearchRules`                         | → | `client.SearchRules`                       |
+| `index.SearchSynonyms`                      | → | `client.SearchSynonyms`                    |
+| `index.SetSettings`                         | → | `client.SetSettings`                       |
+| `index.{operation}.Wait`                    | → | `client.WaitForTask`                       |
+
+### Recommend API client
+
+| Version 6 (legacy)                   |   | Version 7 (current)         |
+| ------------------------------------ | - | --------------------------- |
+| `client.GetFrequentlyBoughtTogether` | → | `client.GetRecommendations` |
+| `client.GetRecommendations`          | → | `client.GetRecommendations` |
+| `client.GetRelatedProducts`          | → | `client.GetRecommendations` |

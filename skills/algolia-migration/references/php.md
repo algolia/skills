@@ -1,74 +1,181 @@
-# PHP: v3 → v4
+# Upgrade the PHP API client to version 4
 
-## Install
+> Keep your PHP API client up to date to benefit from improvements and bug fixes.
 
-```sh
+The latest major version of the `algoliasearch-client-php` package is version 4.
+This page helps you upgrade from version 3
+and explains the breaking changes you need to address.
+
+Algolia generates the version 4 clients from OpenAPI specifications,
+which provides consistent behavior across all languages and up-to-date API coverage.
+The main architectural change is the removal of the `initIndex` pattern:
+all methods are now on the `$client` instance directly, with `indexName` as a parameter.
+
+For the full list of changes, see the [PHP changelog](/doc/libraries/sdk/changelog/php).
+
+## Update your dependencies
+
+Update the `algoliasearch-client-php` package to version 4:
+
+```sh Command line icon=square-terminal theme={"system"}
 composer require algolia/algoliasearch-client-php "^4.0"
 ```
 
-## Namespace changes
+## Update imports
 
-```php
-// v3
+The namespace for API clients changed in version 4.
+The `SearchClient` class moved from `Algolia\AlgoliaSearch` to `Algolia\AlgoliaSearch\Api`.
+
+```php PHP icon=code theme={"system"}
+<?php
+// version 3
 use Algolia\AlgoliaSearch\SearchClient;
 
-// v4
+// version 4
 use Algolia\AlgoliaSearch\Api\SearchClient;
 ```
 
-Client initialization is unchanged — use the same `SearchClient::create()` factory.
+Version 4 also includes dedicated clients for each API.
+If you only need methods from a specific API,
+import the matching client:
+
+```php PHP icon=code theme={"system"}
+<?php
+// Search API
+use Algolia\AlgoliaSearch\Api\SearchClient;
+// Recommend API
+use Algolia\AlgoliaSearch\Api\RecommendClient;
+// A/B testing API
+use Algolia\AlgoliaSearch\Api\AbtestingClient;
+// Analytics API
+use Algolia\AlgoliaSearch\Api\AnalyticsClient;
+// Personalization API
+use Algolia\AlgoliaSearch\Api\PersonalizationClient;
+// Query Suggestions API
+use Algolia\AlgoliaSearch\Api\QuerySuggestionsClient;
+```
+
+## Update client initialization
+
+Client creation uses the same `SearchClient::create()` factory method.
+The constructor still accepts your application ID and API key:
+
+```php PHP icon=code theme={"system"}
+// version 3
+$client = SearchClient::create('ALGOLIA_APPLICATION_ID', 'ALGOLIA_API_KEY');
+
+// version 4
+$client = SearchClient::create('ALGOLIA_APPLICATION_ID', 'ALGOLIA_API_KEY');
+```
 
 ## Remove `initIndex`
 
-```php
-// v3
+This is the most significant change when upgrading.
+Version 3 relied on an index object with methods called on it.
+In version 4, all methods belong to the `$client` instance,
+with `indexName` as a parameter.
+
+```php PHP icon=code highlight={6-8} theme={"system"}
+// version 3
+$client = SearchClient::create('ALGOLIA_APPLICATION_ID', 'ALGOLIA_API_KEY');
 $index = $client->initIndex('INDEX_NAME');
 $index->search('QUERY');
 
-// v4
-$client->searchSingleIndex('INDEX_NAME', (new SearchParamsObject())->setQuery('QUERY'));
-
-// Or using an array
-$client->searchSingleIndex('INDEX_NAME', ['query' => 'QUERY']);
+// version 4
+$client = SearchClient::create('ALGOLIA_APPLICATION_ID', 'ALGOLIA_API_KEY');
+$client->searchSingleIndex(
+    'INDEX_NAME',
+    (new SearchParamsObject())->setQuery('QUERY')
+);
 ```
 
-## Method renames
+<Tip>
+  If you have many files to update,
+  search your codebase for `initIndex` or `->initIndex(` to find every place that needs changing.
+</Tip>
 
-| v3 | v4 |
-|----|----|
-| `$index->search()` | `$client->searchSingleIndex()` |
-| `$client->multipleQueries()` | `$client->search()` |
-| `$index->searchForFacetValues()` | `$client->searchForFacetValues()` |
-| `$index->saveObject()` | `$client->saveObject('INDEX_NAME', $obj)` |
-| `$index->saveObjects()` | `$client->saveObjects('INDEX_NAME', $objects)` |
-| `$index->partialUpdateObject()` | `$client->partialUpdateObject('INDEX_NAME', $id, $update)` |
-| `$index->deleteObject()` | `$client->deleteObject('INDEX_NAME', $id)` |
-| `$index->getSettings()` | `$client->getSettings('INDEX_NAME')` |
-| `$index->setSettings()` | `$client->setSettings('INDEX_NAME', $settings)` |
-| `$index->replaceAllRules()` | `$client->saveRules()` with `clearExistingRules: true` |
-| `$index->replaceAllSynonyms()` | `$client->saveSynonyms()` with `replaceExistingSynonyms: true` |
-| `copyIndex()` / `moveIndex()` / `copyRules()` / `copySynonyms()` | `$client->operationIndex()` |
-| `$index->exists()` | `$client->indexExists('INDEX_NAME')` |
-| `waitTask` | `waitForTask` |
+## Use model classes or associative arrays
 
-## Search
+Version 4 methods accept both **model classes** and **associative arrays** as parameters.
 
-```php
-// searchSingleIndex with filters
+```php PHP icon=code theme={"system"}
+// Using a model class
+$client->searchSingleIndex(
+    'INDEX_NAME',
+    (new SearchParamsObject())->setQuery('QUERY')
+    );
+
+// Using an associative array
+$client->searchSingleIndex(
+    'INDEX_NAME',
+    ['query' => 'QUERY']
+    );
+```
+
+Model classes give you IDE autocompletion, type safety,
+and predictable structure that works well with AI coding assistants.
+The code examples in this guide use model classes,
+but you can use arrays anywhere a model is expected.
+
+## Update search calls
+
+### Search a single index
+
+The `$index->search()` method is now [`$client->searchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+Pass the index name and search parameters as positional arguments:
+
+```php PHP icon=code highlight={7-11} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$results = $index->search('QUERY', [
+    'facetFilters' => ['category:Book'],
+]);
+
+// version 4
 $results = $client->searchSingleIndex(
     'INDEX_NAME',
-    (new SearchParamsObject())->setQuery('QUERY')->setFacetFilters(['category:Book'])
+    (new SearchParamsObject())
+        ->setQuery('QUERY')
+        ->setFacetFilters(['category:Book'])
 );
+```
 
-// Multiple indices (multipleQueries → search)
+### Search multiple indices
+
+The `$client->multipleQueries()` method is now [`$client->search()`](/doc/libraries/sdk/methods/search/search).
+Each request in the array requires an `indexName`:
+
+```php PHP icon=code highlight={7-17} theme={"system"}
+// version 3
+$results = $client->multipleQueries([
+    ['indexName' => 'INDEX_1', 'query' => 'QUERY'],
+    ['indexName' => 'INDEX_2', 'query' => 'QUERY'],
+]);
+
+// version 4
 $results = $client->search(
     (new SearchMethodParams())->setRequests([
-        (new SearchForHits())->setIndexName('INDEX_1')->setQuery('QUERY'),
-        (new SearchForHits())->setIndexName('INDEX_2')->setQuery('QUERY'),
+        (new SearchForHits())
+            ->setIndexName('INDEX_1')
+            ->setQuery('QUERY'),
+        (new SearchForHits())
+            ->setIndexName('INDEX_2')
+            ->setQuery('QUERY'),
     ])
 );
+```
 
-// searchForFacetValues
+### Search for facet values
+
+The `$index->searchForFacetValues()` method becomes `$client->searchForFacetValues()`
+with an `indexName` parameter:
+
+```php PHP icon=code highlight={5-10} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$results = $index->searchForFacetValues('category', 'book');
+
+// version 4
 $results = $client->searchForFacetValues(
     'INDEX_NAME',
     'category',
@@ -76,186 +183,398 @@ $results = $client->searchForFacetValues(
 );
 ```
 
-## Indexing
+## Update indexing operations
 
-```php
-// saveObject
-$client->saveObject('INDEX_NAME', ['objectID' => '1', 'name' => 'Record']);
+In version 4, indexing methods are on the client instead of the index object,
+with `indexName` as a parameter.
 
-// saveObjects
-$client->saveObjects('INDEX_NAME', [['objectID' => '1', 'name' => 'Record']]);
+### Add or replace records
 
-// partialUpdateObject
-$client->partialUpdateObject('INDEX_NAME', '1', ['name' => 'Updated']);
+```php PHP icon=code highlight={6-10,12-15} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$index->saveObject(['objectID' => '1', 'name' => 'Record']);
+$index->saveObjects([['objectID' => '1', 'name' => 'Record']]);
 
-// deleteObject
-$client->deleteObject('INDEX_NAME', '1');
+// version 4
+$client->saveObject(
+    'INDEX_NAME',
+    ['objectID' => '1', 'name' => 'Record']
+);
+// saveObjects works the same way:
+$client->saveObjects(
+    'INDEX_NAME',
+    [['objectID' => '1', 'name' => 'Record']]
+);
 ```
 
-## Settings, synonyms, rules
+### Partially update records
 
-```php
+```php PHP icon=code highlight={5-10} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$index->partialUpdateObject(['objectID' => '1', 'name' => 'Updated']);
+
+// version 4
+$client->partialUpdateObject(
+    'INDEX_NAME',
+    '1',
+    ['name' => 'Updated']
+);
+```
+
+### Delete records
+
+```php PHP icon=code highlight={5-9} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$index->deleteObject('1');
+
+// version 4
+$client->deleteObject(
+    'INDEX_NAME',
+    '1'
+);
+```
+
+## Update settings, synonyms, and rules
+
+### Get and set settings
+
+```php PHP icon=code highlight={6-12} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$settings = $index->getSettings();
+$index->setSettings(['searchableAttributes' => ['title', 'author']]);
+
+// version 4
 $settings = $client->getSettings('INDEX_NAME');
-$client->setSettings('INDEX_NAME', (new IndexSettings())->setSearchableAttributes(['title', 'author']));
-
-$client->saveSynonyms('INDEX_NAME', [
-    ['objectID' => '1', 'type' => 'synonym', 'synonyms' => ['car', 'auto']],
-]);
-$client->saveRules('INDEX_NAME', $rules);
+$client->setSettings(
+    'INDEX_NAME',
+    (new IndexSettings())->setSearchableAttributes(['title', 'author'])
+);
 ```
 
-`replaceAllRules` → `saveRules` with `clearExistingRules=true`; `replaceAllSynonyms` → `saveSynonyms` with `replaceExistingSynonyms=true`.
+### Save synonyms and rules
 
-## `operationIndex` (copy / move)
+```php PHP icon=code highlight={6-14} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$index->saveSynonyms([['objectID' => '1', 'type' => 'synonym', 'synonyms' => ['car', 'auto']]]);
+$index->saveRules([['objectID' => '1', 'conditions' => [['anchoring' => 'contains', 'pattern' => 'shoes']], 'consequence' => ['params' => ['query' => 'sneakers']]]]);
 
-```php
-// copy
+// version 4
+$client->saveSynonyms(
+    'INDEX_NAME',
+    [['objectID' => '1', 'type' => 'synonym', 'synonyms' => ['car', 'auto']]]
+);
+$client->saveRules(
+    'INDEX_NAME',
+    [['objectID' => '1', 'conditions' => [['anchoring' => 'contains', 'pattern' => 'shoes']], 'consequence' => ['params' => ['query' => 'sneakers']]]]
+);
+```
+
+<Note>
+  In version 3, `$index->replaceAllRules()` and `$index->replaceAllSynonyms()` replaced all rules or synonyms.
+  In version 4, use `$client->saveRules()` or `$client->saveSynonyms()` with the `clearExistingRules` or `replaceExistingSynonyms` parameter set to `true`.
+</Note>
+
+## Update index management
+
+The `copyIndex`, `moveIndex`, `copyRules`, `copySynonyms`, and `copySettings`
+methods are all replaced by a single [`operationIndex`](/doc/rest-api/search/operation-index) method.
+
+### Copy an index
+
+```php PHP icon=code highlight={4-9} theme={"system"}
+// version 3
+$client->copyIndex('SOURCE_INDEX_NAME', 'DESTINATION_INDEX_NAME');
+
+// version 4
 $client->operationIndex(
     'SOURCE_INDEX_NAME',
-    (new OperationIndexParams())->setOperation('copy')->setDestination('DEST')
+    (new OperationIndexParams())
+        ->setOperation('copy')
+        ->setDestination('DESTINATION_INDEX_NAME')
 );
+```
 
-// move
+### Move (rename) an index
+
+```php PHP icon=code highlight={4-9} theme={"system"}
+// version 3
+$client->moveIndex('SOURCE_INDEX_NAME', 'DESTINATION_INDEX_NAME');
+
+// version 4
 $client->operationIndex(
     'SOURCE_INDEX_NAME',
-    (new OperationIndexParams())->setOperation('move')->setDestination('DEST')
+    (new OperationIndexParams())
+        ->setOperation('move')
+        ->setDestination('DESTINATION_INDEX_NAME')
 );
+```
 
-// copy with scope
+### Copy only rules or settings
+
+In version 4, use the `scope` parameter to limit the operation to specific data:
+
+```php PHP icon=code theme={"system"}
+// version 4 -- copy only rules and settings from one index to another
 $client->operationIndex(
     'SOURCE_INDEX_NAME',
-    (new OperationIndexParams())->setOperation('copy')->setDestination('DEST')->setScope(['rules', 'settings'])
+    (new OperationIndexParams())
+        ->setOperation('copy')
+        ->setDestination('DESTINATION_INDEX_NAME')
+        ->setScope(['rules', 'settings'])
 );
+```
 
-// indexExists
+### Check if an index exists
+
+In version 3, you could check if an index existed using the `exists` method on the index object.
+In version 4, use the [`indexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+
+```php PHP icon=code highlight={5-6} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
+$index->exists();
+
+// version 4
 $client->indexExists('INDEX_NAME');
 ```
 
-## Task handling
+## Update task handling
 
-```php
-// v3
+Version 3 supported chaining `->wait()` on operations.
+Version 4 replaces this pattern with dedicated wait helpers.
+
+```php PHP icon=code highlight={5-10} theme={"system"}
+// version 3
+$index = $client->initIndex('INDEX_NAME');
 $index->saveObjects($records)->wait();
 
-// v4
-$response = $client->saveObjects('INDEX_NAME', $records);
+// version 4
+$response = $client->saveObjects(
+    'INDEX_NAME',
+    $records
+);
 $client->waitForTask('INDEX_NAME', $response['taskID']);
-
-// waitForTask with controls
-$client->waitForTask('INDEX_NAME', $taskID, maxRetries: 50, timeout: 100000);
-
-// waitForAppTask (new in v4)
-$client->waitForAppTask($taskID);
-
-// waitForApiKey (new in v4)
-$client->waitForApiKey('my-api-key', 'add');
-$client->waitForApiKey('my-api-key', 'update', apiKey: ['acl' => ['search']]);
-$client->waitForApiKey('my-api-key', 'delete');
 ```
+
+Version 4 includes three wait helpers:
+
+* [`waitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
+* [`waitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
+* [`waitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
 
 ## Helper method changes
 
+The following sections document breaking changes in helper method signatures and behavior between version 3 and version 4.
+
 ### `replaceAllObjects`
 
-Safe copy removed; `scopes` required:
+The `'safe'` request option has been removed. In version 3, passing `'safe' => true` caused the helper to wait after each step. In version 4, the helper always waits—equivalent to the previous `'safe' => true` behavior.
 
-```php
+The `scopes` parameter is now required and must be passed explicitly.
+
+```php PHP icon=code highlight={3-9} theme={"system"}
+// version 3
+$index->replaceAllObjects($objects, ['safe' => true]);
+
+// version 4
 $client->replaceAllObjects([
-    'indexName' => 'INDEX_NAME',
-    'objects'   => $objects,
-    'scopes'    => ['settings', 'rules', 'synonyms'],
+  'indexName' => 'INDEX_NAME',
+  'objects' => $objects,
+  'scopes' => ['settings', 'rules', 'synonyms'],
 ]);
 ```
 
 ### `saveObjects`
 
-`autoGenerateObjectIDIfNotExist` removed. Every object must include `objectID`:
+The `autoGenerateObjectIDIfNotExist` request option has been removed. In version 4, every object must include an `objectID`. To have the API generate object IDs, use `chunkedBatch` with `action: 'addObject'`.
 
-```php
-$client->saveObjects(['indexName' => 'INDEX_NAME', 'objects' => $objects]);
+```php PHP icon=code highlight={3-9} theme={"system"}
+// version 3
+$index->saveObjects($objects, ['autoGenerateObjectIDIfNotExist' => true]);
+
+// version 4
+// Objects must include objectID, or use chunkedBatch with 'addObject' action
+$client->saveObjects([
+  'indexName' => 'INDEX_NAME',
+  'objects' => $objects,
+]);
 ```
 
 ### `partialUpdateObjects`
 
-`createIfNotExists` is now an explicit required parameter (no default):
+The `createIfNotExists` option has moved from the `$requestOptions` array to an explicit required parameter.
 
-```php
-$client->partialUpdateObjects('INDEX_NAME', $objects, true);
+```php PHP icon=code highlight={3-9} theme={"system"}
+// version 3
+$index->partialUpdateObjects($objects, ['createIfNotExists' => true]);
+
+// version 4
+$client->partialUpdateObjects(
+    'INDEX_NAME',
+    $objects,
+    true,   // createIfNotExists — required, no default
+);
 ```
 
 ### `deleteObjects`
 
-Parameter renamed `$objectIds` → `$objectIDs`. New `$waitForTasks` and `$batchSize` parameters:
+The helper moved to the client and two new optional parameters are available: `$waitForTasks` (default `false`) and `$batchSize` (default `1,000`). The parameter was also renamed from `$objectIds` to `$objectIDs`.
 
-```php
+```php PHP icon=code highlight={4-5} theme={"system"}
+// version 3
+$index->deleteObjects(['id1', 'id2']);
+
+// version 4
 $client->deleteObjects('INDEX_NAME', ['id1', 'id2'], waitForTasks: true);
 ```
 
-### `browseObjects` / `browseRules` / `browseSynonyms`
+### `browseObjects`, `browseRules`, `browseSynonyms`
 
-Still return iterator objects (foreach pattern). `$indexName` is now an explicit first parameter. The iterator yields page response objects — call `getHits()` to extract records:
+These helpers still return iterator objects in version 4. The only change is that `$indexName` is now an explicit first parameter instead of being implicit from the index object.
 
-```php
-// v3
-foreach ($index->browseObjects() as $object) { process($object); }
+```php PHP icon=code highlight={5-9} theme={"system"}
+// version 3
+foreach ($index->browseObjects() as $object) {
+    process($object);
+}
 
-// v4
-foreach ($client->browseObjects('INDEX_NAME') as $response) {
-    foreach ($response->getHits() as $object) { process($object); }
+// version 4
+foreach ($client->browseObjects('INDEX_NAME') as $object) {
+    process($object);
 }
 ```
 
-### `generateSecuredApiKey`
+### `generateSecuredApiKey` and `getSecuredApiKeyRemainingValidity`
 
-Static method. Restrictions now use the typed `SecuredApiKeyRestrictions` model, not a plain array:
+For `generateSecuredApiKey`, the restrictions parameter now uses a typed `SecuredApiKeyRestrictions` model instead of a plain array.
 
-```php
-// v3
-$key = $client->generateSecuredApiKey('PARENT_API_KEY', ['validUntil' => time() + 3600]);
+For `getSecuredApiKeyRemainingValidity`, the parameter was renamed from `$securedAPIKey` to `$securedApiKey`.
 
-// v4
+```php PHP icon=code highlight={8-20} theme={"system"}
+// version 3
+$key = $client->generateSecuredApiKey(
+    'PARENT_API_KEY',
+    ['validUntil' => time() + 3600, 'restrictIndices' => ['INDEX_NAME']]
+);
+
+$remaining = $client->getSecuredApiKeyRemainingValidity($securedAPIKey);
+
+// version 4
 $key = $client->generateSecuredApiKey(
     'PARENT_API_KEY',
     new SecuredApiKeyRestrictions([
-        'validUntil'      => time() + 3600,
+        'validUntil' => time() + 3600,
         'restrictIndices' => ['INDEX_NAME'],
     ])
 );
+
+$remaining = $client->getSecuredApiKeyRemainingValidity(
+    securedApiKey: $securedApiKey
+);
 ```
 
-### `getSecuredApiKeyRemainingValidity`
+### `waitForTask`
 
-Parameter renamed `$securedAPIKey` → `$securedApiKey`.
+The method was renamed from `waitTask` to `waitForTask`. It also gained optional `$maxRetries` and `$timeout` parameters for controlling retry behavior.
 
-### `chunkedBatch` (now public)
+```php PHP icon=code highlight={3-8} theme={"system"}
+// version 3
+$index->waitTask($taskID);
 
-```php
+// version 4
+$client->waitForTask('INDEX_NAME', $taskID);
+
+// With explicit retry controls:
+$client->waitForTask('INDEX_NAME', $taskID, maxRetries: 50, timeout: 100000);
+```
+
+### `waitForAppTask`
+
+This is a new helper in version 4.
+
+```php PHP icon=code theme={"system"}
+$client->waitForAppTask($taskID);
+```
+
+### `waitForApiKey`
+
+This is a new standalone helper in version 4. In version 3, you had to poll `getApiKey` manually after key mutations.
+
+```php PHP icon=code theme={"system"}
+// Wait for a key to be created:
+$client->waitForApiKey('my-api-key', 'add');
+
+// Wait for a key update (pass the expected final state):
+$client->waitForApiKey('my-api-key', 'update', apiKey: ['acl' => ['search']]);
+
+// Wait for a key to be deleted:
+$client->waitForApiKey('my-api-key', 'delete');
+```
+
+### `indexExists`
+
+The helper was renamed from `exists()` on the index object to `indexExists()` on the client.
+
+```php PHP icon=code highlight={4-5} theme={"system"}
+// version 3
+$exists = $index->exists();
+
+// version 4
+$exists = $client->indexExists('INDEX_NAME');
+```
+
+### `chunkedBatch`
+
+`chunkedBatch` is now a public helper. In version 3, chunking was an internal implementation detail of `saveObjects`. The default `$action` is `'addObject'` and the default `$waitForTasks` is `false`.
+
+```php PHP icon=code theme={"system"}
 $client->chunkedBatch('INDEX_NAME', $objects, action: 'addObject', waitForTasks: true);
 ```
 
-### Cross-app copy (`AccountClient` removed)
+### `copyIndexBetweenApplications`
 
-Compose manually across two client instances:
+In version 3, the separate `Algolia\AccountClient` class provided a static `copyIndex` method for copying an index between two different Algolia applications. It accepted two `SearchIndex` objects and raised an exception if the destination already existed or if both indices were in the same application.
 
-```php
+In version 4, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
+
+```php PHP icon=code expandable highlight={6-37} theme={"system"}
+// version 3
+use Algolia\AccountClient;
+
+AccountClient::copyIndex($srcIndex, $destIndex);
+
+// version 4
 $src = SearchClient::create('SRC_APP_ID', 'SRC_API_KEY');
 $dst = SearchClient::create('DST_APP_ID', 'DST_API_KEY');
 
+// Copy settings
 $settings = $src->getSettings('SOURCE_INDEX');
 $dst->setSettings('DEST_INDEX', $settings);
 
+// Copy rules
 $rules = [];
 foreach ($src->browseRules('SOURCE_INDEX') as $response) {
     $rules = array_merge($rules, $response->getHits());
 }
-if (!empty($rules)) $dst->saveRules('DEST_INDEX', $rules);
+if (!empty($rules)) {
+    $dst->saveRules('DEST_INDEX', $rules);
+}
 
+// Copy synonyms
 $synonyms = [];
 foreach ($src->browseSynonyms('SOURCE_INDEX') as $response) {
     $synonyms = array_merge($synonyms, $response->getHits());
 }
-if (!empty($synonyms)) $dst->saveSynonyms('DEST_INDEX', $synonyms);
+if (!empty($synonyms)) {
+    $dst->saveSynonyms('DEST_INDEX', $synonyms);
+}
 
+// Copy objects
 $objects = [];
 foreach ($src->browseObjects('SOURCE_INDEX') as $response) {
     $objects = array_merge($objects, $response->getHits());
@@ -263,71 +582,118 @@ foreach ($src->browseObjects('SOURCE_INDEX') as $response) {
 $dst->replaceAllObjects('DEST_INDEX', $objects);
 ```
 
-### Transformation helpers (new in v4)
+### `saveObjectsWithTransformation`
 
-Require calling `setTransformationRegion` first:
+New in version 4. Routes objects through the Algolia Push connector. Requires `setTransformationRegion` to be called at client initialization.
 
-```php
+```php PHP icon=code theme={"system"}
 $client->setTransformationRegion('us');
 
 $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
+```
 
-$client->replaceAllObjectsWithTransformation('INDEX_NAME', $objects, 1000, ['settings', 'rules', 'synonyms']);
+### `replaceAllObjectsWithTransformation`
 
-$client->partialUpdateObjectsWithTransformation('INDEX_NAME', $objects, false, false, 1000);
+New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `setTransformationRegion` at client initialization.
+
+```php PHP icon=code theme={"system"}
+$client->replaceAllObjectsWithTransformation(
+    'INDEX_NAME',
+    $objects,
+    1000,
+    ['settings', 'rules', 'synonyms']
+);
+```
+
+### `partialUpdateObjectsWithTransformation`
+
+New in version 4. Routes partial updates through the Push connector. The `$createIfNotExists` parameter is required with no default value.
+
+```php PHP icon=code theme={"system"}
+$client->partialUpdateObjectsWithTransformation(
+    'INDEX_NAME',
+    $objects,
+    false,   // $createIfNotExists — required, no default
+    false,   // $waitForTasks
+    1000     // $batchSize
+);
 ```
 
 ## Method changes reference
 
-Full rename table (camelCase):
+The following tables list all method names that changed between version 3 and version 4.
 
-| v3 | v4 |
-|----|----|
-| `$client->multipleQueries()` | `$client->search()` |
-| `$index->search()` | `$client->searchSingleIndex()` |
-| `$index->searchForFacetValues()` | `$client->searchForFacetValues()` |
-| `$index->saveObject()` | `$client->saveObject()` |
-| `$index->saveObjects()` | `$client->saveObjects()` |
-| `$index->partialUpdateObject()` | `$client->partialUpdateObject()` |
-| `$index->partialUpdateObjects()` | `$client->partialUpdateObjects()` |
-| `$index->deleteObject()` | `$client->deleteObject()` |
-| `$index->deleteObjects()` | `$client->deleteObjects()` |
-| `$index->deleteBy()` | `$client->deleteBy()` |
-| `$index->getObject()` | `$client->getObject()` |
-| `$index->getObjects()` | `$client->getObjects()` |
-| `$index->getSettings()` | `$client->getSettings()` |
-| `$index->setSettings()` | `$client->setSettings()` |
-| `$index->getRule()` | `$client->getRule()` |
-| `$index->saveRule()` | `$client->saveRule()` |
-| `$index->saveRules()` | `$client->saveRules()` |
-| `$index->replaceAllRules()` | `$client->saveRules()` with `clearExistingRules: true` |
-| `$index->deleteRule()` | `$client->deleteRule()` |
-| `$index->clearRules()` | `$client->clearRules()` |
-| `$index->searchRules()` | `$client->searchRules()` |
-| `$index->getSynonym()` | `$client->getSynonym()` |
-| `$index->saveSynonym()` | `$client->saveSynonym()` |
-| `$index->saveSynonyms()` | `$client->saveSynonyms()` |
-| `$index->replaceAllSynonyms()` | `$client->saveSynonyms()` with `replaceExistingSynonyms: true` |
-| `$index->deleteSynonym()` | `$client->deleteSynonym()` |
-| `$index->clearSynonyms()` | `$client->clearSynonyms()` |
-| `$index->searchSynonyms()` | `$client->searchSynonyms()` |
-| `$index->browseObjects()` | `$client->browseObjects('INDEX_NAME')` |
-| `$index->browseRules()` | `$client->browseRules('INDEX_NAME')` |
-| `$index->browseSynonyms()` | `$client->browseSynonyms('INDEX_NAME')` |
-| `$index->batch()` | `$client->batch()` |
-| `$index->clearObjects()` | `$client->clearObjects()` |
-| `$index->delete()` | `$client->deleteIndex()` |
-| `$index->exists()` | `$client->indexExists()` |
-| `$index->replaceAllObjects()` | `$client->replaceAllObjects()` |
-| `copyIndex()` / `moveIndex()` / `copyRules()` / `copySynonyms()` | `$client->operationIndex()` |
-| `$index->{operation}->wait()` | `$client->waitForTask()` |
+### Search API client
 
-### Recommend API renames
+| Version 3 (legacy)                           |   | Version 4 (current)                          |
+| -------------------------------------------- | - | -------------------------------------------- |
+| `$client->addApiKey`                         | → | `$client->addApiKey`                         |
+| `$client->addApiKey->wait`                   | → | `$client->waitForApiKey`                     |
+| `$client->clearDictionaryEntries`            | → | `$client->batchDictionaryEntries`            |
+| `$client->copyIndex`                         | → | `$client->operationIndex`                    |
+| `$client->copyRules`                         | → | `$client->operationIndex`                    |
+| `$client->copySynonyms`                      | → | `$client->operationIndex`                    |
+| `$client->deleteApiKey`                      | → | `$client->deleteApiKey`                      |
+| `$client->deleteDictionaryEntries`           | → | `$client->batchDictionaryEntries`            |
+| `$client->generateSecuredApiKey`             | → | `$client->generateSecuredApiKey`             |
+| `$client->getApiKey`                         | → | `$client->getApiKey`                         |
+| `$client->getSecuredApiKeyRemainingValidity` | → | `$client->getSecuredApiKeyRemainingValidity` |
+| `$client->listApiKeys`                       | → | `$client->listApiKeys`                       |
+| `$client->listIndices`                       | → | `$client->listIndices`                       |
+| `$client->moveIndex`                         | → | `$client->operationIndex`                    |
+| `$client->multipleBatch`                     | → | `$client->multipleBatch`                     |
+| `$client->multipleQueries`                   | → | `$client->search`                            |
+| `$client->replaceDictionaryEntries`          | → | `$client->batchDictionaryEntries`            |
+| `$client->restoreApiKey`                     | → | `$client->restoreApiKey`                     |
+| `$client->saveDictionaryEntries`             | → | `$client->batchDictionaryEntries`            |
+| `$client->updateApiKey`                      | → | `$client->updateApiKey`                      |
+| `$index->batch`                              | → | `$client->batch`                             |
+| `$index->browseObjects`                      | → | `$client->browseObjects`                     |
+| `$index->browseRules`                        | → | `$client->browseRules`                       |
+| `$index->browseSynonyms`                     | → | `$client->browseSynonyms`                    |
+| `$index->clearObjects`                       | → | `$client->clearObjects`                      |
+| `$index->clearRules`                         | → | `$client->clearRules`                        |
+| `$index->clearSynonyms`                      | → | `$client->clearSynonyms`                     |
+| `$index->copySettings`                       | → | `$client->operationIndex`                    |
+| `$index->delete`                             | → | `$client->deleteIndex`                       |
+| `$index->deleteBy`                           | → | `$client->deleteBy`                          |
+| `$index->deleteObject`                       | → | `$client->deleteObject`                      |
+| `$index->deleteObjects`                      | → | `$client->deleteObjects`                     |
+| `$index->deleteRule`                         | → | `$client->deleteRule`                        |
+| `$index->deleteSynonym`                      | → | `$client->deleteSynonym`                     |
+| `$index->exists`                             | → | `$client->indexExists`                       |
+| `$index->findObject`                         | → | `$client->searchSingleIndex`                 |
+| `$index->getObject`                          | → | `$client->getObject`                         |
+| `$index->getObjects`                         | → | `$client->getObjects`                        |
+| `$index->getRule`                            | → | `$client->getRule`                           |
+| `$index->getSettings`                        | → | `$client->getSettings`                       |
+| `$index->getSynonym`                         | → | `$client->getSynonym`                        |
+| `$index->getTask`                            | → | `$client->getTask`                           |
+| `$index->partialUpdateObject`                | → | `$client->partialUpdateObject`               |
+| `$index->partialUpdateObjects`               | → | `$client->partialUpdateObjects`              |
+| `$index->replaceAllObjects`                  | → | `$client->replaceAllObjects`                 |
+| `$index->replaceAllRules`                    | → | `$client->saveRules`                         |
+| `$index->replaceAllSynonyms`                 | → | `$client->saveSynonyms`                      |
+| `$index->saveObject`                         | → | `$client->saveObject`                        |
+| `$index->saveObjects`                        | → | `$client->saveObjects`                       |
+| `$index->saveRule`                           | → | `$client->saveRule`                          |
+| `$index->saveRules`                          | → | `$client->saveRules`                         |
+| `$index->saveSynonym`                        | → | `$client->saveSynonym`                       |
+| `$index->saveSynonyms`                       | → | `$client->saveSynonyms`                      |
+| `$index->search`                             | → | `$client->searchSingleIndex`                 |
+| `$index->searchForFacetValues`               | → | `$client->searchForFacetValues`              |
+| `$index->searchRules`                        | → | `$client->searchRules`                       |
+| `$index->searchSynonyms`                     | → | `$client->searchSynonyms`                    |
+| `$index->setSettings`                        | → | `$client->setSettings`                       |
+| `$index->{operation}->wait`                  | → | `$client->waitForTask`                       |
 
-| v3 | v4 |
-|----|----|
-| `$client->getFrequentlyBoughtTogether()` | `$client->getRecommendations()` |
-| `$client->getLookingSimilar()` | `$client->getRecommendations()` |
-| `$client->getRelatedProducts()` | `$client->getRecommendations()` |
-| `$client->getTrendingFacets()` | `$client->getRecommendations()` |
-| `$client->getTrendingItems()` | `$client->getRecommendations()` |
+### Recommend API client
+
+| Version 3 (legacy)                     |   | Version 4 (current)           |
+| -------------------------------------- | - | ----------------------------- |
+| `$client->getFrequentlyBoughtTogether` | → | `$client->getRecommendations` |
+| `$client->getLookingSimilar`           | → | `$client->getRecommendations` |
+| `$client->getRecommendations`          | → | `$client->getRecommendations` |
+| `$client->getRelatedProducts`          | → | `$client->getRecommendations` |
+| `$client->getTrendingFacets`           | → | `$client->getRecommendations` |
+| `$client->getTrendingItems`            | → | `$client->getRecommendations` |

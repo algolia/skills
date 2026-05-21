@@ -1,133 +1,215 @@
-# Python: v3 → v4
+# Upgrade the Python API client to version 4
 
-## Install
+> Keep your Python API client up to date to benefit from improvements and bug fixes.
 
-```sh
+The latest major version of the `algoliasearch` package is version 4.
+This page helps you upgrade from version 3
+and explains the breaking changes you need to address.
+
+Algolia generates the version 4 clients from OpenAPI specifications,
+which provides consistent behavior across all languages and up-to-date API coverage.
+The main architectural change is the removal of the `init_index` pattern:
+all methods are now on the `client` instance directly, with `index_name` as a parameter.
+
+For the full list of changes, see the [Python changelog](/doc/libraries/sdk/changelog/python).
+
+## Update your dependencies
+
+Update the `algoliasearch` package to version 4:
+
+```sh Command line icon=square-terminal theme={"system"}
 pip install 'algoliasearch>=4.0,<5.0'
 ```
 
-## Import changes
+## Update imports
 
-```python
-# v3
+The import path changed from `algoliasearch.search_client` to `algoliasearch.search.client`.
+
+```python Python icon=code theme={"system"}
+# version 3
 from algoliasearch.search_client import SearchClient
 
-# v4 — synchronous
-from algoliasearch.search.client import SearchClientSync
-
-# v4 — asynchronous
-from algoliasearch.search.client import SearchClient
-
-# dedicated clients
-from algoliasearch.search.client import SearchClientSync, SearchClient
-from algoliasearch.abtesting.client import AbtestingClientSync, AbtestingClient
+# version 4
+from algoliasearch.search.client import SearchClient, SearchClientSync
 ```
 
-## Client initialization
+Version 4 also includes dedicated packages for each API.
+If you only need methods from a specific API,
+you can import them separately:
 
-```python
-# v3
-client = SearchClient.create("APP_ID", "API_KEY")
+```python Python icon=code expandable theme={"system"}
+# Search API
+from algoliasearch.search.client import SearchClient, SearchClientSync
+# A/B testing API
+from algoliasearch.abtesting.client import AbtestingClient, AbtestingClientSync
+# Analytics API
+from algoliasearch.analytics.client import AnalyticsClient, AnalyticsClientSync
+# Ingestion API
+from algoliasearch.ingestion.client import IngestionClient, IngestionClientSync
+# Insights API
+from algoliasearch.insights.client import InsightsClient, InsightsClientSync
+# Personalization API
+from algoliasearch.personalization.client import (
+    PersonalizationClient,
+    PersonalizationClientSync,
+)
+# Query Suggestions API
+from algoliasearch.query_suggestions.client import (
+    QuerySuggestionsClient,
+    QuerySuggestionsClientSync,
+)
+# Recommend API
+from algoliasearch.recommend.client import RecommendClient, RecommendClientSync
+# Monitoring API
+from algoliasearch.monitoring.client import MonitoringClient, MonitoringClientSync
+```
 
-# v4 — sync
-client = SearchClientSync("APP_ID", "API_KEY")
+## Update client initialization
 
-# v4 — async (use as context manager)
-async with SearchClient("APP_ID", "API_KEY") as client:
+Client creation changed in version 4.
+The `SearchClient.create()` factory method is gone.
+Create a `SearchClientSync` instance for synchronous code
+or a `SearchClient` instance for asynchronous code.
+
+```python Python icon=code highlight={5-7,9-12} theme={"system"}
+# version 3
+from algoliasearch.search_client import SearchClient
+client = SearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
+
+# version 4 (synchronous)
+from algoliasearch.search.client import SearchClientSync
+client = SearchClientSync("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
+
+# version 4 (asynchronous)
+from algoliasearch.search.client import SearchClient
+async with SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY") as client:
     ...
 ```
 
-`SearchClient.create()` factory method is removed.
+Note the naming: `SearchClientSync` is the synchronous client,
+while `SearchClient` (without suffix) is the asynchronous client.
+The asynchronous client supports the
+[`async with`](https://peps.python.org/pep-0492/#asynchronous-context-managers-and-async-with) syntax
+to automatically close open connections.
 
-## `init_index` removal
+## Understand the new API surface
 
-`init_index` is removed. All methods that previously lived on the index object are now on the client and require `index_name`. v4 also introduces typed model classes (dicts also accepted).
+Version 4 introduces three major changes to the API surface:
 
-```python
-# v3
+* **No more `init_index`.**
+  Version 3 relied on an index object with methods called on it.
+  In version 4, all methods belong to the `client` instance,
+  with `index_name` as a parameter.
+* **Synchronous and asynchronous clients.**
+  Version 4 includes `SearchClientSync` for synchronous code
+  and `SearchClient` for asynchronous code (with `async/await`).
+  Version 3 only had a synchronous client.
+* **Typed model classes.**
+  Version 4 includes model classes like `SearchParams` and `IndexSettings`
+  for all API parameters (see [Use model classes or dictionaries](#use-model-classes-or-dictionaries)).
+
+```python Python icon=code highlight={6-11} theme={"system"}
+# version 3
+client = SearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 index = client.init_index("INDEX_NAME")
 index.search("QUERY")
 
-# v4
-from algoliasearch.search.models import SearchParams
-
-client = SearchClientSync("APP_ID", "API_KEY")
+# version 4
+client = SearchClientSync("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 client.search_single_index(
     index_name="INDEX_NAME",
     search_params=SearchParams(query="QUERY"),
 )
-# dict also accepted:
-client.search_single_index(index_name="INDEX_NAME", search_params={"query": "QUERY"})
 ```
 
-## Method renames
+<Tip>
+  If you have many files to update,
+  search your codebase for `init_index` or `.init_index(` to find every place that needs changing.
+</Tip>
 
-| v3 | v4 |
-|----|----|
-| `index.search()` | `client.search_single_index()` |
-| `client.multiple_queries()` | `client.search()` |
-| `index.search_for_facet_values()` | `client.search_for_facet_values()` |
-| `index.save_objects()` | `client.save_objects()` |
-| `index.save_object()` | `client.save_object()` |
-| `index.partial_update_object()` | `client.partial_update_object()` |
-| `index.delete_object()` | `client.delete_object()` |
-| `index.get_settings()` | `client.get_settings()` |
-| `index.set_settings()` | `client.set_settings()` |
-| `index.replace_all_rules()` | `client.save_rules(clear_existing_rules=True)` |
-| `index.replace_all_synonyms()` | `client.save_synonyms(replace_existing_synonyms=True)` |
-| `copy_index()` / `move_index()` / `copy_rules()` / etc. | `client.operation_index()` |
-| `index.exists()` | `client.index_exists()` |
-| `index.wait()` / `index.wait_task()` | `client.wait_for_task()` |
-| `SearchIndex.generate_secured_api_key()` (static) | `client.generate_secured_api_key()` (instance) |
-| `SearchIndex.get_secured_api_key_remaining_validity()` (static) | `client.get_secured_api_key_remaining_validity()` (instance) |
-| `client.clear_dictionary_entries()` / `delete_dictionary_entries()` / etc. | `client.batch_dictionary_entries()` |
+## Use model classes or dictionaries
 
-## Search single index
+Version 4 methods accept both **model classes** and **dictionaries** as parameters.
 
-```python
-# v3
-results = index.search("QUERY", {"facetFilters": ["category:Book"]})
+```python Python icon=code theme={"system"}
+# Using a model class
+from algoliasearch.search.models.search_params import SearchParams
 
-# v4 — model class
-results = client.search_single_index(
+client.search_single_index(
     index_name="INDEX_NAME",
-    search_params=SearchParams(query="QUERY", facet_filters=["category:Book"]),
+    search_params=SearchParams(query="QUERY"),
 )
 
-# v4 — dict also accepted
-results = client.search_single_index(
+# Using a dictionary
+client.search_single_index(
     index_name="INDEX_NAME",
     search_params={"query": "QUERY"},
 )
 ```
 
-## Multiple index search
+Model classes give you IDE autocompletion, type safety,
+and predictable structure that works well with AI coding assistants.
+The code examples in this guide use model classes,
+but you can use dictionaries anywhere a model is expected.
 
-```python
-# v3
-results = client.multiple_queries([
-    {"indexName": "INDEX_1", "query": "QUERY"},
-])
+## Update search calls
 
-# v4
-from algoliasearch.search.models import SearchMethodParams, SearchForHits
+### Search a single index
 
-results = client.search(
-    search_method_params=SearchMethodParams(
-        requests=[SearchForHits(index_name="INDEX_1", query="QUERY")]
-    )
+The `index.search()` method is now [`client.search_single_index()`](/doc/libraries/sdk/methods/search/search-single-index).
+Pass the index name and search parameters as separate arguments:
+
+```python Python icon=code highlight={7-12} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+results = index.search("QUERY", {
+    "facetFilters": ["category:Book"],
+})
+
+# version 4
+results = client.search_single_index(
+    index_name="INDEX_NAME",
+    search_params=SearchParams(
+        query="QUERY",
+        facet_filters=["category:Book"],
+    ),
 )
 ```
 
-## Search for facet values
+### Search multiple indices
 
-```python
-# v3
+The `client.multiple_queries()` method is now [`client.search()`](/doc/libraries/sdk/methods/search/search).
+Each request in the list requires an `indexName`:
+
+```python Python icon=code highlight={7-15} theme={"system"}
+# version 3
+results = client.multiple_queries([
+    {"indexName": "INDEX_1", "query": "QUERY"},
+    {"indexName": "INDEX_2", "query": "QUERY"},
+])
+
+# version 4
+results = client.search(
+    search_method_params=SearchMethodParams(
+        requests=[
+            SearchForHits(index_name="INDEX_1", query="QUERY"),
+            SearchForHits(index_name="INDEX_2", query="QUERY"),
+        ],
+    ),
+)
+```
+
+### Search for facet values
+
+The `index.search_for_facet_values()` method becomes `client.search_for_facet_values()`
+with an `index_name` parameter:
+
+```python Python icon=code highlight={5-10} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
 results = index.search_for_facet_values("category", "book")
 
-# v4
-from algoliasearch.search.models import SearchForFacetValuesRequest
-
+# version 4
 results = client.search_for_facet_values(
     index_name="INDEX_NAME",
     facet_name="category",
@@ -135,93 +217,186 @@ results = client.search_for_facet_values(
 )
 ```
 
-## Indexing
+## Update indexing operations
 
-```python
-# save_objects
+In version 4, indexing methods are on the client instead of the index object,
+with `index_name` as a parameter.
+
+### Add or replace records
+
+```python Python icon=code highlight={5-9} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+index.save_objects([{"objectID": "1", "name": "Record"}])
+
+# version 4
 response = client.save_objects(
     index_name="INDEX_NAME",
     objects=[{"objectID": "1", "name": "Record"}],
 )
+```
 
-# partial_update_object
+### Partially update records
+
+```python Python icon=code highlight={5-10} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+index.partial_update_object({"objectID": "1", "name": "Updated"})
+
+# version 4
 client.partial_update_object(
     index_name="INDEX_NAME",
     object_id="1",
     attributes_to_update={"name": "Updated"},
 )
-
-# delete_object
-client.delete_object(index_name="INDEX_NAME", object_id="1")
 ```
 
-## Settings, synonyms, rules
+### Delete records
 
-```python
-from algoliasearch.search.models import IndexSettings
+```python Python icon=code highlight={5-9} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+index.delete_object("1")
 
-# get_settings / set_settings
-settings = client.get_settings(index_name="INDEX_NAME")
+# version 4
+client.delete_object(
+    index_name="INDEX_NAME",
+    object_id="1",
+)
+```
+
+## Update settings, synonyms, and rules
+
+### Get and set settings
+
+```python Python icon=code highlight={6-12} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+settings = index.get_settings()
+index.set_settings({"searchableAttributes": ["title", "author"]})
+
+# version 4
+settings = client.get_settings(
+    index_name="INDEX_NAME",
+)
 client.set_settings(
     index_name="INDEX_NAME",
     index_settings=IndexSettings(searchable_attributes=["title", "author"]),
 )
-
-# save_synonyms
-client.save_synonyms(
-    index_name="INDEX_NAME",
-    synonym_hit=[{"objectID": "1", "type": "synonym", "synonyms": ["car", "auto"]}],
-)
-
-# save_rules
-client.save_rules(index_name="INDEX_NAME", rules=[...])
-
-# replace_all_rules → save_rules with clear_existing_rules
-client.save_rules(index_name="INDEX_NAME", rules=[...], clear_existing_rules=True)
-
-# replace_all_synonyms → save_synonyms with replace_existing_synonyms
-client.save_synonyms(index_name="INDEX_NAME", synonym_hit=[...], replace_existing_synonyms=True)
 ```
 
-## `operation_index` (copy / move)
+### Save synonyms and rules
 
-```python
-from algoliasearch.search.models import OperationIndexParams
+```python Python icon=code highlight={6-22} expandable theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+index.save_synonyms([{"objectID": "1", "type": "synonym", "synonyms": ["car", "auto"]}])
+index.save_rules([{"objectID": "1", "conditions": [{"anchoring": "contains", "pattern": "shoes"}], "consequence": {"params": {"query": "sneakers"}}}])
 
-# copy
-client.operation_index(
-    index_name="SOURCE_INDEX_NAME",
-    operation_index_params=OperationIndexParams(operation="copy", destination="DESTINATION_INDEX_NAME"),
+# version 4
+client.save_synonyms(
+    index_name="INDEX_NAME",
+    synonym_hit=[
+        {"objectID": "1", "type": "synonym", "synonyms": ["car", "auto"]},
+    ],
 )
-
-# move
-client.operation_index(
-    index_name="SOURCE_INDEX_NAME",
-    operation_index_params=OperationIndexParams(operation="move", destination="DESTINATION_INDEX_NAME"),
+client.save_rules(
+    index_name="INDEX_NAME",
+    rules=[
+        {
+            "objectID": "1",
+            "conditions": [{"anchoring": "contains", "pattern": "shoes"}],
+            "consequence": {"params": {"query": "sneakers"}},
+        },
+    ],
 )
+```
 
-# copy with scope
+<Note>
+  In version 3, `index.replace_all_rules()` and `index.replace_all_synonyms()` replaced all rules or synonyms.
+  In version 4, use `client.save_rules()` or `client.save_synonyms()` with the `clear_existing_rules` or `replace_existing_synonyms` parameter set to `True`.
+</Note>
+
+## Update index management
+
+The `copy_index`, `move_index`, `copy_rules`, `copy_synonyms`, and `copy_settings`
+methods are all replaced by a single [`operation_index`](/doc/rest-api/search/operation-index) method.
+
+### Copy an index
+
+```python Python icon=code highlight={4-10} theme={"system"}
+# version 3
+client.copy_index("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
+
+# version 4
 client.operation_index(
     index_name="SOURCE_INDEX_NAME",
     operation_index_params=OperationIndexParams(
-        operation="copy", destination="DEST", scope=["rules", "settings"]
+        operation="copy",
+        destination="DESTINATION_INDEX_NAME",
     ),
 )
-
-# check if index exists
-client.index_exists(index_name="INDEX_NAME")
 ```
 
-## Wait pattern
+### Move (rename) an index
 
-```python
-# v3
-response = index.set_settings({"searchableAttributes": ["title"]})
-index.wait_task(response["taskID"])
+```python Python icon=code highlight={4-10} theme={"system"}
+# version 3
+client.move_index("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
-# v4
-from algoliasearch.search.models import IndexSettings
+# version 4
+client.operation_index(
+    index_name="SOURCE_INDEX_NAME",
+    operation_index_params=OperationIndexParams(
+        operation="move",
+        destination="DESTINATION_INDEX_NAME",
+    ),
+)
+```
 
+### Copy only rules or settings
+
+In version 4, use the `scope` parameter to limit the operation to specific data:
+
+```python Python icon=code theme={"system"}
+# version 4 -- copy only rules and settings from one index to another
+client.operation_index(
+    index_name="SOURCE_INDEX_NAME",
+    operation_index_params=OperationIndexParams(
+        operation="copy",
+        destination="DESTINATION_INDEX_NAME",
+        scope=["rules", "settings"],
+    ),
+)
+```
+
+### Check if an index exists
+
+In version 3, you could check if an index existed using the `exists` method on the index object.
+In version 4, use the [`index_exists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+
+```python Python icon=code highlight={5-7} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+index.exists()
+
+# version 4
+client.index_exists(
+    index_name="INDEX_NAME",
+)
+```
+
+## Update task handling
+
+Version 3 supported chaining `.wait()` on operations.
+Version 4 replaces this pattern with dedicated wait helpers.
+
+```python Python icon=code highlight={5-10} theme={"system"}
+# version 3
+index = client.init_index("INDEX_NAME")
+index.set_settings({"searchableAttributes": ["title"]}).wait()
+
+# version 4
 response = client.set_settings(
     index_name="INDEX_NAME",
     index_settings=IndexSettings(searchable_attributes=["title"]),
@@ -229,43 +404,54 @@ response = client.set_settings(
 client.wait_for_task(index_name="INDEX_NAME", task_id=response.task_id)
 ```
 
-Three helpers: `wait_for_task`, `wait_for_app_task`, `wait_for_api_key`.
+Version 4 includes three wait helpers:
 
-```python
-# wait_for_api_key — add
-await client.wait_for_api_key(key="my-api-key", operation="add")
+* [`wait_for_task`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
+* [`wait_for_app_task`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
+* [`wait_for_api_key`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
 
-# wait_for_api_key — update (pass expected final state)
-await client.wait_for_api_key(
-    key="my-api-key",
-    operation="update",
-    api_key={"acl": ["search", "browse"]},
+## Helper method changes
+
+The following sections document breaking changes in helper method signatures and behavior between version 3 and version 4.
+
+### `replace_all_objects`
+
+The `safe` option has been removed. In version 3, passing `safe=True` in `request_options` caused the helper to wait after each step. In version 4, the helper always waits—equivalent to the previous `safe=True` behavior.
+
+The `scopes` parameter is now required and must be passed explicitly.
+
+```python Python icon=code highlight={7-12} theme={"system"}
+# version 3
+index.replace_all_objects(
+    objects=my_objects,
+    request_options={"safe": True},
 )
 
-# wait_for_app_task (new in v4)
-await client.wait_for_app_task(task_id=task_id)
-```
-
-`wait_for_task` also accepts `max_retries` (default 50):
-```python
-await client.wait_for_task(index_name="INDEX_NAME", task_id=task_id, max_retries=50)
-```
-
-## `replace_all_objects`
-
-```python
-# v4 — safe option removed; scopes required
-client.replace_all_objects(
+# version 4
+await client.replace_all_objects(
     index_name="INDEX_NAME",
     objects=my_objects,
     scopes=["settings", "rules", "synonyms"],
 )
 ```
 
-## Helper method changes
+### `save_objects`
 
-- **`save_objects`**: `autoGenerateObjectIDIfNotExist` removed — every object must have `objectID`, or use `chunked_batch`; new `wait_for_tasks` (default `False`) and `batch_size` (default 1000) options:
-```python
+The `autoGenerateObjectIDIfNotExist` option has been removed. In version 4, every object must include an `object_id`, or you must use `chunked_batch` with `action="addObject"` if you want the API to generate object IDs.
+
+Two new optional parameters are available:
+
+* `wait_for_tasks` (waits for all indexing tasks before returning, default `False`)
+* `batch_size` (controls objects per API call, default `1,000`)
+
+```python Python icon=code highlight={7-13} theme={"system"}
+# version 3
+index.save_objects(
+    objects=my_objects,
+    {"autoGenerateObjectIDIfNotExist": True},
+)
+
+# version 4
 await client.save_objects(
     index_name="INDEX_NAME",
     objects=my_objects,
@@ -274,10 +460,38 @@ await client.save_objects(
 )
 ```
 
-- **`delete_objects`**: new `wait_for_tasks` and `batch_size` options
+### `delete_objects`
 
-- **`partial_update_objects`**: `create_if_not_exists` is now an explicit keyword argument:
-```python
+Two new optional parameters are available:
+
+* `wait_for_tasks` (default `False`)
+* `batch_size` (default `1,000`)
+
+```python Python icon=code highlight={4-10} theme={"system"}
+# version 3
+index.delete_objects(object_ids=["id1", "id2"])
+
+# version 4
+await client.delete_objects(
+    index_name="INDEX_NAME",
+    object_ids=["id1", "id2"],
+    wait_for_tasks=True,
+    batch_size=1000,
+)
+```
+
+### `partial_update_objects`
+
+The `create_if_not_exists` parameter moved from `request_options` to an explicit keyword argument.
+
+```python Python icon=code highlight={7-12} theme={"system"}
+# version 3
+index.partial_update_objects(
+    objects=my_objects,
+    {"createIfNotExists": True},
+)
+
+# version 4
 await client.partial_update_objects(
     index_name="INDEX_NAME",
     objects=my_objects,
@@ -285,31 +499,36 @@ await client.partial_update_objects(
 )
 ```
 
-## Browse aggregator
+### `browse_objects`, `browse_rules`, `browse_synonyms`
 
-```python
-# v3 — iterator
+These helpers now use an `aggregator` callback instead of returning an iterator. The helper calls `aggregator` with each page of results as it paginates.
+
+```python Python icon=code highlight={5-11} theme={"system"}
+# version 3
 for obj in index.browse_objects({"query": ""}):
     process(obj)
 
-# v4 — aggregator callback
+# version 4
 objects = []
+
 await client.browse_objects(
     index_name="INDEX_NAME",
     aggregator=lambda response: objects.extend(response.hits),
 )
 ```
 
-## Secured API key
+### `generate_secured_api_key` and `get_secured_api_key_remaining_validity`
 
-```python
-# v3 — static methods on SearchIndex
-key = SearchIndex.generate_secured_api_key(
-    "parentApiKey", {"validUntil": 1893456000}
-)
+Both methods were static methods on the index class in version 3. In version 4 they are instance methods on the client.
+
+```python Python icon=code highlight={7-12} theme={"system"}
+# version 3
+from algoliasearch.search_index import SearchIndex
+
+key = SearchIndex.generate_secured_api_key("parentApiKey", {"validUntil": 1893456000})
 remaining = SearchIndex.get_secured_api_key_remaining_validity(key)
 
-# v4 — instance methods on client
+# version 4
 key = client.generate_secured_api_key(
     parent_api_key="parentApiKey",
     restrictions={"validUntil": 1893456000},
@@ -317,12 +536,63 @@ key = client.generate_secured_api_key(
 remaining = client.get_secured_api_key_remaining_validity(secured_api_key=key)
 ```
 
-## New in v4
+### `wait_for_task`
 
-**`chunked_batch`** (was internal):
-```python
-from algoliasearch.search.models import Action
+The helper was renamed from `wait_task` to `wait_for_task`, moved to the client, and now accepts explicit `max_retries` (default `50`) and `timeout` parameters. In version 3 it retried indefinitely with no cap.
 
+```python Python icon=code highlight={4-9} theme={"system"}
+# version 3
+index.wait_task(task_id)
+
+# version 4
+await client.wait_for_task(
+    index_name="INDEX_NAME",
+    task_id=task_id,
+    max_retries=50,
+)
+```
+
+### `wait_for_app_task`
+
+This is a new helper in version 4.
+
+```python Python icon=code theme={"system"}
+await client.wait_for_app_task(task_id=task_id)
+```
+
+### `wait_for_api_key`
+
+This is a new standalone helper in version 4.
+
+```python Python icon=code theme={"system"}
+# Wait for a key to be created:
+await client.wait_for_api_key(key="my-api-key", operation="add")
+
+# Wait for a key update (pass the expected final state):
+await client.wait_for_api_key(
+    key="my-api-key",
+    operation="update",
+    api_key={"acl": ["search", "browse"]},
+)
+```
+
+### `index_exists`
+
+The helper was renamed from `exists()` on the index object to `index_exists()` on the client.
+
+```python Python icon=code highlight={4-5} theme={"system"}
+# version 3
+exists = index.exists()
+
+# version 4
+exists = await client.index_exists(index_name="INDEX_NAME")
+```
+
+### `chunked_batch`
+
+`chunked_batch` is now a public helper. In version 3, chunking was an internal detail of `save_objects`. The `action` parameter defaults to `Action.ADDOBJECT` and `wait_for_tasks` defaults to `False`.
+
+```python Python icon=code theme={"system"}
 responses = await client.chunked_batch(
     index_name="INDEX_NAME",
     objects=my_objects,
@@ -332,112 +602,160 @@ responses = await client.chunked_batch(
 )
 ```
 
-**`AccountClient` removed** — compose cross-app copy manually:
-```python
-src = SearchClientSync("SRC_APP_ID", "SRC_API_KEY")
-dst = SearchClientSync("DST_APP_ID", "DST_API_KEY")
+### `account_copy_index`
 
+In version 3, `AccountClient.copy_index` allowed copying an index between two different Algolia applications. It accepted two `SearchIndex` objects and raised if the destination already existed or if both indices were on the same app.
+
+In version 4, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
+
+```python Python icon=code expandable highlight={6-29} theme={"system"}
+# version 3
+from algoliasearch.account_client import AccountClient
+
+AccountClient.copy_index(source_index, destination_index)
+
+# version 4
+src = SearchClient.create("SRC_APP_ID", "SRC_API_KEY")
+dst = SearchClient.create("DST_APP_ID", "DST_API_KEY")
+
+# Copy settings
 settings = await src.get_settings(index_name="SOURCE_INDEX")
 await dst.set_settings(index_name="DEST_INDEX", index_settings=settings)
 
+# Copy rules
 rules = []
 await src.browse_rules("SOURCE_INDEX", aggregator=lambda r: rules.extend(r.hits))
 if rules:
     await dst.save_rules(index_name="DEST_INDEX", rules=rules)
 
+# Copy synonyms
 synonyms = []
 await src.browse_synonyms("SOURCE_INDEX", aggregator=lambda r: synonyms.extend(r.hits))
 if synonyms:
     await dst.save_synonyms(index_name="DEST_INDEX", synonyms=synonyms)
 
+# Copy objects
 objects = []
 await src.browse_objects("SOURCE_INDEX", aggregator=lambda r: objects.extend(r.hits))
 await dst.replace_all_objects(index_name="DEST_INDEX", objects=objects)
 ```
 
-**Transformation helpers** (require `transformation_region` at init):
-```python
-from algoliasearch.search.config import SearchConfig
+### `save_objects_with_transformation`
 
-client = SearchClientSync.create_with_config(
+New in version 4. Routes objects through the Algolia Push connector. Requires `transformation_region` at client initialization.
+
+```python Python icon=code theme={"system"}
+client = SearchClient.create_with_config(
     SearchConfig("APP_ID", "API_KEY", transformation_region="us")
 )
 
 await client.save_objects_with_transformation(
-    index_name="INDEX_NAME", objects=my_objects, wait_for_tasks=False, batch_size=1000
+    index_name="INDEX_NAME",
+    objects=my_objects,
+    wait_for_tasks=False,
+    batch_size=1000,
 )
+```
 
+### `replace_all_objects_with_transformation`
+
+New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `transformation_region` at client initialization.
+
+```python Python icon=code theme={"system"}
 await client.replace_all_objects_with_transformation(
-    index_name="INDEX_NAME", objects=my_objects, batch_size=1000,
+    index_name="INDEX_NAME",
+    objects=my_objects,
+    batch_size=1000,
     scopes=["settings", "rules", "synonyms"],
 )
+```
 
+### `partial_update_objects_with_transformation`
+
+New in version 4. Routes partial updates through the Push connector. The `create_if_not_exists` parameter defaults to `False`.
+
+```python Python icon=code theme={"system"}
 await client.partial_update_objects_with_transformation(
-    index_name="INDEX_NAME", objects=my_objects,
-    create_if_not_exists=False, wait_for_tasks=False, batch_size=1000,
+    index_name="INDEX_NAME",
+    objects=my_objects,
+    create_if_not_exists=False,
+    wait_for_tasks=False,
+    batch_size=1000,
 )
 ```
 
 ## Method changes reference
 
-Full rename table from v3 to v4:
+The following tables list all method names that changed between version 3 and version 4.
 
-| v3 | v4 |
-|----|----|
-| `client.multiple_queries()` | `client.search()` |
-| `client.clear_dictionary_entries()` | `client.batch_dictionary_entries()` |
-| `client.delete_dictionary_entries()` | `client.batch_dictionary_entries()` |
-| `client.replace_dictionary_entries()` | `client.batch_dictionary_entries()` |
-| `client.save_dictionary_entries()` | `client.batch_dictionary_entries()` |
-| `client.copy_index()` | `client.operation_index()` |
-| `client.copy_rules()` | `client.operation_index()` |
-| `client.copy_synonyms()` | `client.operation_index()` |
-| `client.move_index()` | `client.operation_index()` |
-| `SearchIndex.generate_secured_api_key()` (static) | `client.generate_secured_api_key()` (instance) |
-| `SearchIndex.get_secured_api_key_remaining_validity()` (static) | `client.get_secured_api_key_remaining_validity()` (instance) |
-| `index.batch()` | `client.batch()` |
-| `index.browse_objects()` | `client.browse_objects()` |
-| `index.browse_rules()` | `client.browse_rules()` |
-| `index.browse_synonyms()` | `client.browse_synonyms()` |
-| `index.clear_objects()` | `client.clear_objects()` |
-| `index.clear_rules()` | `client.clear_rules()` |
-| `index.clear_synonyms()` | `client.clear_synonyms()` |
-| `index.copy_settings()` | `client.operation_index()` |
-| `index.delete()` | `client.delete_index()` |
-| `index.delete_by()` | `client.delete_by()` |
-| `index.delete_object()` | `client.delete_object()` |
-| `index.delete_objects()` | `client.delete_objects()` |
-| `index.delete_rule()` | `client.delete_rule()` |
-| `index.delete_synonym()` | `client.delete_synonym()` |
-| `index.exists()` | `client.index_exists()` |
-| `index.get_object()` | `client.get_object()` |
-| `index.get_objects()` | `client.get_objects()` |
-| `index.get_rule()` | `client.get_rule()` |
-| `index.get_settings()` | `client.get_settings()` |
-| `index.get_synonym()` | `client.get_synonym()` |
-| `index.get_task()` | `client.get_task()` |
-| `index.partial_update_object()` | `client.partial_update_object()` |
-| `index.partial_update_objects()` | `client.partial_update_objects()` |
-| `index.replace_all_objects()` | `client.replace_all_objects()` |
-| `index.replace_all_rules()` | `client.save_rules()` (with `clear_existing_rules=True`) |
-| `index.replace_all_synonyms()` | `client.save_synonyms()` (with `replace_existing_synonyms=True`) |
-| `index.save_object()` | `client.save_object()` |
-| `index.save_objects()` | `client.save_objects()` |
-| `index.save_rule()` | `client.save_rule()` |
-| `index.save_rules()` | `client.save_rules()` |
-| `index.save_synonym()` | `client.save_synonym()` |
-| `index.save_synonyms()` | `client.save_synonyms()` |
-| `index.search()` | `client.search_single_index()` |
-| `index.search_for_facet_values()` | `client.search_for_facet_values()` |
-| `index.search_rules()` | `client.search_rules()` |
-| `index.search_synonyms()` | `client.search_synonyms()` |
-| `index.set_settings()` | `client.set_settings()` |
-| `index.wait()` / `index.wait_task()` | `client.wait_for_task()` |
+### Search API client
 
-Recommend API renames:
+| Version 3 (legacy)                              |   | Version 4 (current)                             |
+| ----------------------------------------------- | - | ----------------------------------------------- |
+| `client.add_api_key`                            | → | `client.add_api_key`                            |
+| `client.add_api_key.wait`                       | → | `client.wait_for_api_key`                       |
+| `client.clear_dictionary_entries`               | → | `client.batch_dictionary_entries`               |
+| `client.copy_index`                             | → | `client.operation_index`                        |
+| `client.copy_rules`                             | → | `client.operation_index`                        |
+| `client.copy_synonyms`                          | → | `client.operation_index`                        |
+| `client.delete_api_key`                         | → | `client.delete_api_key`                         |
+| `client.delete_dictionary_entries`              | → | `client.batch_dictionary_entries`               |
+| `client.generate_secured_api_key`               | → | `client.generate_secured_api_key`               |
+| `client.get_api_key`                            | → | `client.get_api_key`                            |
+| `client.get_secured_api_key_remaining_validity` | → | `client.get_secured_api_key_remaining_validity` |
+| `client.list_api_keys`                          | → | `client.list_api_keys`                          |
+| `client.list_indices`                           | → | `client.list_indices`                           |
+| `client.move_index`                             | → | `client.operation_index`                        |
+| `client.multiple_batch`                         | → | `client.multiple_batch`                         |
+| `client.multiple_queries`                       | → | `client.search`                                 |
+| `client.replace_dictionary_entries`             | → | `client.batch_dictionary_entries`               |
+| `client.restore_api_key`                        | → | `client.restore_api_key`                        |
+| `client.save_dictionary_entries`                | → | `client.batch_dictionary_entries`               |
+| `client.update_api_key`                         | → | `client.update_api_key`                         |
+| `index.batch`                                   | → | `client.batch`                                  |
+| `index.browse_objects`                          | → | `client.browse_objects`                         |
+| `index.browse_rules`                            | → | `client.browse_rules`                           |
+| `index.browse_synonyms`                         | → | `client.browse_synonyms`                        |
+| `index.clear_objects`                           | → | `client.clear_objects`                          |
+| `index.clear_rules`                             | → | `client.clear_rules`                            |
+| `index.clear_synonyms`                          | → | `client.clear_synonyms`                         |
+| `index.copy_settings`                           | → | `client.operation_index`                        |
+| `index.delete`                                  | → | `client.delete_index`                           |
+| `index.delete_by`                               | → | `client.delete_by`                              |
+| `index.delete_object`                           | → | `client.delete_object`                          |
+| `index.delete_objects`                          | → | `client.delete_objects`                         |
+| `index.delete_rule`                             | → | `client.delete_rule`                            |
+| `index.delete_synonym`                          | → | `client.delete_synonym`                         |
+| `index.exists`                                  | → | `client.index_exists`                           |
+| `index.find_object`                             | → | `client.search_single_index`                    |
+| `index.get_object`                              | → | `client.get_object`                             |
+| `index.get_objects`                             | → | `client.get_objects`                            |
+| `index.get_rule`                                | → | `client.get_rule`                               |
+| `index.get_settings`                            | → | `client.get_settings`                           |
+| `index.get_synonym`                             | → | `client.get_synonym`                            |
+| `index.get_task`                                | → | `client.get_task`                               |
+| `index.partial_update_object`                   | → | `client.partial_update_object`                  |
+| `index.partial_update_objects`                  | → | `client.partial_update_objects`                 |
+| `index.replace_all_objects`                     | → | `client.replace_all_objects`                    |
+| `index.replace_all_rules`                       | → | `client.save_rules`                             |
+| `index.replace_all_synonyms`                    | → | `client.save_synonyms`                          |
+| `index.save_object`                             | → | `client.save_object`                            |
+| `index.save_objects`                            | → | `client.save_objects`                           |
+| `index.save_rule`                               | → | `client.save_rule`                              |
+| `index.save_rules`                              | → | `client.save_rules`                             |
+| `index.save_synonym`                            | → | `client.save_synonym`                           |
+| `index.save_synonyms`                           | → | `client.save_synonyms`                          |
+| `index.search`                                  | → | `client.search_single_index`                    |
+| `index.search_for_facet_values`                 | → | `client.search_for_facet_values`                |
+| `index.search_rules`                            | → | `client.search_rules`                           |
+| `index.search_synonyms`                         | → | `client.search_synonyms`                        |
+| `index.set_settings`                            | → | `client.set_settings`                           |
+| `index.{operation}.wait`                        | → | `client.wait_for_task`                          |
 
-| v3 | v4 |
-|----|----|
-| `client.get_frequently_bought_together()` | `client.get_recommendations()` |
-| `client.get_related_products()` | `client.get_recommendations()` |
-| `client.get_recommendations()` | `client.get_recommendations()` |
+### Recommend API client
+
+| Version 3 (legacy)                      |   | Version 4 (current)          |
+| --------------------------------------- | - | ---------------------------- |
+| `client.get_frequently_bought_together` | → | `client.get_recommendations` |
+| `client.get_recommendations`            | → | `client.get_recommendations` |
+| `client.get_related_products`           | → | `client.get_recommendations` |
