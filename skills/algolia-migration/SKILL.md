@@ -9,7 +9,7 @@ description: >-
   specific old-to-new version (e.g. "Python v3 to v4", "JS v4 to v5").
   Covers JavaScript, Python, Go, PHP, Java, C#, Ruby, Kotlin, Scala, Swift. Dart is a new client, doesn't need migration and is therefore excluded from the scope of this skill.
   Do NOT use for new project setup (use algolia-cli or algolia-mcp instead),
-  InstantSearch / frontend widgets, analytics queries, or recommendations.
+  InstantSearch / frontend frameworks, analytics queries, or recommendations.
 license: MIT
 metadata:
   author: algolia
