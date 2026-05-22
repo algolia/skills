@@ -18,7 +18,7 @@ metadata:
 
 # Algolia API Client Migration
 
-> This skill covers **backend/server-side API client upgrades only**.
+> This skill covers **API client upgrades** (backend and frontend search-only builds).
 > For frontend search UI, see **instantsearch**. For index operations, see **algolia-cli**.
 
 ## Supported migrations
