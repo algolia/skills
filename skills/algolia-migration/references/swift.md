@@ -16,7 +16,7 @@ The main architectural changes are:
 * All module names are prefixed with `Algolia` (for example, `import AlgoliaSearch` instead of `import Search`).
 * The client is compatible with Swift 6.
 
-For the full list of changes, see the [Swift changelog](/doc/libraries/sdk/changelog/swift).
+For the full list of changes, see the Swift changelog.
 
 ## Update your dependencies
 
@@ -25,7 +25,7 @@ For the full list of changes, see the [Swift changelog](/doc/libraries/sdk/chang
 Update your Swift Package Manager dependency to version 9.
 In your `Package.swift`, change the version requirement:
 
-```swift Swift icon=code theme={"system"}
+```swift
 // version 8
 .package(url: "https://github.com/algolia/algoliasearch-client-swift", from: "8.0.0")
 
@@ -39,7 +39,7 @@ If you're using Xcode, update the package version in **File > Swift Packages**.
 
 If you use CocoaPods, update your `Podfile`:
 
-```ruby Ruby icon=code theme={"system"}
+```ruby
 # version 8
 pod 'AlgoliaSearchClient', '~> 8.0'
 
@@ -47,7 +47,6 @@ pod 'AlgoliaSearchClient', '~> 8.0'
 pod 'AlgoliaSearchClient', '~> 9.0.0'
 ```
 
-<Note>
   With CocoaPods, all Algolia modules are bundled into a single `AlgoliaSearchClient` module.
   This means you use `import AlgoliaSearchClient` instead of the individual module imports
   shown in the rest of this guide.
@@ -58,14 +57,13 @@ This applies regardless of your installation method.
 The prefixed names are more verbose,
 but the tradeoff is better autocompletion in IDEs and more predictable structure
 that works well with AI coding assistants.
-</Note>
 
 ## Update imports
 
 Since version 9.40.0, all module names are prefixed with `Algolia` to avoid conflicts with other dependencies.
 The main module changed from `AlgoliaSearchClient` to `AlgoliaSearch`:
 
-```swift Swift icon=code theme={"system"}
+```swift
 // version 8
 import AlgoliaSearchClient
 
@@ -81,7 +79,7 @@ Version 9 includes dedicated modules for each API.
 To access methods from a specific API,
 import the corresponding module:
 
-```swift Swift icon=code theme={"system"}
+```swift
 // Search API
 import AlgoliaSearch
 // Recommend API
@@ -101,7 +99,7 @@ import AlgoliaQuerySuggestions
 In version 9, `SearchClient` initialization can throw,
 requiring the `try` keyword:
 
-```swift Swift icon=code highlight={5} theme={"system"}
+```swift
 // version 8
 let client = SearchClient(appID: "ALGOLIA_APPLICATION_ID", apiKey: "ALGOLIA_API_KEY")
 
@@ -109,12 +107,10 @@ let client = SearchClient(appID: "ALGOLIA_APPLICATION_ID", apiKey: "ALGOLIA_API_
 let client = try SearchClient(appID: "ALGOLIA_APPLICATION_ID", apiKey: "ALGOLIA_API_KEY")
 ```
 
-<Note>
   The `try` keyword is required because version 9 validates
   your application ID and API key during initialization.
   If you're initializing the client inside a function that doesn't already throw,
   wrap it in a `do`/`catch` block.
-</Note>
 
 The other major change concerns what follows initialization:
 `index(withName:)` no longer exists.
@@ -126,7 +122,7 @@ Version 8 relied on an index object with methods called on it.
 In version 9, all methods belong to the `client` instance,
 with `indexName` as a parameter.
 
-```swift Swift icon=code highlight={7-13} theme={"system"}
+```swift
 // version 8
 let client = SearchClient(appID: "ALGOLIA_APPLICATION_ID", apiKey: "ALGOLIA_API_KEY")
 let index = client.index(withName: "INDEX_NAME")
@@ -142,10 +138,8 @@ try await client.searchSingleIndex(
 )
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `index(withName:)` or `.index(withName:` to find every place that needs changing.
-</Tip>
 
 ## Add async/await
 
@@ -154,7 +148,7 @@ All API calls are `async` functions that require `try await`.
 
 In version 8, API calls rely on completion handlers:
 
-```swift Swift icon=code theme={"system"}
+```swift
 // version 8 -- completion handler
 let index = client.index(withName: "INDEX_NAME")
 index.search(query: Query("QUERY")) { result in
@@ -177,7 +171,7 @@ let response: SearchResponse<Hit> = try await client.searchSingleIndex(
 
 If you're calling Algolia methods from synchronous code, wrap them in a `Task`:
 
-```swift Swift icon=code theme={"system"}
+```swift
 // version 9 -- calling from synchronous code
 Task {
     do {
@@ -198,10 +192,10 @@ Task {
 
 ### Search a single index
 
-The `index.search()` method is now [`client.searchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.search()` method is now `client.searchSingleIndex()`.
 Pass the index name and search parameters as named arguments:
 
-```swift Swift icon=code highlight={6-13} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 let result = index.search(query: "QUERY")
@@ -222,10 +216,10 @@ let result: SearchResponse<Hit> = try await client.searchSingleIndex(
 
 ### Search multiple indices
 
-The `client.multipleQueries()` method is now [`client.search()`](/doc/libraries/sdk/methods/search/search).
+The `client.multipleQueries()` method is now `client.search()`.
 Each request in the array requires an `indexName`:
 
-```swift Swift icon=code highlight={8-18} theme={"system"}
+```swift
 // version 8
 let results = client.multipleQueries(queries: [
     IndexQuery(indexName: "INDEX_1", query: Query("QUERY")),
@@ -254,7 +248,7 @@ let response: SearchResponses<Hit> = try await client.search(
 The `index.searchForFacetValues()` method becomes `client.searchForFacetValues()`
 with an `indexName` parameter:
 
-```swift Swift icon=code highlight={6-10} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 let results = index.searchForFacetValues(of: "category", matching: "book")
@@ -274,7 +268,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```swift Swift icon=code highlight={6-13} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 index.saveObject(["objectID": "1", "name": "Record"])
@@ -296,7 +290,7 @@ let response = try await client.saveObjects(
 
 ### Partially update records
 
-```swift Swift icon=code highlight={5-9} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 index.partialUpdateObject(["objectID": "1", "name": "Updated"])
@@ -311,7 +305,7 @@ let response = try await client.partialUpdateObject(
 
 ### Delete records
 
-```swift Swift icon=code highlight={5} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 index.deleteObject(withID: "1")
@@ -324,7 +318,7 @@ let response = try await client.deleteObject(indexName: "INDEX_NAME", objectID: 
 
 ### Get and set settings
 
-```swift Swift icon=code highlight={6-12} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 let settings = index.getSettings()
@@ -342,7 +336,7 @@ try await client.setSettings(
 
 ### Save synonyms and rules
 
-```swift Swift icon=code highlight={6-13} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 index.saveSynonyms([Synonym.regular(objectID: "1", synonyms: ["car", "auto"])])
@@ -363,19 +357,17 @@ try await client.saveRules(
 )
 ```
 
-<Note>
   In version 8, `index.replaceAllRules()` and `index.replaceAllSynonyms()` replaced all rules or synonyms.
   In version 9, use `client.saveRules()` or `client.saveSynonyms()` with the `clearExistingRules` or `replaceExistingSynonyms` parameter set to `true`.
-</Note>
 
 ## Update index management
 
 The `copyIndex`, `moveIndex`, `copyRules`, `copySynonyms`, and `copySettings`
-methods are all replaced by a single [`operationIndex`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `operationIndex` method.
 
 ### Copy an index
 
-```swift Swift icon=code highlight={5-10} theme={"system"}
+```swift
 // version 8
 client.copyIndex(from: "SOURCE_INDEX_NAME", to: "DESTINATION_INDEX_NAME")
 
@@ -391,7 +383,7 @@ try await client.operationIndex(
 
 ### Move (rename) an index
 
-```swift Swift icon=code highlight={5-10} theme={"system"}
+```swift
 // version 8
 client.moveIndex(from: "SOURCE_INDEX_NAME", to: "DESTINATION_INDEX_NAME")
 
@@ -409,7 +401,7 @@ try await client.operationIndex(
 
 In version 9, use the `scope` parameter to limit the operation to specific data:
 
-```swift Swift icon=code theme={"system"}
+```swift
 // version 9 -- copy only rules and settings from one index to another
 try await client.operationIndex(
     indexName: "SOURCE_INDEX_NAME",
@@ -424,9 +416,9 @@ try await client.operationIndex(
 ### Check if an index exists
 
 In version 8, you could check if an index existed using the `exists` method on the index object.
-In version 9, use the [`indexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 9, use the `indexExists` helper method on the client:
 
-```swift Swift icon=code highlight={5-6} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 index.exists()
@@ -440,7 +432,7 @@ let response = try await client.indexExists(indexName: "INDEX_NAME")
 Version 8 supported chaining `.wait()` on operations.
 Version 9 replaces this pattern with dedicated wait helpers.
 
-```swift Swift icon=code highlight={6-10} theme={"system"}
+```swift
 // version 8
 let index = client.index(withName: "INDEX_NAME")
 index.saveObjects(records).wait()
@@ -455,9 +447,9 @@ try await client.waitForTask(indexName: "INDEX_NAME", taskID: Int64(response.tas
 
 Version 9 includes three wait helpers:
 
-* [`waitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`waitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`waitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `waitForTask`: wait until indexing operations are done.
+* `waitForAppTask`: wait for application-level tasks.
+* `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -469,7 +461,7 @@ The `safe` parameter has been removed. In version 8, `safe: true` caused the hel
 
 The completion-handler-based API has also been removed in favor of Swift concurrency (`async`/`await`).
 
-```swift Swift icon=code highlight={6-11} theme={"system"}
+```swift
 // version 8
 index.replaceAllObjects(with: objects, safe: true) { result in
     // handle result
@@ -487,7 +479,7 @@ let response = try await client.replaceAllObjects(
 
 The `autoGeneratingObjectID` parameter has been removed. In version 9, every object must include an `objectID`. The completion-handler-based API has also been removed in favor of Swift concurrency.
 
-```swift Swift icon=code highlight={6-8} theme={"system"}
+```swift
 // version 8
 index.saveObjects(objects, autoGeneratingObjectID: true) { result in
     // handle result
@@ -502,7 +494,7 @@ let response = try await client.saveObjects(indexName: "INDEX_NAME", objects: ob
 
 The input type changed from `[ObjectID]` (a typed wrapper) to `[String]`. The helper moved to the client, and two new optional parameters are available: `waitForTasks` (default `false`) and `batchSize` (default `1,000`).
 
-```swift Swift icon=code highlight={6-11} theme={"system"}
+```swift
 // version 8
 index.deleteObjects(withIDs: [ObjectID("id1"), ObjectID("id2")]) { result in
     // handle result
@@ -520,7 +512,7 @@ try await client.deleteObjects(
 
 The input type changed from `[(objectID: ObjectID, update: PartialUpdate)]` to `[some Encodable]`. The `createIfNotExists` default flipped from `true` (version 8) to `false` (version 9). The completion-handler API was also replaced with Swift concurrency.
 
-```swift Swift icon=code expandable highlight={10-16} theme={"system"}
+```swift
 // version 8
 // createIfNotExists defaulted to true
 index.partialUpdateObjects(
@@ -543,7 +535,7 @@ try await client.partialUpdateObjects(
 
 In version 8, these helpers eagerly fetched all pages and returned the full result array via a completion handler or throwing call. In version 9, they accept an `aggregator` closure invoked with each page, use Swift concurrency, and accept an optional `validate` closure to stop early.
 
-```swift Swift icon=code expandable highlight={11-20} theme={"system"}
+```swift
 // version 8
 index.browseObjects() { result in
     switch result {
@@ -570,7 +562,7 @@ try await client.browseObjects(
 
 Both method names changed from `API` (all caps) to `Api` (title case) to follow Swift naming conventions.
 
-```swift Swift icon=code highlight={7-13} theme={"system"}
+```swift
 // version 8
 let key = SearchClient.generateSecuredAPIKey(
     withParent: "parentApiKey",
@@ -590,7 +582,7 @@ let remaining = try SearchClient.getSecuredApiKeyRemainingValidity(for: key)
 
 The helper was renamed from `waitTask` to `waitForTask`, moved to the client, and now uses Swift concurrency. The `timeout` parameter changed from `TimeInterval?` (a maximum wall-clock limit) to a retry-count-to-delay closure (exponential backoff). An explicit `maxRetries` parameter (default `50`) was added.
 
-```swift Swift icon=code highlight={4-9} theme={"system"}
+```swift
 // version 8
 try index.waitTask(withID: taskID, timeout: 30)
 
@@ -606,7 +598,7 @@ try await client.waitForTask(
 
 This is a new helper in version 9.
 
-```swift Swift icon=code theme={"system"}
+```swift
 try await client.waitForAppTask(taskID: taskID)
 ```
 
@@ -614,7 +606,7 @@ try await client.waitForAppTask(taskID: taskID)
 
 This is a new standalone helper in version 9.
 
-```swift Swift icon=code theme={"system"}
+```swift
 // Wait for a key to be created:
 try await client.waitForApiKey(key: "my-api-key", operation: .add)
 
@@ -630,7 +622,7 @@ try await client.waitForApiKey(
 
 This helper is new in version 9.
 
-```swift Swift icon=code theme={"system"}
+```swift
 let exists = try await client.indexExists(indexName: "INDEX_NAME")
 ```
 
@@ -638,7 +630,7 @@ let exists = try await client.indexExists(indexName: "INDEX_NAME")
 
 `chunkedBatch` is now a public helper in version 9. In version 8, chunking was an internal detail of `saveObjects`. The `action` parameter defaults to `.addObject` and `waitForTasks` defaults to `false`.
 
-```swift Swift icon=code theme={"system"}
+```swift
 let responses = try await client.chunkedBatch(
     indexName: "INDEX_NAME",
     objects: myObjects,
@@ -653,7 +645,7 @@ In version 8, the `AccountClient` struct provided a static `copyIndex(source:des
 
 In version 9, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```swift Swift icon=code expandable highlight={4-29} theme={"system"}
+```swift
 // version 8
 let tasks = try AccountClient.copyIndex(source: srcIndex, destination: destIndex)
 

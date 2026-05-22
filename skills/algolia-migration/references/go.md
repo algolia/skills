@@ -11,13 +11,13 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `InitIndex` pattern:
 all methods are now on the `client` instance directly, with `indexName` as a parameter.
 
-For the full list of changes, see the [Go changelog](/doc/libraries/sdk/changelog/go).
+For the full list of changes, see the Go changelog.
 
 ## Update your dependencies
 
 Update the `algoliasearch-client-go` package to version 4:
 
-```sh Command line icon=square-terminal theme={"system"}
+```sh
 go get github.com/algolia/algoliasearch-client-go/v4
 ```
 
@@ -25,7 +25,7 @@ go get github.com/algolia/algoliasearch-client-go/v4
 
 The import path changed from `v3` to `v4`:
 
-```go Go icon=code theme={"system"}
+```go
 // version 3
 import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 
@@ -38,7 +38,7 @@ import "github.com/algolia/algoliasearch-client-go/v4/algolia/search"
 In version 3, `NewClient` returned a client directly.
 In version 4, it returns a `(client, error)` pair, so you need to handle the error:
 
-```go Go icon=code highlight={6-9} theme={"system"}
+```go
 // version 3
 client := search.NewClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 
@@ -65,7 +65,7 @@ The builder pattern is more verbose than version 3's flat function signatures.
 The tradeoff is strong typing, better IDE autocompletion,
 and predictable structure that works well with AI coding assistants.
 
-```go Go icon=code highlight={7-14} theme={"system"}
+```go
 // version 3
 client := search.NewClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 index := client.InitIndex("INDEX_NAME")
@@ -82,19 +82,17 @@ response, err := client.SearchSingleIndex(client.NewApiSearchSingleIndexRequest(
       search.NewEmptySearchParamsObject().SetQuery("QUERY"))))
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `InitIndex` or `.InitIndex(` to find every place that needs changing.
-</Tip>
 
 ## Update search calls
 
 ### Search a single index
 
-The `index.Search()` method is now [`client.SearchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.Search()` method is now `client.SearchSingleIndex()`.
 Build the request with `NewApiSearchSingleIndexRequest` and attach search parameters with `WithSearchParams`:
 
-```go Go icon=code highlight={7-11} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 res, err := index.Search("QUERY", opt.Filters("category:Book"))
@@ -110,10 +108,10 @@ response, err := client.SearchSingleIndex(client.NewApiSearchSingleIndexRequest(
 
 ### Search multiple indices
 
-The `client.MultipleQueries()` method is now [`client.Search()`](/doc/libraries/sdk/methods/search/search).
+The `client.MultipleQueries()` method is now `client.Search()`.
 Each query in the request requires an `IndexName`:
 
-```go Go icon=code highlight={8-14} theme={"system"}
+```go
 // version 3
 res, err := client.MultipleQueries([]search.IndexedQuery{
   {IndexName: "INDEX_1", Params: search.Params{Query: search.Query("QUERY")}},
@@ -136,7 +134,7 @@ response, err := client.Search(client.NewApiSearchRequest(
 The `index.SearchForFacetValues()` method becomes `client.SearchForFacetValues()`
 with an `indexName` parameter:
 
-```go Go icon=code highlight={5-7} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 res, err := index.SearchForFacetValues("category", "book", nil)
@@ -153,7 +151,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```go Go icon=code highlight={6-11} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 res, err := index.SaveObject(map[string]any{"objectID": "1", "name": "Record"})
@@ -169,7 +167,7 @@ response, err := client.SaveObject(client.NewApiSaveObjectRequest(
 
 ### Partially update records
 
-```go Go icon=code highlight={5-7} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 res, err := index.PartialUpdateObject(map[string]any{"objectID": "1", "name": "Updated"})
@@ -181,7 +179,7 @@ response, err := client.PartialUpdateObject(client.NewApiPartialUpdateObjectRequ
 
 ### Delete records
 
-```go Go icon=code highlight={5-7} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 res, err := index.DeleteObject("1")
@@ -195,7 +193,7 @@ response, err := client.DeleteObject(client.NewApiDeleteObjectRequest(
 
 ### Get and set settings
 
-```go Go icon=code highlight={7-14} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 settings, err := index.GetSettings()
@@ -213,7 +211,7 @@ setResponse, err := client.SetSettings(client.NewApiSetSettingsRequest(
 
 ### Save synonyms and rules
 
-```go Go icon=code highlight={7-19} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 index.SaveSynonyms([]search.Synonym{{ObjectID: "1", Type: search.RegularSynonymType, Synonyms: []string{"car", "auto"}}})
@@ -240,19 +238,17 @@ rulesResponse, err := client.SaveRules(client.NewApiSaveRulesRequest(
   }))
 ```
 
-<Note>
   In version 3, `index.ReplaceAllRules()` and `index.ReplaceAllSynonyms()` replaced all rules or synonyms.
   In version 4, use `client.SaveRules()` or `client.SaveSynonyms()` with the `WithClearExistingRules(true)` or `WithReplaceExistingSynonyms(true)` option on the request builder.
-</Note>
 
 ## Update index management
 
 The `CopyIndex`, `MoveIndex`, `CopyRules`, `CopySynonyms`, and `CopySettings`
-methods are all replaced by a single [`OperationIndex`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `OperationIndex` method.
 
 ### Copy an index
 
-```go Go icon=code highlight={5-8} theme={"system"}
+```go
 // version 3
 client.CopyIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
@@ -266,7 +262,7 @@ response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
 
 ### Move (rename) an index
 
-```go Go icon=code highlight={5-8} theme={"system"}
+```go
 // version 3
 client.MoveIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
@@ -282,7 +278,7 @@ response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
 
 In version 4, use the `SetScope` parameter to limit the operation to specific data:
 
-```go Go icon=code theme={"system"}
+```go
 // version 4 -- copy only rules and settings from one index to another
 response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
   "SOURCE_INDEX_NAME",
@@ -298,9 +294,9 @@ response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
 ### Check if an index exists
 
 In version 3, you could check if an index existed using the `Exists` method on the index object.
-In version 4, use the [`IndexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 4, use the `IndexExists` helper method on the client:
 
-```go Go icon=code highlight={5-6} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 ok, err := index.Exists()
@@ -314,7 +310,7 @@ response, err := client.IndexExists("INDEX_NAME")
 Version 3 supported chaining `.Wait()` on operations.
 Version 4 replaces this pattern with dedicated wait helpers.
 
-```go Go icon=code highlight={6-8} theme={"system"}
+```go
 // version 3
 index := client.InitIndex("INDEX_NAME")
 res, err := index.SaveObjects(records)
@@ -327,9 +323,9 @@ client.WaitForTask("INDEX_NAME", *response[0].TaskID)
 
 Version 4 includes three wait helpers:
 
-* [`WaitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`WaitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`WaitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `WaitForTask`: wait until indexing operations are done.
+* `WaitForAppTask`: wait for application-level tasks.
+* `WaitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -339,7 +335,7 @@ The following sections document breaking changes in helper method signatures and
 
 The `opt.Safe()` functional option has been removed. In version 3, passing `opt.Safe(true)` caused the helper to wait after each step. In version 4, the helper always waits—equivalent to the previous `opt.Safe(true)` behavior.
 
-```go Go icon=code highlight={4-9} theme={"system"}
+```go
 // version 3
 res, err := index.ReplaceAllObjects(objects, opt.Safe(true))
 
@@ -355,7 +351,7 @@ res, err := client.ReplaceAllObjects(search.ReplaceAllObjectsParams{
 
 The `opt.AutoGenerateObjectIDIfNotExist()` functional option has been removed. In version 4, every object must include an `ObjectID`. To have the API generate object IDs, use `ChunkedBatch` with `search.ACTION_ADD_OBJECT`.
 
-```go Go icon=code highlight={4-9} theme={"system"}
+```go
 // version 3
 res, err := index.SaveObjects(objects, opt.AutoGenerateObjectIDIfNotExist(true))
 
@@ -371,7 +367,7 @@ res, err := client.SaveObjects(search.SaveObjectsParams{
 
 The `opt.CreateIfNotExists()` functional option has been replaced with an explicit field on the params struct. The default also changed: in version 3 it defaulted to `false` (used `partialUpdateObjectNoCreate`); in version 4 it defaults to `true`.
 
-```go Go icon=code highlight={5-11} theme={"system"}
+```go
 // version 3
 // Default: createIfNotExists = false
 res, err := index.PartialUpdateObjects(objects, opt.CreateIfNotExists(true))
@@ -389,7 +385,7 @@ res, err := client.PartialUpdateObjects(search.PartialUpdateObjectsParams{
 
 The `ObjectIterator`, `RuleIterator`, and `SynonymIterator` types have been removed. These helpers now use an `Aggregator` callback that is called with each page of results.
 
-```go Go icon=code expandable highlight={9-19} theme={"system"}
+```go
 // version 3
 it, err := index.BrowseObjects()
 for {
@@ -418,7 +414,7 @@ Two new optional parameters are available:
 * `WithWaitForTasks(bool)` (default `false`)
 * `WithBatchSize(int)` (default `1,000`)
 
-```go Go icon=code highlight={4-7} theme={"system"}
+```go
 // version 3
 res, err := index.DeleteObjects([]string{"id1", "id2"})
 
@@ -432,7 +428,7 @@ res, err := client.DeleteObjects("INDEX_NAME", []string{"id1", "id2"},
 
 The helper was renamed from `WaitTask` to `WaitForTask`, moved to the client, and now returns `*GetTaskResponse` instead of `error`. The `timeToWait` config option is replaced by explicit `WithMaxRetries` and `WithTimeout` options—the default timeout uses exponential backoff capped at 5 seconds.
 
-```go Go icon=code highlight={4-13} theme={"system"}
+```go
 // version 3
 err := index.WaitTask(taskID)
 
@@ -452,7 +448,7 @@ resp, err := client.WaitForTask("INDEX_NAME", taskID,
 
 This is a new helper in version 4.
 
-```go Go icon=code theme={"system"}
+```go
 resp, err := client.WaitForAppTask(taskID)
 ```
 
@@ -460,7 +456,7 @@ resp, err := client.WaitForAppTask(taskID)
 
 This is a new standalone helper in version 4. In version 3, waiting for API key operations required polling `GetAPIKey` manually.
 
-```go Go icon=code theme={"system"}
+```go
 // Wait for a key to be created:
 resp, err := client.WaitForApiKey("my-api-key", search.APIKEYOPERATION_ADD, nil)
 
@@ -475,7 +471,7 @@ resp, err := client.WaitForApiKey("my-api-key", search.APIKEYOPERATION_UPDATE,
 
 The helper was renamed from `Exists()` on the index object to `IndexExists()` on the client.
 
-```go Go icon=code highlight={4-5} theme={"system"}
+```go
 // version 3
 exists, err := index.Exists()
 
@@ -487,7 +483,7 @@ exists, err := client.IndexExists("INDEX_NAME")
 
 The function moved from a package-level function to a method on the client and was renamed from `GenerateSecuredAPIKey` to `GenerateSecuredApiKey`. The restrictions are now a single typed struct instead of variadic functional options.
 
-```go Go icon=code highlight={7-11} theme={"system"}
+```go
 // version 3
 key, err := search.GenerateSecuredAPIKey("parentApiKey",
     opt.ValidUntil(1893456000),
@@ -505,7 +501,7 @@ key, err := client.GenerateSecuredApiKey("parentApiKey", &search.SecuredApiKeyRe
 
 The method was renamed from `GetSecuredAPIKeyRemainingValidity` to `GetSecuredApiKeyRemainingValidity`. The variadic options parameter has been removed.
 
-```go Go icon=code highlight={4-5} theme={"system"}
+```go
 // version 3
 duration, err := client.GetSecuredAPIKeyRemainingValidity(key)
 
@@ -517,7 +513,7 @@ duration, err := client.GetSecuredApiKeyRemainingValidity(key)
 
 `ChunkedBatch` is now a public helper. In version 3, chunking was an internal detail of `SaveObjects`. The `action` parameter is required.
 
-```go Go icon=code theme={"system"}
+```go
 res, err := client.ChunkedBatch("INDEX_NAME", objects, search.ACTION_ADD_OBJECT,
     search.WithChunkedBatchWaitForTasks(true),
     search.WithChunkedBatchBatchSize(1000),
@@ -530,7 +526,7 @@ In version 3, the `Account` type provided a `CopyIndex` method for copying an in
 
 In version 4, the `Account` type is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```go Go icon=code expandable highlight={5-49} theme={"system"}
+```go
 // version 3
 account := search.NewAccount(srcClient, destClient)
 _, err := account.CopyIndex(srcIndex, destIndex)
@@ -586,7 +582,7 @@ dst.ReplaceAllObjects("DEST_INDEX", objects)
 
 New in version 4. Routes objects through the Algolia Push connector. Requires the `IngestionTransporter` to be configured at client initialization via a region.
 
-```go Go icon=code theme={"system"}
+```go
 res, err := client.SaveObjectsWithTransformation("INDEX_NAME", objects,
     search.WithChunkedBatchWaitForTasks(true),
     search.WithChunkedBatchBatchSize(1000),
@@ -597,7 +593,7 @@ res, err := client.SaveObjectsWithTransformation("INDEX_NAME", objects,
 
 New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the `IngestionTransporter` to be configured at client initialization.
 
-```go Go icon=code theme={"system"}
+```go
 res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
     search.WithReplaceAllObjectsBatchSize(1000),
     search.WithReplaceAllObjectsScopes([]search.ScopeType{
@@ -612,7 +608,7 @@ res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
 
 New in version 4. Routes partial updates through the Push connector. The `createIfNotExists` option defaults to `false`.
 
-```go Go icon=code theme={"system"}
+```go
 res, err := client.PartialUpdateObjectsWithTransformation("INDEX_NAME", objects,
     search.WithPartialUpdateObjectsCreateIfNotExists(false),
     search.WithChunkedBatchWaitForTasks(false),

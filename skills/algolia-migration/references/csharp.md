@@ -11,21 +11,19 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `InitIndex` pattern:
 all methods are now on the `client` instance directly, with `indexName` as a parameter.
 
-For the full list of changes, see the [C# changelog](/doc/libraries/sdk/changelog/csharp).
+For the full list of changes, see the C# changelog.
 
 ## Update your dependencies
 
 Update the `Algolia.Search` package to version 7:
 
-```sh Command line icon=square-terminal theme={"system"}
+```sh
 dotnet add package Algolia.Search --version "7.*"
 ```
 
-<Note>
   Version 7 replaces the `Newtonsoft.Json` dependency with `System.Text.Json`.
   If your project relies on Newtonsoft-specific attributes or converters,
   see [Update the serialization library](#update-the-serialization-library) for migration guidance.
-</Note>
 
 ## Update imports
 
@@ -34,7 +32,7 @@ but several model types have been renamed.
 For example, the `Query` class no longer exists.
 It's replaced by `SearchParams` and `SearchParamsObject`.
 
-```cs C# icon=code theme={"system"}
+```cs
 // version 6
 using Algolia.Search.Clients;
 using Algolia.Search.Models.Search;
@@ -53,7 +51,7 @@ for the new model classes.
 Client creation is unchanged.
 The constructor still accepts your application ID and API key:
 
-```cs C# icon=code theme={"system"}
+```cs
 // version 6
 var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 
@@ -70,7 +68,7 @@ Version 7 includes both synchronous and asynchronous variants for every API meth
 Asynchronous methods have an `Async` suffix and return a `Task<T>`.
 Synchronous methods keep the base name.
 
-```cs C# icon=code theme={"system"}
+```cs
 // Asynchronous (recommended)
 var results = await client.SearchSingleIndexAsync<Hit>("INDEX_NAME", searchParams);
 
@@ -88,7 +86,7 @@ Version 6 relied on an index object with methods called on it.
 In version 7, all methods belong to the `client` instance,
 with `indexName` as a parameter.
 
-```cs C# icon=code highlight={6-10} theme={"system"}
+```cs
 // version 6
 var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 var index = client.InitIndex("INDEX_NAME");
@@ -102,19 +100,17 @@ var results = await client.SearchSingleIndexAsync<Hit>(
 );
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `InitIndex` or `.InitIndex(` to find every place that needs changing.
-</Tip>
 
 ## Update search calls
 
 ### Search a single index
 
-The `index.Search()` method is now [`client.SearchSingleIndexAsync()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.Search()` method is now `client.SearchSingleIndexAsync()`.
 Pass the index name and search parameters directly:
 
-```cs C# icon=code highlight={7-12} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 var results = await index.SearchAsync<Contact>(new Query("QUERY")
@@ -135,10 +131,10 @@ var results = await client.SearchSingleIndexAsync<Hit>(
 
 ### Search multiple indices
 
-The `client.MultipleQueries()` method is now [`client.SearchAsync()`](/doc/libraries/sdk/methods/search/search).
+The `client.MultipleQueries()` method is now `client.SearchAsync()`.
 Each request in the collection requires an `IndexName`:
 
-```cs C# icon=code highlight={8-16} theme={"system"}
+```cs
 // version 6
 var results = await client.MultipleQueriesAsync<Hit>(
     new List<MultipleQueriesQuery>
@@ -166,7 +162,7 @@ var results = await client.SearchAsync<Hit>(
 The `index.SearchForFacetValues()` method becomes `client.SearchForFacetValuesAsync()`
 with an `indexName` parameter:
 
-```cs C# icon=code highlight={5-10} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 var results = await index.SearchForFacetValueAsync("category", "book");
@@ -186,7 +182,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```cs C# icon=code highlight={6-7,10-13} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 await index.SaveObjectAsync(new { ObjectID = "1", Name = "Record" });
@@ -204,7 +200,7 @@ await client.SaveObjectsAsync(
 
 ### Partially update records
 
-```cs C# icon=code highlight={5-9} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 await index.PartialUpdateObjectAsync(new { ObjectID = "1", Name = "Updated" });
@@ -219,7 +215,7 @@ await client.PartialUpdateObjectAsync(
 
 ### Delete records
 
-```cs C# icon=code highlight={5} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 await index.DeleteObjectAsync("1");
@@ -232,7 +228,7 @@ await client.DeleteObjectAsync("INDEX_NAME", "1");
 
 ### Get and set settings
 
-```cs C# icon=code highlight={6-13} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 var settings = await index.GetSettingsAsync();
@@ -254,7 +250,7 @@ await client.SetSettingsAsync(
 
 ### Save synonyms and rules
 
-```cs C# icon=code highlight={5-12} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 await index.SaveSynonymsAsync(synonyms);
@@ -271,19 +267,17 @@ await client.SaveRulesAsync(
 );
 ```
 
-<Note>
   In version 6, `index.ReplaceAllRules()` and `index.ReplaceAllSynonyms()` replaced all rules or synonyms.
   In version 7, use `client.SaveRulesAsync()` or `client.SaveSynonymsAsync()` with the `clearExistingRules` or `clearExistingSynonyms` parameter set to `true`.
-</Note>
 
 ## Update index management
 
 The `CopyIndex`, `MoveIndex`, `CopyRules`, `CopySynonyms`, and `CopySettings`
-methods are all replaced by [`OperationIndexAsync`](/doc/rest-api/search/operation-index).
+methods are all replaced by `OperationIndexAsync`.
 
 ### Copy an index
 
-```cs C# icon=code highlight={4-10} theme={"system"}
+```cs
 // version 6
 await client.CopyIndexAsync("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
 
@@ -300,7 +294,7 @@ await client.OperationIndexAsync(
 
 ### Move (rename) an index
 
-```cs C# icon=code highlight={4-10} theme={"system"}
+```cs
 // version 6
 await client.MoveIndexAsync("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
 
@@ -319,7 +313,7 @@ await client.OperationIndexAsync(
 
 In version 7, use the `Scope` parameter to limit the operation to specific data:
 
-```cs C# icon=code theme={"system"}
+```cs
 // version 7 -- copy only rules and settings from one index to another
 await client.OperationIndexAsync(
     "SOURCE_INDEX_NAME",
@@ -335,9 +329,9 @@ await client.OperationIndexAsync(
 ### Check if an index exists
 
 In version 6, you could check if an index existed using the `Exists` method on the index object.
-In version 7, use the [`IndexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 7, use the `IndexExists` helper method on the client:
 
-```cs C# icon=code highlight={5-6} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 index.Exists();
@@ -351,7 +345,7 @@ await client.IndexExistsAsync("INDEX_NAME");
 Version 6 supported chaining `.Wait()` on operations.
 Version 7 replaces this pattern with dedicated wait helpers.
 
-```cs C# icon=code highlight={5-7} theme={"system"}
+```cs
 // version 6
 var index = client.InitIndex("INDEX_NAME");
 index.SaveObjects(records).Wait();
@@ -363,9 +357,9 @@ await client.WaitForTaskAsync("INDEX_NAME", response.TaskID);
 
 Version 7 includes three wait helpers:
 
-* [`WaitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`WaitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`WaitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `WaitForTask`: wait until indexing operations are done.
+* `WaitForAppTask`: wait for application-level tasks.
+* `WaitForApiKey`: wait for API key operations.
 
 ## Update the serialization library
 
@@ -379,14 +373,12 @@ If you were using the `Newtonsoft.Json` package for custom serialization,
 see [Migrate from Newtonsoft.Json to System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/migrate-from-newtonsoft?pivots=dotnet-9-0)
 in Microsoft's documentation.
 
-<Tip>
   Common attribute replacements when migrating from `Newtonsoft.Json`:
 
 * `[JsonProperty("name")]` becomes `[JsonPropertyName("name")]`
 * `[JsonIgnore]` keeps the same name but moves to the `System.Text.Json.Serialization` namespace
 * Custom `JsonConverter` implementations need rewriting for `System.Text.Json`
-  </Tip>
-
+  
 ## Update enumeration serialization
 
 To keep the serialization of enumeration types consistent with previous versions of the .NET API client,
@@ -394,7 +386,7 @@ they're serialized as `int` by default.
 
 To serialize enumeration types as strings, use the `JsonStringEnumConverter` attribute from `System.Text.Json.Serialization`:
 
-```cs C# icon=code theme={"system"}
+```cs
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MyEnum
 {
@@ -422,7 +414,7 @@ The `safe` parameter has been removed. In version 6, `safe: true` caused the hel
 
 The `scopes` parameter is now required and must be passed explicitly.
 
-```csharp C# icon=code highlight={4-9} theme={"system"}
+```csharp
 // version 6
 await index.ReplaceAllObjectsAsync(objects, safe: true);
 
@@ -438,7 +430,7 @@ await client.ReplaceAllObjectsAsync(
 
 The `autoGenerateObjectId` parameter has been removed. In version 7, every object must include an `ObjectID`. To have the API generate object IDs, use the `ChunkedBatch` helper with `Action.AddObject`.
 
-```csharp C# icon=code highlight={3-6} theme={"system"}
+```csharp
 // version 6
 await index.SaveObjectsAsync(objects, autoGenerateObjectId: true);
 
@@ -451,7 +443,7 @@ await client.SaveObjectsAsync(indexName: "INDEX_NAME", objects: objects);
 
 The `createIfNotExists` parameter is now a required argument—it no longer has a default value.
 
-```csharp C# icon=code highlight={4-11} theme={"system"}
+```csharp
 // version 6
 // createIfNotExists defaulted to false
 await index.PartialUpdateObjectsAsync(objects, createIfNotExists: true);
@@ -469,7 +461,7 @@ await client.PartialUpdateObjectsAsync(
 
 The method was renamed from the plural `GenerateSecuredApiKeys` to the singular `GenerateSecuredApiKey`.
 
-```csharp C# icon=code highlight={4-5} theme={"system"}
+```csharp
 // version 6
 var key = SearchClient.GenerateSecuredApiKeys("parentApiKey", new SecuredApiKeyRestriction { ... });
 
@@ -481,7 +473,7 @@ var key = SearchClient.GenerateSecuredApiKey("parentApiKey", new SecuredApiKeyRe
 
 These helpers no longer return iterator types (`IndexIterator<T>`, `RulesIterator`, `SynonymsIterator`). In version 7, they accept an `aggregator` action invoked with each page of results.
 
-```csharp C# icon=code highlight={8-14} theme={"system"}
+```csharp
 // version 6
 var iterator = index.Browse<MyModel>(new BrowseIndexQuery("query"));
 foreach (var obj in iterator)
@@ -505,7 +497,7 @@ Two new optional parameters are available:
 * `waitForTasks` (default `false`)
 * `batchSize` (default `1,000`)
 
-```csharp C# icon=code highlight={3-9} theme={"system"}
+```csharp
 // version 6
 await index.DeleteObjectsAsync(new List<string> { "id1", "id2" });
 
@@ -521,7 +513,7 @@ await client.DeleteObjectsAsync(
 
 The method was renamed from `WaitTask` to `WaitForTask`. It now returns `GetTaskResponse` instead of `void`, adds explicit `maxRetries` (default `50`) and a `timeout` function (default: exponential backoff capped at 5 seconds) instead of the `timeToWait` integer.
 
-```csharp C# icon=code highlight={5-11} theme={"system"}
+```csharp
 // version 6
 // Returns void; flat timeToWait in milliseconds
 await index.WaitTaskAsync(taskID, timeToWait: 100);
@@ -539,7 +531,7 @@ var taskResponse = await client.WaitForTaskAsync(
 
 This is a new helper in version 7.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 var taskResponse = await client.WaitForAppTaskAsync(taskId: taskID);
 ```
 
@@ -547,7 +539,7 @@ var taskResponse = await client.WaitForAppTaskAsync(taskId: taskID);
 
 This is a new standalone helper in version 7.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 // Wait for a key to be created:
 await client.WaitForApiKeyAsync("my-api-key", ApiKeyOperation.Add);
 
@@ -563,7 +555,7 @@ await client.WaitForApiKeyAsync(
 
 This helper is new in version 7.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 TimeSpan remaining = client.GetSecuredApiKeyRemainingValidity(securedApiKey: key);
 ```
 
@@ -571,7 +563,7 @@ TimeSpan remaining = client.GetSecuredApiKeyRemainingValidity(securedApiKey: key
 
 This helper is new in version 7.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 bool exists = await client.IndexExistsAsync(indexName: "INDEX_NAME");
 ```
 
@@ -579,7 +571,7 @@ bool exists = await client.IndexExistsAsync(indexName: "INDEX_NAME");
 
 `ChunkedBatch` is now a public helper. In version 6, chunking was an internal detail of `SaveObjects`. The `waitForTasks` parameter defaults to `false` and `batchSize` defaults to `1,000`.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 var responses = await client.ChunkedBatchAsync<MyModel>(
     indexName: "INDEX_NAME",
     objects: myObjects,
@@ -594,7 +586,7 @@ In version 6, `AccountClient` provided `CopyIndex<T>` and `CopyIndexAsync<T>` fo
 
 In version 7, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```csharp C# icon=code expandable highlight={4-27} theme={"system"}
+```csharp
 // version 6
 var response = await AccountClient.CopyIndexAsync<MyModel>(sourceIndex, destinationIndex);
 
@@ -628,7 +620,7 @@ await dst.ReplaceAllObjectsAsync("DEST_INDEX", objects);
 
 New in version 7. Routes objects through the Algolia Push connector. Requires the transformation region to be set at client initialization.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 var responses = await client.SaveObjectsWithTransformationAsync(
     indexName: "INDEX_NAME",
     objects: myObjects,
@@ -641,7 +633,7 @@ var responses = await client.SaveObjectsWithTransformationAsync(
 
 New in version 7. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the transformation region to be set at client initialization.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 var response = await client.ReplaceAllObjectsWithTransformationAsync(
     indexName: "INDEX_NAME",
     objects: myObjects,
@@ -654,7 +646,7 @@ var response = await client.ReplaceAllObjectsWithTransformationAsync(
 
 New in version 7. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
 
-```csharp C# icon=code theme={"system"}
+```csharp
 var responses = await client.PartialUpdateObjectsWithTransformationAsync(
     indexName: "INDEX_NAME",
     objects: myObjects,

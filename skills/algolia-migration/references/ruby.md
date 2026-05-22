@@ -11,21 +11,19 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `init_index` pattern:
 all methods are now on the `client` instance directly, with `index_name` as a parameter.
 
-For the full list of changes, see the [Ruby changelog](/doc/libraries/sdk/changelog/ruby).
+For the full list of changes, see the Ruby changelog.
 
 ## Update your dependencies
 
 Update the `algolia` gem to version 3:
 
-```sh Command line icon=square-terminal theme={"system"}
+```sh
 bundle add algolia --version '~> 3.0'
 # or: gem install algolia -v '~> 3.0'
 ```
 
-<Note>
   The gem name stays `algolia`.
   Don't confuse it with the older `algoliasearch` gem, which installs version 1.
-</Note>
 
 ## Update imports
 
@@ -33,7 +31,7 @@ The module paths for API clients changed.
 `Algolia::Search::Client` is now `Algolia::SearchClient`,
 and all other clients follow the same flattened pattern.
 
-```ruby Ruby icon=code theme={"system"}
+```ruby
 # version 2
 require "algolia"
 Algolia::Search::Client
@@ -45,7 +43,7 @@ Algolia::SearchClient
 
 Version 3 includes dedicated client classes for each API:
 
-```ruby Ruby icon=code expandable theme={"system"}
+```ruby
 # Search API
 Algolia::SearchClient
 # Recommend API
@@ -73,7 +71,7 @@ Algolia::UsageClient
 Besides the class name change, client creation follows the same pattern.
 The constructor still accepts your application ID and API key:
 
-```ruby Ruby icon=code theme={"system"}
+```ruby
 # version 2
 client = Algolia::Search::Client.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 
@@ -91,7 +89,7 @@ Version 2 relied on an index object with methods called on it.
 In version 3, all methods belong to the `client` instance,
 with `index_name` as a parameter.
 
-```ruby Ruby icon=code highlight={6-8} theme={"system"}
+```ruby
 # version 2
 client = Algolia::Search::Client.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 index = client.init_index("INDEX_NAME")
@@ -102,19 +100,17 @@ client = Algolia::SearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY
 client.search_single_index("INDEX_NAME", Algolia::Search::SearchParamsObject.new(query: "QUERY"))
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `init_index` or `.init_index(` to find every place that needs changing.
-</Tip>
 
 ## Update search calls
 
 ### Search a single index
 
-The `index.search` method is now [`client.search_single_index`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.search` method is now `client.search_single_index`.
 Pass the index name and search parameters as positional arguments:
 
-```ruby Ruby icon=code highlight={7-11} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 results = index.search("QUERY", {
@@ -130,10 +126,10 @@ results = client.search_single_index(
 
 ### Search multiple indices
 
-The `client.multiple_queries` method is now [`client.search`](/doc/libraries/sdk/methods/search/search).
+The `client.multiple_queries` method is now `client.search`.
 Each request in the array requires an `index_name`:
 
-```ruby Ruby icon=code highlight={8-15} theme={"system"}
+```ruby
 # version 2
 results = client.multiple_queries([
   {indexName: "INDEX_1", query: "QUERY"},
@@ -156,7 +152,7 @@ response = client.search(
 The `index.search_for_facet_values` method becomes `client.search_for_facet_values`
 with an `index_name` parameter:
 
-```ruby Ruby icon=code highlight={5-9} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 results = index.search_for_facet_values("category", "book")
@@ -176,7 +172,7 @@ with `index_name` as a parameter.
 
 ### Add or replace records
 
-```ruby Ruby icon=code highlight={7-8} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 index.save_object({objectID: "1", name: "Record"})
@@ -189,7 +185,7 @@ client.save_objects("INDEX_NAME", [{objectID: "1", name: "Record"}])
 
 ### Partially update records
 
-```ruby Ruby icon=code highlight={5} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 index.partial_update_object({objectID: "1", name: "Updated"})
@@ -200,7 +196,7 @@ client.partial_update_object("INDEX_NAME", "1", {name: "Updated"})
 
 ### Delete records
 
-```ruby Ruby icon=code highlight={5} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 index.delete_object("1")
@@ -213,7 +209,7 @@ client.delete_object("INDEX_NAME", "1")
 
 ### Get and set settings
 
-```ruby Ruby icon=code highlight={7-11} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 settings = index.get_settings
@@ -229,7 +225,7 @@ client.set_settings(
 
 ### Save synonyms and rules
 
-```ruby Ruby icon=code highlight={7-20} expandable theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 index.save_synonyms([{objectID: "1", type: "synonym", synonyms: ["car", "auto"]}])
@@ -252,19 +248,17 @@ client.save_rules(
 )
 ```
 
-<Note>
   In version 2, `index.replace_all_rules` and `index.replace_all_synonyms` replaced all rules or synonyms.
   In version 3, use `client.save_rules` or `client.save_synonyms` with `clear_existing_rules` or `replace_existing_synonyms` set to `true`.
-</Note>
 
 ## Update index management
 
 The `copy_index`, `move_index`, `copy_rules`, `copy_synonyms`, and `copy_settings`
-methods are all replaced by a single [`operation_index`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `operation_index` method.
 
 ### Copy an index
 
-```ruby Ruby icon=code highlight={4-7} theme={"system"}
+```ruby
 # version 2
 client.copy_index("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
@@ -277,7 +271,7 @@ client.operation_index(
 
 ### Move (rename) an index
 
-```ruby Ruby icon=code highlight={4-7} theme={"system"}
+```ruby
 # version 2
 client.move_index("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
@@ -292,7 +286,7 @@ client.operation_index(
 
 In version 3, use the `scope` parameter to limit the operation to specific data:
 
-```ruby Ruby icon=code theme={"system"}
+```ruby
 # version 3 -- copy only rules and settings from one index to another
 client.operation_index(
   "SOURCE_INDEX_NAME",
@@ -307,9 +301,9 @@ client.operation_index(
 ### Check if an index exists
 
 In version 2, you could check if an index existed using the `exists?` method on the index object.
-In version 3, use the [`index_exists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 3, use the `index_exists` helper method on the client:
 
-```ruby Ruby icon=code highlight={5-6} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 index.exists?
@@ -323,7 +317,7 @@ client.index_exists("INDEX_NAME")
 Version 2 supported chaining `.wait` on operations.
 Version 3 replaces this pattern with dedicated wait helpers or the built-in `wait_for_tasks` parameter.
 
-```ruby Ruby icon=code highlight={5-6} theme={"system"}
+```ruby
 # version 2
 index = client.init_index("INDEX_NAME")
 index.save_objects(records).wait
@@ -334,9 +328,9 @@ client.save_objects("INDEX_NAME", records, true)
 
 Version 3 includes three wait helpers:
 
-* [`wait_for_task`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`wait_for_app_task`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`wait_for_api_key`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `wait_for_task`: wait until indexing operations are done.
+* `wait_for_app_task`: wait for application-level tasks.
+* `wait_for_api_key`: wait for API key operations.
 
 ## Helper method changes
 
@@ -346,7 +340,7 @@ The following sections document breaking changes in helper method signatures and
 
 All bang (`!`) variants of helper methods have been removed. In version 2, bang methods (`save_objects!`, `delete_objects!`, `partial_update_objects!`, `replace_all_objects!`) automatically waited for indexing tasks to complete. In version 3, pass `true` as the `wait_for_tasks` argument instead.
 
-```ruby Ruby icon=code highlight={6-11} theme={"system"}
+```ruby
 # version 2
 index.save_objects!(objects)
 index.delete_objects!(["id1", "id2"])
@@ -366,7 +360,7 @@ The `safe:` option has been removed. In version 2, `safe: true` caused the helpe
 
 The `scopes` parameter is now required and must be passed explicitly.
 
-```ruby Ruby icon=code highlight={3-9} theme={"system"}
+```ruby
 # version 2
 index.replace_all_objects(objects, safe: true)
 
@@ -382,7 +376,7 @@ client.replace_all_objects(
 
 Two new optional parameters are available in version 3: `wait_for_tasks` (default `false`) and `batch_size` (default `1,000`). In version 2, you had to call the bang variants to wait for tasks.
 
-```ruby Ruby icon=code highlight={4-7} theme={"system"}
+```ruby
 # version 2
 index.save_objects(objects)
 index.delete_objects(["id1", "id2"])
@@ -396,7 +390,7 @@ client.delete_objects("INDEX_NAME", ["id1", "id2"], wait_for_tasks: false, batch
 
 These helpers moved from the index object to the client and now accept `index_name` as an explicit first argument. The block receives the full page response—use `response.hits` to access the objects for that page.
 
-```ruby Ruby icon=code highlight={5-9} theme={"system"}
+```ruby
 # version 2
 index.browse_objects do |object|
   process(object)
@@ -412,7 +406,7 @@ end
 
 Both methods were class methods in version 2. In version 3, they are available both as instance methods on the client and as class methods on `Algolia::Search::SearchClient`.
 
-```ruby Ruby icon=code highlight={4-10} theme={"system"}
+```ruby
 # version 2
 key = Algolia::SearchClient.generate_secured_api_key("parentApiKey", { validUntil: 1893456000 })
 remaining = Algolia::SearchClient.get_secured_api_key_remaining_validity(key)
@@ -429,7 +423,7 @@ key = Algolia::Search::SearchClient.generate_secured_api_key("parentApiKey", { v
 
 The helper was renamed from `wait_task` and moved from the index object to the client. The `index_name` parameter is now required as an explicit argument.
 
-```ruby Ruby icon=code highlight={4-5} theme={"system"}
+```ruby
 # version 2
 index.wait_task(task_id)
 
@@ -441,7 +435,7 @@ client.wait_for_task("INDEX_NAME", task_id)
 
 In version 2, waiting for API key operations was done by calling `.wait` on the response object returned by `add_api_key`, `update_api_key`, or `delete_api_key`. Version 3 provides a standalone `wait_for_api_key` helper.
 
-```ruby Ruby icon=code highlight={4-12} theme={"system"}
+```ruby
 # version 2
 response = client.add_api_key(["search"])
 response.wait
@@ -460,7 +454,7 @@ client.wait_for_api_key("my-api-key", "update",
 
 These are new helpers in version 3 with no equivalent in version 2.
 
-```ruby Ruby icon=code theme={"system"}
+```ruby
 # Wait for an application-level task:
 client.wait_for_app_task(task_id)
 
@@ -472,7 +466,7 @@ client.chunked_batch("INDEX_NAME", objects, Action::ADD_OBJECT, true)
 
 This is a new helper in version 3.
 
-```ruby Ruby icon=code highlight={4-5} theme={"system"}
+```ruby
 # version 2
 # No equivalent — had to rescue NotFoundException from get_settings
 
@@ -486,7 +480,7 @@ In version 2, the separate `Algolia::AccountClient` class provided a `copy_index
 
 In version 3, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```ruby Ruby icon=code expandable highlight={5-26} theme={"system"}
+```ruby
 # version 2
 account_client = Algolia::AccountClient.new
 account_client.copy_index(src_index, dest_index)
@@ -519,11 +513,9 @@ dst.replace_all_objects("DEST_INDEX", objects)
 
 The following tables list all method names that changed between version 2 and version 3.
 
-<Note>
   A few methods were also renamed:
   `list_indexes` is now `list_indices`,
   and `get_top_user_id` is now `get_top_user_ids`.
-</Note>
 
 ### Search API client
 

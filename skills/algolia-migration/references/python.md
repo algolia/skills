@@ -11,13 +11,13 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `init_index` pattern:
 all methods are now on the `client` instance directly, with `index_name` as a parameter.
 
-For the full list of changes, see the [Python changelog](/doc/libraries/sdk/changelog/python).
+For the full list of changes, see the Python changelog.
 
 ## Update your dependencies
 
 Update the `algoliasearch` package to version 4:
 
-```sh Command line icon=square-terminal theme={"system"}
+```sh
 pip install 'algoliasearch>=4.0,<5.0'
 ```
 
@@ -25,7 +25,7 @@ pip install 'algoliasearch>=4.0,<5.0'
 
 The import path changed from `algoliasearch.search_client` to `algoliasearch.search.client`.
 
-```python Python icon=code theme={"system"}
+```python
 # version 3
 from algoliasearch.search_client import SearchClient
 
@@ -37,7 +37,7 @@ Version 4 also includes dedicated packages for each API.
 If you only need methods from a specific API,
 you can import them separately:
 
-```python Python icon=code expandable theme={"system"}
+```python
 # Search API
 from algoliasearch.search.client import SearchClient, SearchClientSync
 # A/B testing API
@@ -71,7 +71,7 @@ The `SearchClient.create()` factory method is gone.
 Create a `SearchClientSync` instance for synchronous code
 or a `SearchClient` instance for asynchronous code.
 
-```python Python icon=code highlight={5-7,9-12} theme={"system"}
+```python
 # version 3
 from algoliasearch.search_client import SearchClient
 client = SearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
@@ -108,7 +108,7 @@ Version 4 introduces three major changes to the API surface:
   Version 4 includes model classes like `SearchParams` and `IndexSettings`
   for all API parameters (see [Use model classes or dictionaries](#use-model-classes-or-dictionaries)).
 
-```python Python icon=code highlight={6-11} theme={"system"}
+```python
 # version 3
 client = SearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 index = client.init_index("INDEX_NAME")
@@ -122,16 +122,14 @@ client.search_single_index(
 )
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `init_index` or `.init_index(` to find every place that needs changing.
-</Tip>
 
 ## Use model classes or dictionaries
 
 Version 4 methods accept both **model classes** and **dictionaries** as parameters.
 
-```python Python icon=code theme={"system"}
+```python
 # Using a model class
 from algoliasearch.search.models.search_params import SearchParams
 
@@ -156,10 +154,10 @@ but you can use dictionaries anywhere a model is expected.
 
 ### Search a single index
 
-The `index.search()` method is now [`client.search_single_index()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.search()` method is now `client.search_single_index()`.
 Pass the index name and search parameters as separate arguments:
 
-```python Python icon=code highlight={7-12} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 results = index.search("QUERY", {
@@ -178,10 +176,10 @@ results = client.search_single_index(
 
 ### Search multiple indices
 
-The `client.multiple_queries()` method is now [`client.search()`](/doc/libraries/sdk/methods/search/search).
+The `client.multiple_queries()` method is now `client.search()`.
 Each request in the list requires an `indexName`:
 
-```python Python icon=code highlight={7-15} theme={"system"}
+```python
 # version 3
 results = client.multiple_queries([
     {"indexName": "INDEX_1", "query": "QUERY"},
@@ -204,7 +202,7 @@ results = client.search(
 The `index.search_for_facet_values()` method becomes `client.search_for_facet_values()`
 with an `index_name` parameter:
 
-```python Python icon=code highlight={5-10} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 results = index.search_for_facet_values("category", "book")
@@ -224,7 +222,7 @@ with `index_name` as a parameter.
 
 ### Add or replace records
 
-```python Python icon=code highlight={5-9} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 index.save_objects([{"objectID": "1", "name": "Record"}])
@@ -238,7 +236,7 @@ response = client.save_objects(
 
 ### Partially update records
 
-```python Python icon=code highlight={5-10} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 index.partial_update_object({"objectID": "1", "name": "Updated"})
@@ -253,7 +251,7 @@ client.partial_update_object(
 
 ### Delete records
 
-```python Python icon=code highlight={5-9} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 index.delete_object("1")
@@ -269,7 +267,7 @@ client.delete_object(
 
 ### Get and set settings
 
-```python Python icon=code highlight={6-12} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 settings = index.get_settings()
@@ -287,7 +285,7 @@ client.set_settings(
 
 ### Save synonyms and rules
 
-```python Python icon=code highlight={6-22} expandable theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 index.save_synonyms([{"objectID": "1", "type": "synonym", "synonyms": ["car", "auto"]}])
@@ -312,19 +310,17 @@ client.save_rules(
 )
 ```
 
-<Note>
   In version 3, `index.replace_all_rules()` and `index.replace_all_synonyms()` replaced all rules or synonyms.
   In version 4, use `client.save_rules()` or `client.save_synonyms()` with the `clear_existing_rules` or `replace_existing_synonyms` parameter set to `True`.
-</Note>
 
 ## Update index management
 
 The `copy_index`, `move_index`, `copy_rules`, `copy_synonyms`, and `copy_settings`
-methods are all replaced by a single [`operation_index`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `operation_index` method.
 
 ### Copy an index
 
-```python Python icon=code highlight={4-10} theme={"system"}
+```python
 # version 3
 client.copy_index("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
@@ -340,7 +336,7 @@ client.operation_index(
 
 ### Move (rename) an index
 
-```python Python icon=code highlight={4-10} theme={"system"}
+```python
 # version 3
 client.move_index("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 
@@ -358,7 +354,7 @@ client.operation_index(
 
 In version 4, use the `scope` parameter to limit the operation to specific data:
 
-```python Python icon=code theme={"system"}
+```python
 # version 4 -- copy only rules and settings from one index to another
 client.operation_index(
     index_name="SOURCE_INDEX_NAME",
@@ -373,9 +369,9 @@ client.operation_index(
 ### Check if an index exists
 
 In version 3, you could check if an index existed using the `exists` method on the index object.
-In version 4, use the [`index_exists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 4, use the `index_exists` helper method on the client:
 
-```python Python icon=code highlight={5-7} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 index.exists()
@@ -391,7 +387,7 @@ client.index_exists(
 Version 3 supported chaining `.wait()` on operations.
 Version 4 replaces this pattern with dedicated wait helpers.
 
-```python Python icon=code highlight={5-10} theme={"system"}
+```python
 # version 3
 index = client.init_index("INDEX_NAME")
 index.set_settings({"searchableAttributes": ["title"]}).wait()
@@ -406,9 +402,9 @@ client.wait_for_task(index_name="INDEX_NAME", task_id=response.task_id)
 
 Version 4 includes three wait helpers:
 
-* [`wait_for_task`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`wait_for_app_task`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`wait_for_api_key`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `wait_for_task`: wait until indexing operations are done.
+* `wait_for_app_task`: wait for application-level tasks.
+* `wait_for_api_key`: wait for API key operations.
 
 ## Helper method changes
 
@@ -420,7 +416,7 @@ The `safe` option has been removed. In version 3, passing `safe=True` in `reques
 
 The `scopes` parameter is now required and must be passed explicitly.
 
-```python Python icon=code highlight={7-12} theme={"system"}
+```python
 # version 3
 index.replace_all_objects(
     objects=my_objects,
@@ -444,7 +440,7 @@ Two new optional parameters are available:
 * `wait_for_tasks` (waits for all indexing tasks before returning, default `False`)
 * `batch_size` (controls objects per API call, default `1,000`)
 
-```python Python icon=code highlight={7-13} theme={"system"}
+```python
 # version 3
 index.save_objects(
     objects=my_objects,
@@ -467,7 +463,7 @@ Two new optional parameters are available:
 * `wait_for_tasks` (default `False`)
 * `batch_size` (default `1,000`)
 
-```python Python icon=code highlight={4-10} theme={"system"}
+```python
 # version 3
 index.delete_objects(object_ids=["id1", "id2"])
 
@@ -484,7 +480,7 @@ await client.delete_objects(
 
 The `create_if_not_exists` parameter moved from `request_options` to an explicit keyword argument.
 
-```python Python icon=code highlight={7-12} theme={"system"}
+```python
 # version 3
 index.partial_update_objects(
     objects=my_objects,
@@ -503,7 +499,7 @@ await client.partial_update_objects(
 
 These helpers now use an `aggregator` callback instead of returning an iterator. The helper calls `aggregator` with each page of results as it paginates.
 
-```python Python icon=code highlight={5-11} theme={"system"}
+```python
 # version 3
 for obj in index.browse_objects({"query": ""}):
     process(obj)
@@ -521,7 +517,7 @@ await client.browse_objects(
 
 Both methods were static methods on the index class in version 3. In version 4 they are instance methods on the client.
 
-```python Python icon=code highlight={7-12} theme={"system"}
+```python
 # version 3
 from algoliasearch.search_index import SearchIndex
 
@@ -540,7 +536,7 @@ remaining = client.get_secured_api_key_remaining_validity(secured_api_key=key)
 
 The helper was renamed from `wait_task` to `wait_for_task`, moved to the client, and now accepts explicit `max_retries` (default `50`) and `timeout` parameters. In version 3 it retried indefinitely with no cap.
 
-```python Python icon=code highlight={4-9} theme={"system"}
+```python
 # version 3
 index.wait_task(task_id)
 
@@ -556,7 +552,7 @@ await client.wait_for_task(
 
 This is a new helper in version 4.
 
-```python Python icon=code theme={"system"}
+```python
 await client.wait_for_app_task(task_id=task_id)
 ```
 
@@ -564,7 +560,7 @@ await client.wait_for_app_task(task_id=task_id)
 
 This is a new standalone helper in version 4.
 
-```python Python icon=code theme={"system"}
+```python
 # Wait for a key to be created:
 await client.wait_for_api_key(key="my-api-key", operation="add")
 
@@ -580,7 +576,7 @@ await client.wait_for_api_key(
 
 The helper was renamed from `exists()` on the index object to `index_exists()` on the client.
 
-```python Python icon=code highlight={4-5} theme={"system"}
+```python
 # version 3
 exists = index.exists()
 
@@ -592,7 +588,7 @@ exists = await client.index_exists(index_name="INDEX_NAME")
 
 `chunked_batch` is now a public helper. In version 3, chunking was an internal detail of `save_objects`. The `action` parameter defaults to `Action.ADDOBJECT` and `wait_for_tasks` defaults to `False`.
 
-```python Python icon=code theme={"system"}
+```python
 responses = await client.chunked_batch(
     index_name="INDEX_NAME",
     objects=my_objects,
@@ -608,7 +604,7 @@ In version 3, `AccountClient.copy_index` allowed copying an index between two di
 
 In version 4, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```python Python icon=code expandable highlight={6-29} theme={"system"}
+```python
 # version 3
 from algoliasearch.account_client import AccountClient
 
@@ -644,7 +640,7 @@ await dst.replace_all_objects(index_name="DEST_INDEX", objects=objects)
 
 New in version 4. Routes objects through the Algolia Push connector. Requires `transformation_region` at client initialization.
 
-```python Python icon=code theme={"system"}
+```python
 client = SearchClient.create_with_config(
     SearchConfig("APP_ID", "API_KEY", transformation_region="us")
 )
@@ -661,7 +657,7 @@ await client.save_objects_with_transformation(
 
 New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `transformation_region` at client initialization.
 
-```python Python icon=code theme={"system"}
+```python
 await client.replace_all_objects_with_transformation(
     index_name="INDEX_NAME",
     objects=my_objects,
@@ -674,7 +670,7 @@ await client.replace_all_objects_with_transformation(
 
 New in version 4. Routes partial updates through the Push connector. The `create_if_not_exists` parameter defaults to `False`.
 
-```python Python icon=code theme={"system"}
+```python
 await client.partial_update_objects_with_transformation(
     index_name="INDEX_NAME",
     objects=my_objects,

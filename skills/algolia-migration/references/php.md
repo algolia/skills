@@ -11,13 +11,13 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `initIndex` pattern:
 all methods are now on the `$client` instance directly, with `indexName` as a parameter.
 
-For the full list of changes, see the [PHP changelog](/doc/libraries/sdk/changelog/php).
+For the full list of changes, see the PHP changelog.
 
 ## Update your dependencies
 
 Update the `algoliasearch-client-php` package to version 4:
 
-```sh Command line icon=square-terminal theme={"system"}
+```sh
 composer require algolia/algoliasearch-client-php "^4.0"
 ```
 
@@ -26,7 +26,7 @@ composer require algolia/algoliasearch-client-php "^4.0"
 The namespace for API clients changed in version 4.
 The `SearchClient` class moved from `Algolia\AlgoliaSearch` to `Algolia\AlgoliaSearch\Api`.
 
-```php PHP icon=code theme={"system"}
+```php
 <?php
 // version 3
 use Algolia\AlgoliaSearch\SearchClient;
@@ -39,7 +39,7 @@ Version 4 also includes dedicated clients for each API.
 If you only need methods from a specific API,
 import the matching client:
 
-```php PHP icon=code theme={"system"}
+```php
 <?php
 // Search API
 use Algolia\AlgoliaSearch\Api\SearchClient;
@@ -60,7 +60,7 @@ use Algolia\AlgoliaSearch\Api\QuerySuggestionsClient;
 Client creation uses the same `SearchClient::create()` factory method.
 The constructor still accepts your application ID and API key:
 
-```php PHP icon=code theme={"system"}
+```php
 // version 3
 $client = SearchClient::create('ALGOLIA_APPLICATION_ID', 'ALGOLIA_API_KEY');
 
@@ -75,7 +75,7 @@ Version 3 relied on an index object with methods called on it.
 In version 4, all methods belong to the `$client` instance,
 with `indexName` as a parameter.
 
-```php PHP icon=code highlight={6-8} theme={"system"}
+```php
 // version 3
 $client = SearchClient::create('ALGOLIA_APPLICATION_ID', 'ALGOLIA_API_KEY');
 $index = $client->initIndex('INDEX_NAME');
@@ -89,16 +89,14 @@ $client->searchSingleIndex(
 );
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `initIndex` or `->initIndex(` to find every place that needs changing.
-</Tip>
 
 ## Use model classes or associative arrays
 
 Version 4 methods accept both **model classes** and **associative arrays** as parameters.
 
-```php PHP icon=code theme={"system"}
+```php
 // Using a model class
 $client->searchSingleIndex(
     'INDEX_NAME',
@@ -121,10 +119,10 @@ but you can use arrays anywhere a model is expected.
 
 ### Search a single index
 
-The `$index->search()` method is now [`$client->searchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `$index->search()` method is now `$client->searchSingleIndex()`.
 Pass the index name and search parameters as positional arguments:
 
-```php PHP icon=code highlight={7-11} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $results = $index->search('QUERY', [
@@ -142,10 +140,10 @@ $results = $client->searchSingleIndex(
 
 ### Search multiple indices
 
-The `$client->multipleQueries()` method is now [`$client->search()`](/doc/libraries/sdk/methods/search/search).
+The `$client->multipleQueries()` method is now `$client->search()`.
 Each request in the array requires an `indexName`:
 
-```php PHP icon=code highlight={7-17} theme={"system"}
+```php
 // version 3
 $results = $client->multipleQueries([
     ['indexName' => 'INDEX_1', 'query' => 'QUERY'],
@@ -170,7 +168,7 @@ $results = $client->search(
 The `$index->searchForFacetValues()` method becomes `$client->searchForFacetValues()`
 with an `indexName` parameter:
 
-```php PHP icon=code highlight={5-10} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $results = $index->searchForFacetValues('category', 'book');
@@ -190,7 +188,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```php PHP icon=code highlight={6-10,12-15} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $index->saveObject(['objectID' => '1', 'name' => 'Record']);
@@ -210,7 +208,7 @@ $client->saveObjects(
 
 ### Partially update records
 
-```php PHP icon=code highlight={5-10} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $index->partialUpdateObject(['objectID' => '1', 'name' => 'Updated']);
@@ -225,7 +223,7 @@ $client->partialUpdateObject(
 
 ### Delete records
 
-```php PHP icon=code highlight={5-9} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $index->deleteObject('1');
@@ -241,7 +239,7 @@ $client->deleteObject(
 
 ### Get and set settings
 
-```php PHP icon=code highlight={6-12} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $settings = $index->getSettings();
@@ -257,7 +255,7 @@ $client->setSettings(
 
 ### Save synonyms and rules
 
-```php PHP icon=code highlight={6-14} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $index->saveSynonyms([['objectID' => '1', 'type' => 'synonym', 'synonyms' => ['car', 'auto']]]);
@@ -274,19 +272,17 @@ $client->saveRules(
 );
 ```
 
-<Note>
   In version 3, `$index->replaceAllRules()` and `$index->replaceAllSynonyms()` replaced all rules or synonyms.
   In version 4, use `$client->saveRules()` or `$client->saveSynonyms()` with the `clearExistingRules` or `replaceExistingSynonyms` parameter set to `true`.
-</Note>
 
 ## Update index management
 
 The `copyIndex`, `moveIndex`, `copyRules`, `copySynonyms`, and `copySettings`
-methods are all replaced by a single [`operationIndex`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `operationIndex` method.
 
 ### Copy an index
 
-```php PHP icon=code highlight={4-9} theme={"system"}
+```php
 // version 3
 $client->copyIndex('SOURCE_INDEX_NAME', 'DESTINATION_INDEX_NAME');
 
@@ -301,7 +297,7 @@ $client->operationIndex(
 
 ### Move (rename) an index
 
-```php PHP icon=code highlight={4-9} theme={"system"}
+```php
 // version 3
 $client->moveIndex('SOURCE_INDEX_NAME', 'DESTINATION_INDEX_NAME');
 
@@ -318,7 +314,7 @@ $client->operationIndex(
 
 In version 4, use the `scope` parameter to limit the operation to specific data:
 
-```php PHP icon=code theme={"system"}
+```php
 // version 4 -- copy only rules and settings from one index to another
 $client->operationIndex(
     'SOURCE_INDEX_NAME',
@@ -332,9 +328,9 @@ $client->operationIndex(
 ### Check if an index exists
 
 In version 3, you could check if an index existed using the `exists` method on the index object.
-In version 4, use the [`indexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 4, use the `indexExists` helper method on the client:
 
-```php PHP icon=code highlight={5-6} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $index->exists();
@@ -348,7 +344,7 @@ $client->indexExists('INDEX_NAME');
 Version 3 supported chaining `->wait()` on operations.
 Version 4 replaces this pattern with dedicated wait helpers.
 
-```php PHP icon=code highlight={5-10} theme={"system"}
+```php
 // version 3
 $index = $client->initIndex('INDEX_NAME');
 $index->saveObjects($records)->wait();
@@ -363,9 +359,9 @@ $client->waitForTask('INDEX_NAME', $response['taskID']);
 
 Version 4 includes three wait helpers:
 
-* [`waitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`waitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`waitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `waitForTask`: wait until indexing operations are done.
+* `waitForAppTask`: wait for application-level tasks.
+* `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -377,7 +373,7 @@ The `'safe'` request option has been removed. In version 3, passing `'safe' => t
 
 The `scopes` parameter is now required and must be passed explicitly.
 
-```php PHP icon=code highlight={3-9} theme={"system"}
+```php
 // version 3
 $index->replaceAllObjects($objects, ['safe' => true]);
 
@@ -393,7 +389,7 @@ $client->replaceAllObjects([
 
 The `autoGenerateObjectIDIfNotExist` request option has been removed. In version 4, every object must include an `objectID`. To have the API generate object IDs, use `chunkedBatch` with `action: 'addObject'`.
 
-```php PHP icon=code highlight={3-9} theme={"system"}
+```php
 // version 3
 $index->saveObjects($objects, ['autoGenerateObjectIDIfNotExist' => true]);
 
@@ -409,7 +405,7 @@ $client->saveObjects([
 
 The `createIfNotExists` option has moved from the `$requestOptions` array to an explicit required parameter.
 
-```php PHP icon=code highlight={3-9} theme={"system"}
+```php
 // version 3
 $index->partialUpdateObjects($objects, ['createIfNotExists' => true]);
 
@@ -425,7 +421,7 @@ $client->partialUpdateObjects(
 
 The helper moved to the client and two new optional parameters are available: `$waitForTasks` (default `false`) and `$batchSize` (default `1,000`). The parameter was also renamed from `$objectIds` to `$objectIDs`.
 
-```php PHP icon=code highlight={4-5} theme={"system"}
+```php
 // version 3
 $index->deleteObjects(['id1', 'id2']);
 
@@ -437,7 +433,7 @@ $client->deleteObjects('INDEX_NAME', ['id1', 'id2'], waitForTasks: true);
 
 These helpers still return iterator objects in version 4. The only change is that `$indexName` is now an explicit first parameter instead of being implicit from the index object.
 
-```php PHP icon=code highlight={5-9} theme={"system"}
+```php
 // version 3
 foreach ($index->browseObjects() as $object) {
     process($object);
@@ -455,7 +451,7 @@ For `generateSecuredApiKey`, the restrictions parameter now uses a typed `Secure
 
 For `getSecuredApiKeyRemainingValidity`, the parameter was renamed from `$securedAPIKey` to `$securedApiKey`.
 
-```php PHP icon=code highlight={8-20} theme={"system"}
+```php
 // version 3
 $key = $client->generateSecuredApiKey(
     'PARENT_API_KEY',
@@ -482,7 +478,7 @@ $remaining = $client->getSecuredApiKeyRemainingValidity(
 
 The method was renamed from `waitTask` to `waitForTask`. It also gained optional `$maxRetries` and `$timeout` parameters for controlling retry behavior.
 
-```php PHP icon=code highlight={3-8} theme={"system"}
+```php
 // version 3
 $index->waitTask($taskID);
 
@@ -497,7 +493,7 @@ $client->waitForTask('INDEX_NAME', $taskID, maxRetries: 50, timeout: 100000);
 
 This is a new helper in version 4.
 
-```php PHP icon=code theme={"system"}
+```php
 $client->waitForAppTask($taskID);
 ```
 
@@ -505,7 +501,7 @@ $client->waitForAppTask($taskID);
 
 This is a new standalone helper in version 4. In version 3, you had to poll `getApiKey` manually after key mutations.
 
-```php PHP icon=code theme={"system"}
+```php
 // Wait for a key to be created:
 $client->waitForApiKey('my-api-key', 'add');
 
@@ -520,7 +516,7 @@ $client->waitForApiKey('my-api-key', 'delete');
 
 The helper was renamed from `exists()` on the index object to `indexExists()` on the client.
 
-```php PHP icon=code highlight={4-5} theme={"system"}
+```php
 // version 3
 $exists = $index->exists();
 
@@ -532,7 +528,7 @@ $exists = $client->indexExists('INDEX_NAME');
 
 `chunkedBatch` is now a public helper. In version 3, chunking was an internal implementation detail of `saveObjects`. The default `$action` is `'addObject'` and the default `$waitForTasks` is `false`.
 
-```php PHP icon=code theme={"system"}
+```php
 $client->chunkedBatch('INDEX_NAME', $objects, action: 'addObject', waitForTasks: true);
 ```
 
@@ -542,7 +538,7 @@ In version 3, the separate `Algolia\AccountClient` class provided a static `copy
 
 In version 4, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```php PHP icon=code expandable highlight={6-37} theme={"system"}
+```php
 // version 3
 use Algolia\AccountClient;
 
@@ -586,7 +582,7 @@ $dst->replaceAllObjects('DEST_INDEX', $objects);
 
 New in version 4. Routes objects through the Algolia Push connector. Requires `setTransformationRegion` to be called at client initialization.
 
-```php PHP icon=code theme={"system"}
+```php
 $client->setTransformationRegion('us');
 
 $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
@@ -596,7 +592,7 @@ $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
 
 New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `setTransformationRegion` at client initialization.
 
-```php PHP icon=code theme={"system"}
+```php
 $client->replaceAllObjectsWithTransformation(
     'INDEX_NAME',
     $objects,
@@ -609,7 +605,7 @@ $client->replaceAllObjectsWithTransformation(
 
 New in version 4. Routes partial updates through the Push connector. The `$createIfNotExists` parameter is required with no default value.
 
-```php PHP icon=code theme={"system"}
+```php
 $client->partialUpdateObjectsWithTransformation(
     'INDEX_NAME',
     $objects,

@@ -11,7 +11,7 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the **removal of the domain-specific language (DSL)**.
 Instead of writing expressions like `client.execute { search into "index" query "q" }` (version 1), you call methods directly on the `SearchClient` instance, passing named parameters.
 
-For the full list of changes, see the [Scala changelog](/doc/libraries/sdk/changelog/scala).
+For the full list of changes, see the Scala changelog.
 
 ## Update your dependencies
 
@@ -19,7 +19,7 @@ Update the `algoliasearch-scala` package to version 2.
 
 With **`sbt`**, update the version range in your `build.sbt` file:
 
-```txt build.sbt icon=braces theme={"system"}
+```txt
 // version 1
 libraryDependencies += "com.algolia" %% "algoliasearch-scala" % "[1,)"
 
@@ -29,7 +29,7 @@ libraryDependencies += "com.algolia" %% "algoliasearch-client-scala" % "[2,)"
 
 With **Maven**, update the version in your `pom.xml` file:
 
-```xml pom.xml icon=code-xml theme={"system"}
+```xml
 <!-- version 1 -->
 <dependency>
     <groupId>com.algolia</groupId>
@@ -54,7 +54,7 @@ If you use Maven, replace `_2.13` with `_3` in the `artifactId` for Scala 3 proj
 The package namespace changed from `algolia` to `algoliasearch`.
 Version 2 also includes dedicated imports for each API.
 
-```scala Scala icon=code theme={"system"}
+```scala
 // version 1
 import algolia.AlgoliaClient
 import algolia.AlgoliaDsl._
@@ -67,7 +67,7 @@ import algoliasearch.api.SearchClient
 Version 2 includes separate client classes for each API.
 If you only need a specific API, import the corresponding client:
 
-```scala Scala icon=code theme={"system"}
+```scala
 // Search API
 import algoliasearch.api.SearchClient
 // Recommend API
@@ -95,7 +95,7 @@ import algoliasearch.api.UsageClient
 The client class was renamed from `AlgoliaClient` to `SearchClient`,
 and you no longer use the `new` keyword.
 
-```scala Scala icon=code highlight={4} theme={"system"}
+```scala
 // version 1
 val client = new AlgoliaClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")
 
@@ -119,7 +119,7 @@ Here are the most common DSL patterns and their replacements:
 
 ### Search
 
-```scala Scala icon=code highlight={8-13} theme={"system"}
+```scala
 // version 1
 val future: Future[Search] =
     client.execute {
@@ -138,7 +138,7 @@ val response: Future[SearchResponse] =
 
 ### Index an object
 
-```scala Scala icon=code highlight={8-15} theme={"system"}
+```scala
 // version 1
 client.execute {
     index into "INDEX_NAME" `object` Contact("Jimmie", "Barninger", 93, "California Paint")
@@ -160,7 +160,7 @@ val response: Future[SaveObjectResponse] =
 
 ### Parse results
 
-```scala Scala icon=code highlight={10-17} theme={"system"}
+```scala
 // version 1 (case class deserialization via json4s)
 val future: Future[Seq[Contact]] =
     client
@@ -178,18 +178,16 @@ val response: Future[SearchResponse] =
   )
 ```
 
-<Tip>
   Search your codebase for `client.execute`, `AlgoliaDsl`, and `import algolia.` to find every place that needs changing.
-</Tip>
 
 ## Update search calls
 
 ### Search a single index
 
-The DSL `search into` expression is now [`client.searchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+The DSL `search into` expression is now `client.searchSingleIndex()`.
 Pass the index name and search parameters as named arguments:
 
-```scala Scala icon=code highlight={8-17} theme={"system"}
+```scala
 // version 1
 val results = client.execute {
     search into "INDEX_NAME" query Query(
@@ -213,10 +211,10 @@ val results: Future[SearchResponse] =
 
 ### Search multiple indices
 
-The `multiQueries` DSL is now [`client.search()`](/doc/libraries/sdk/methods/search/search).
+The `multiQueries` DSL is now `client.search()`.
 Each request in the list requires an `indexName`:
 
-```scala Scala icon=code highlight={7-14} theme={"system"}
+```scala
 // version 1
 val results = client.execute {
     multiQueries(
@@ -241,7 +239,7 @@ val results: Future[SearchResponses] =
 The `search facet` DSL is now on the client
 and requires `indexName` and `facetName` parameters:
 
-```scala Scala icon=code highlight={5-12} theme={"system"}
+```scala
 // version 1
 client.execute { search facet "category" into "INDEX_NAME" query "book" }
 
@@ -263,7 +261,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```scala Scala icon=code highlight={8-17} theme={"system"}
+```scala
 // version 1
 client.execute {
     index into "INDEX_NAME" `object` Record("Record", "1")
@@ -290,7 +288,7 @@ val result: Future[Seq[BatchResponse]] =
 
 ### Partially update records
 
-```scala Scala icon=code highlight={5-10} theme={"system"}
+```scala
 // version 1
 client.execute { partialUpdate from "INDEX_NAME" `object` ("1", JObject()) }
 
@@ -305,7 +303,7 @@ val result: Future[UpdatedAtWithObjectIDResponse] =
 
 ### Delete records
 
-```scala Scala icon=code highlight={5-9} theme={"system"}
+```scala
 // version 1
 client.execute { delete from "INDEX_NAME" objectId "1" }
 
@@ -321,7 +319,7 @@ val result: Future[DeletedAtResponse] =
 
 ### Get and set settings
 
-```scala Scala icon=code highlight={7-15} theme={"system"}
+```scala
 // version 1
 client.execute { settings of "INDEX_NAME" }
 client.execute {
@@ -347,7 +345,7 @@ val updated: Future[UpdatedAtResponse] =
 Many synonym and rule operations weren't available in version 1 of the Scala client.
 Version 2 includes full coverage of the API, including `saveSynonyms`, `saveRules`, and `replaceAllObjects`.
 
-```scala Scala icon=code theme={"system"}
+```scala
 // version 2 -- save synonyms
 val result: Future[UpdatedAtResponse] =
   client.saveSynonyms(
@@ -363,7 +361,7 @@ val result: Future[UpdatedAtResponse] =
   )
 ```
 
-```scala Scala icon=code theme={"system"}
+```scala
 // version 2 -- save rules
 val result: Future[UpdatedAtResponse] =
   client.saveRules(
@@ -386,19 +384,17 @@ val result: Future[UpdatedAtResponse] =
   )
 ```
 
-<Note>
   In version 1, `replaceAllRules` and `replaceAllSynonyms` weren't available in the Scala client.
   In version 2, use `client.saveRules()` with `clearExistingRules = Some(true)` or `client.saveSynonyms()` with `replaceExistingSynonyms = Some(true)` to replace all rules or synonyms.
-</Note>
 
 ## Update index management
 
 The `copy index` and `move index` DSL commands
-are replaced by a single [`operationIndex`](/doc/rest-api/search/operation-index) method.
+are replaced by a single `operationIndex` method.
 
 ### Copy an index
 
-```scala Scala icon=code highlight={4-10} theme={"system"}
+```scala
 // version 1
 client.execute { copy index "SOURCE_INDEX_NAME" to "DESTINATION_INDEX_NAME" }
 
@@ -415,7 +411,7 @@ val result: Future[UpdatedAtResponse] =
 
 ### Move (rename) an index
 
-```scala Scala icon=code highlight={4-10} theme={"system"}
+```scala
 // version 1
 client.execute { move index "SOURCE_INDEX_NAME" to "DESTINATION_INDEX_NAME" }
 
@@ -434,7 +430,7 @@ val result: Future[UpdatedAtResponse] =
 
 In version 2, use the `scope` parameter to limit the operation to specific data:
 
-```scala Scala icon=code theme={"system"}
+```scala
 // version 2 -- copy only rules and settings from one index to another
 val result: Future[UpdatedAtResponse] =
   client.operationIndex(
@@ -449,10 +445,10 @@ val result: Future[UpdatedAtResponse] =
 
 ### Check if an index exists
 
-Version 2 introduces the [`indexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method to check if an index exists.
+Version 2 introduces the `indexExists` helper method to check if an index exists.
 This method wasn't available in version 1.
 
-```scala Scala icon=code theme={"system"}
+```scala
 // version 2
 val exists: Future[Boolean] =
   client.indexExists(indexName = "INDEX_NAME")
@@ -464,7 +460,7 @@ Version 1 relied on calling `.wait()` on `Future` results or `Await.ready`.
 Version 2 replaces this pattern with dedicated wait helpers.
 Since all methods return `Future[...]`, you can chain `waitForTask` with a `flatMap`:
 
-```scala Scala icon=code highlight={6-12} theme={"system"}
+```scala
 // version 1
 val indexing = client.execute {
     index into "INDEX_NAME" `object` Record("test", "1")
@@ -488,9 +484,9 @@ val waited: Future[GetTaskResponse] =
 
 Version 2 includes three wait helpers:
 
-* [`waitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`waitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`waitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `waitForTask`: wait until indexing operations are done.
+* `waitForAppTask`: wait for application-level tasks.
+* `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -500,7 +496,7 @@ The following sections document breaking changes in helper method signatures and
 
 The method was previously available through the version 1 DSL as a static utility. In version 2, it is an instance method on the client.
 
-```scala Scala icon=code highlight={7-11} theme={"system"}
+```scala
 // version 1
 val key = client.generateSecuredAPIKey(
   parentApiKey = "parentApiKey",
@@ -518,7 +514,7 @@ val key = client.generateSecuredApiKey(
 
 New in version 2. Atomically replaces all objects in an index by copying it, batch-saving new objects, then moving the copy back. `batchSize` defaults to `1,000` and `scopes` defaults to `["settings", "rules", "synonyms"]`.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val response = client.replaceAllObjects(
   indexName = "INDEX_NAME",
   objects = myObjects,
@@ -531,7 +527,7 @@ val response = client.replaceAllObjects(
 
 New in version 2. Sends objects in chunks. `waitForTasks` defaults to `false` and `batchSize` defaults to `1,000`.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val responses = client.saveObjects(
   indexName = "INDEX_NAME",
   objects = myObjects,
@@ -544,7 +540,7 @@ val responses = client.saveObjects(
 
 New in version 2. Deletes objects by ID in chunks. `waitForTasks` defaults to `false` and `batchSize` defaults to `1,000`.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val responses = client.deleteObjects(
   indexName = "INDEX_NAME",
   objectIDs = Seq("id1", "id2"),
@@ -556,7 +552,7 @@ val responses = client.deleteObjects(
 
 New in version 2. `createIfNotExists` is a required parameter with no default.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val responses = client.partialUpdateObjects(
   indexName = "INDEX_NAME",
   objects = myObjects,
@@ -568,7 +564,7 @@ val responses = client.partialUpdateObjects(
 
 New in version 2. Each helper accepts an `aggregator` callback invoked with every page, and an optional `validate` callback to stop early.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val hits = scala.collection.mutable.ListBuffer.empty[JsonObject]
 
 client.browseObjects(
@@ -582,7 +578,7 @@ client.browseObjects(
 
 New in version 2. Polls until an indexing task reaches the `published` state. `maxRetries` defaults to `50`.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val response = client.waitForTask(
   indexName = "INDEX_NAME",
   taskID = taskId
@@ -593,7 +589,7 @@ val response = client.waitForTask(
 
 New in version 2. Polls until an application-level task completes.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val response = client.waitForAppTask(taskID = taskId)
 ```
 
@@ -601,7 +597,7 @@ val response = client.waitForAppTask(taskID = taskId)
 
 New in version 2. Polls until an API key operation (`add`, `update`, or `delete`) has propagated.
 
-```scala Scala icon=code theme={"system"}
+```scala
 // Wait for a key to be created:
 client.waitForApiKey(key = "my-api-key", operation = ApiKeyOperation.Add)
 
@@ -617,7 +613,7 @@ client.waitForApiKey(
 
 New in version 2. Returns `true` if the index exists.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val exists: Boolean = client.indexExists(indexName = "INDEX_NAME")
 ```
 
@@ -625,7 +621,7 @@ val exists: Boolean = client.indexExists(indexName = "INDEX_NAME")
 
 New in version 2. Sends objects in chunks with a specified action. `waitForTasks` is required with no default.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val responses = client.chunkedBatch(
   indexName = "INDEX_NAME",
   objects = myObjects,
@@ -639,7 +635,7 @@ val responses = client.chunkedBatch(
 
 New in version 2. Returns the time remaining until a secured API key expires, based on its embedded `validUntil` parameter.
 
-```scala Scala icon=code theme={"system"}
+```scala
 val remaining: Duration = client.getSecuredApiKeyRemainingValidity(
   securedApiKey = myKey
 )
@@ -649,7 +645,7 @@ val remaining: Duration = client.getSecuredApiKeyRemainingValidity(
 
 There is no built-in cross-application copy helper in the Scala client, but you can compose existing helpers across two clients to achieve the same result.
 
-```scala Scala icon=code expandable theme={"system"}
+```scala
 val src = new SearchClient("SRC_APP_ID", "SRC_API_KEY")
 val dst = new SearchClient("DST_APP_ID", "DST_API_KEY")
 

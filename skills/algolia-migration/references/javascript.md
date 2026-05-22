@@ -11,13 +11,13 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `initIndex` pattern:
 all methods are now on the `client` instance directly, with `indexName` as a parameter.
 
-For the full list of changes, see the [JavaScript changelog](/doc/libraries/sdk/changelog/javascript).
+For the full list of changes, see the JavaScript changelog.
 
 ## Update your dependencies
 
 Update the `algoliasearch` package to version 5:
 
-```sh Command line icon=square-terminal theme={"system"}
+```sh
 npm install algoliasearch@5
 ```
 
@@ -28,7 +28,7 @@ Only the import path changes (see [Update imports](#update-imports)).
 
 The import style changed from a default export to a named export.
 
-```js JavaScript icon=code theme={"system"}
+```js
 // version 4
 import algoliasearch from "algoliasearch";
 
@@ -38,7 +38,7 @@ import { algoliasearch } from "algoliasearch";
 
 If you're using the **lite client** (search only), the import also changed:
 
-```js JavaScript icon=code theme={"system"}
+```js
 // version 4
 import algoliasearch from "algoliasearch/lite";
 
@@ -50,7 +50,7 @@ Version 5 also includes dedicated packages for each API.
 If you only need to access methods from a specific API,
 you can install and import them separately:
 
-```js JavaScript icon=code theme={"system"}
+```js
 // Search API
 import { searchClient } from "@algolia/client-search";
 // Recommend API
@@ -70,7 +70,7 @@ import { querySuggestionsClient } from "@algolia/client-query-suggestions";
 Client creation is unchanged.
 The constructor still accepts your application ID and API key:
 
-```js JavaScript icon=code theme={"system"}
+```js
 // version 4
 const client = algoliasearch("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 
@@ -88,7 +88,7 @@ Version 4 relied on an index object with methods called on it.
 In version 5, all methods belong to the `client` instance,
 with `indexName` as a parameter.
 
-```js JavaScript icon=code highlight={6-9} theme={"system"}
+```js
 // version 4
 const client = algoliasearch("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 const index = client.initIndex("INDEX_NAME");
@@ -102,19 +102,17 @@ const results = await client.searchSingleIndex({
 });
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `initIndex` or `.initIndex(` to find every place that needs changing.
-</Tip>
 
 ## Update search calls
 
 ### Search a single index
 
-The `index.search()` method is now [`client.searchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.search()` method is now `client.searchSingleIndex()`.
 Pass the index name and search parameters as an object:
 
-```js JavaScript icon=code highlight={7-12} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 const { hits } = await index.search("QUERY", {
@@ -133,10 +131,10 @@ const { hits } = await client.searchSingleIndex({
 
 ### Search multiple indices
 
-The `client.multipleQueries()` method is now [`client.search()`](/doc/libraries/sdk/methods/search/search).
+The `client.multipleQueries()` method is now `client.search()`.
 Each request in the array requires an `indexName`:
 
-```js JavaScript icon=code highlight={11-20} theme={"system"}
+```js
 // version 4
 const { results } = await client.multipleQueries([
   { indexName: "INDEX_1", query: "QUERY" },
@@ -161,7 +159,7 @@ const { results } = await client.search({
 The `index.searchForFacetValues()` method becomes `client.searchForFacetValues()`
 with an `indexName` parameter:
 
-```js JavaScript icon=code highlight={5-9} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 const results = await index.searchForFacetValues("category", "book");
@@ -181,7 +179,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```js JavaScript icon=code highlight={6-9,13-16} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 await index.saveObject({ objectID: "1", name: "Record" });
@@ -202,7 +200,7 @@ const { taskID } = await client.saveObjects({
 
 ### Partially update records
 
-```js JavaScript icon=code highlight={5-9} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 await index.partialUpdateObject({ objectID: "1", name: "Updated" });
@@ -217,7 +215,7 @@ await client.partialUpdateObject({
 
 ### Delete records
 
-```js JavaScript icon=code highlight={5-8} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 await index.deleteObject("1");
@@ -233,7 +231,7 @@ await client.deleteObject({
 
 ### Get and set settings
 
-```js JavaScript icon=code highlight={6-12} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 const settings = await index.getSettings();
@@ -251,7 +249,7 @@ await client.setSettings({
 
 ### Save synonyms and rules
 
-```js JavaScript icon=code highlight={6-10} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 await index.saveSynonyms([{ objectID: "1", type: "synonym", synonyms: ["car", "auto"] }]);
@@ -268,19 +266,17 @@ await client.saveRules({
 });
 ```
 
-<Note>
   In version 4, `index.replaceAllRules()` and `index.replaceAllSynonyms()` replaced all rules or synonyms.
   In version 5, use `client.saveRules()` or `client.saveSynonyms()` with the `clearExistingRules` or `clearExistingSynonyms` parameter set to `true`.
-</Note>
 
 ## Update index management
 
 The `copyIndex`, `moveIndex`, `copyRules`, `copySynonyms`, and `copySettings`
-methods are all replaced by a single [`operationIndex`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `operationIndex` method.
 
 ### Copy an index
 
-```js JavaScript icon=code highlight={5-8} theme={"system"}
+```js
 // version 4
 await client.copyIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
 
@@ -293,7 +289,7 @@ await client.operationIndex({
 
 ### Move (rename) an index
 
-```js JavaScript icon=code highlight={5-8} theme={"system"}
+```js
 // version 4
 await client.moveIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
 
@@ -308,7 +304,7 @@ await client.operationIndex({
 
 In version 5, use the `scope` parameter to limit the operation to specific data:
 
-```js JavaScript icon=code theme={"system"}
+```js
 // version 5 -- copy only rules and settings from one index to another
 await client.operationIndex({
   indexName: "SOURCE_INDEX_NAME",
@@ -323,9 +319,9 @@ await client.operationIndex({
 ### Check if an index exists
 
 In version 4, you could check if an index existed using the `exists` method on the index object.
-In version 5, use the [`indexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 5, use the `indexExists` helper method on the client:
 
-```js JavaScript icon=code highlight={5-6} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 await index.exists();
@@ -339,7 +335,7 @@ await client.indexExists({ indexName: "INDEX_NAME" });
 Version 4 supported chaining `.wait()` on operations.
 Version 5 replaces this pattern with dedicated wait helpers.
 
-```js JavaScript icon=code highlight={6-8} theme={"system"}
+```js
 // version 4
 const index = client.initIndex("INDEX_NAME");
 await index.saveObjects(records).wait();
@@ -354,9 +350,9 @@ await client.waitForTask({ indexName: "INDEX_NAME", taskID });
 
 Version 5 includes three wait helpers:
 
-* [`waitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`waitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`waitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `waitForTask`: wait until indexing operations are done.
+* `waitForAppTask`: wait for application-level tasks.
+* `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -368,7 +364,7 @@ The `safe` option has been removed. In version 4, `safe: true` caused the helper
 
 The `scopes` parameter is now required and must be passed explicitly.
 
-```js JavaScript icon=code highlight={8-13} theme={"system"}
+```js
 // version 4
 await client.replaceAllObjects({
   indexName: "INDEX_NAME",
@@ -393,7 +389,7 @@ Two new optional parameters are available:
 * `waitForTasks` (waits for all indexing tasks to complete before returning, default `false`)
 * `batchSize` (controls how many objects are sent per API call, default `1,000`)
 
-```js JavaScript icon=code highlight={8-16} theme={"system"}
+```js
 // version 4
 await client.saveObjects({
   indexName: "INDEX_NAME",
@@ -419,7 +415,7 @@ Two new optional parameters are available:
 * `waitForTasks` (waits for all indexing tasks to complete before returning, default `false`)
 * `batchSize` (controls how many objects are sent per API call, default `1,000`)
 
-```js JavaScript icon=code highlight={7-13} theme={"system"}
+```js
 // version 4
 await client.deleteObjects({
   indexName: "INDEX_NAME",
@@ -439,7 +435,7 @@ await client.deleteObjects({
 
 Two new optional parameters are available: `waitForTasks` and `batchSize`.
 
-```js JavaScript icon=code highlight={7-15} theme={"system"}
+```js
 // version 4
 await client.partialUpdateObjects({
   indexName: "INDEX_NAME",
@@ -461,7 +457,7 @@ await client.partialUpdateObjects({
 
 These helpers now accept an `aggregator` callback instead of returning an iterator. The helper calls `aggregator` with each page of results as it paginates. An optional `validate` callback can be used to stop early.
 
-```js JavaScript icon=code highlight={8-17} theme={"system"}
+```js
 // version 4
 const objects = [];
 await client.browseObjects({
@@ -485,7 +481,7 @@ await client.browseObjects({
 
 The method signature has changed from positional parameters to a single object parameter.
 
-```js JavaScript icon=code highlight={6-14} theme={"system"}
+```js
 // version 4
 const key = client.generateSecuredApiKey("parentApiKey", {
   validUntil: Math.round(Date.now() / 1000) + 3600,
@@ -506,7 +502,7 @@ const key = client.generateSecuredApiKey({
 
 The method signature changed from a positional string argument to an object parameter.
 
-```js JavaScript icon=code highlight={4-7} theme={"system"}
+```js
 // version 4
 const remaining = client.getSecuredApiKeyRemainingValidity("SECURED_API_KEY");
 
@@ -520,7 +516,7 @@ const remaining = client.getSecuredApiKeyRemainingValidity({
 
 The helper was renamed from `waitTask` to `waitForTask` and now takes `indexName` as an explicit parameter.
 
-```js JavaScript icon=code highlight={4-5} theme={"system"}
+```js
 // version 4
 await index.waitTask(taskID);
 
@@ -532,7 +528,7 @@ await client.waitForTask({ indexName: "INDEX_NAME", taskID });
 
 The helper was renamed from `waitAppTask` to `waitForAppTask` for consistency with `waitForTask` and `waitForApiKey`.
 
-```js JavaScript icon=code highlight={4-5} theme={"system"}
+```js
 // version 4
 await client.waitAppTask({ taskID: 123 });
 
@@ -544,7 +540,7 @@ await client.waitForAppTask({ taskID: 123 });
 
 In version 4, waiting for API key operations was done by calling `.wait()` on the `WaitablePromise` returned by `addApiKey`, `updateApiKey`, `deleteApiKey`, or `restoreApiKey`. Version 5 provides a standalone `waitForApiKey` helper.
 
-```js JavaScript icon=code highlight={5-14} theme={"system"}
+```js
 // version 4
 const { wait } = await client.addApiKey({ acl: ["search"] });
 await wait();
@@ -565,7 +561,7 @@ await client.waitForApiKey({
 
 The helper was renamed from `exists()` on the index object to `indexExists()` on the client.
 
-```js JavaScript icon=code highlight={4-5} theme={"system"}
+```js
 // version 4
 const exists = await index.exists();
 
@@ -577,7 +573,7 @@ const exists = await client.indexExists({ indexName: "INDEX_NAME" });
 
 `chunkedBatch` is now a public helper. In version 4, chunking was an internal implementation detail of `saveObjects`. The `action` parameter defaults to `"addObject"`.
 
-```js JavaScript icon=code highlight={4-11} theme={"system"}
+```js
 // version 4
 // No public chunkedBatch — was internal to saveObjects
 
@@ -595,7 +591,7 @@ const responses = await client.chunkedBatch({
 
 In version 4, `accountCopyIndex` was part of the separate `@algolia/client-account` package and accepted two initialized `SearchIndex` objects. In version 5, it's a built-in helper on the `algoliasearch` client and accepts a flat options object with string identifiers.
 
-```js JavaScript icon=code expandable highlight={9-18} theme={"system"}
+```js
 // version 4
 import { accountCopyIndex } from "@algolia/client-account";
 
@@ -620,7 +616,7 @@ await client.accountCopyIndex({
 
 In version 4, this method was available on index objects via the ingestion mixin. In version 5, it's a top-level helper on the `algoliasearch` client. It routes objects through the Algolia Push connector and requires `transformation.region` to be set at client initialization.
 
-```js JavaScript icon=code highlight={4-14} theme={"system"}
+```js
 // version 4
 await index.saveObjectsWithTransformation(objects, ingestionTransporter);
 
@@ -641,7 +637,7 @@ await client.saveObjectsWithTransformation({
 
 New in version 5. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `transformation.region` at client initialization.
 
-```js JavaScript icon=code theme={"system"}
+```js
 const client = algoliasearch("APP_ID", "API_KEY", {
   transformation: { region: "us" },
 });
@@ -658,7 +654,7 @@ await client.replaceAllObjectsWithTransformation({
 
 New in version 5. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
 
-```js JavaScript icon=code theme={"system"}
+```js
 await client.partialUpdateObjectsWithTransformation({
   indexName: "INDEX_NAME",
   objects: myObjects,

@@ -11,7 +11,7 @@ which provides consistent behavior across all languages and up-to-date API cover
 The main architectural change is the removal of the `initIndex` pattern:
 all methods are now on the `client` instance directly, with `indexName` as a parameter.
 
-For the full list of changes, see the [Java changelog](/doc/libraries/sdk/changelog/java).
+For the full list of changes, see the Java changelog.
 
 ## Update your dependencies
 
@@ -23,7 +23,7 @@ You no longer need `algoliasearch-apache` or `algoliasearch-java-net`.
 
 Replace your Algolia dependencies in `pom.xml`:
 
-```xml pom.xml icon=code-xml theme={"system"}
+```xml
 <!-- version 3 -->
 <dependency>
   <groupId>com.algolia</groupId>
@@ -45,7 +45,7 @@ Replace your Algolia dependencies in `pom.xml`:
 
 Update your `build.gradle` file:
 
-```groovy build.gradle icon=braces theme={"system"}
+```groovy
 // version 3
 implementation 'com.algolia:algoliasearch-core:VERSION'
 implementation 'com.algolia:algoliasearch-apache:VERSION'
@@ -62,7 +62,7 @@ The package structure changed.
 Client classes moved from `com.algolia.search` to `com.algolia.api`,
 and model classes moved to `com.algolia.model.search`.
 
-```java Java icon=code theme={"system"}
+```java
 // version 3
 import com.algolia.search.DefaultSearchClient;
 import com.algolia.search.SearchClient;
@@ -77,7 +77,7 @@ import com.algolia.model.search.*;
 
 Version 4 also includes dedicated client classes for each API:
 
-```java Java icon=code theme={"system"}
+```java
 // Search API
 import com.algolia.api.SearchClient;
 // Recommend API
@@ -97,7 +97,7 @@ import com.algolia.api.QuerySuggestionsClient;
 In version 3, the `DefaultSearchClient.create()` factory method created the client.
 Version 4 removes this factory. Use the `SearchClient` constructor instead.
 
-```java Java icon=code highlight={5} theme={"system"}
+```java
 // version 3
 SearchClient client = DefaultSearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 
@@ -108,7 +108,7 @@ var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 The version 4 client implements `Closeable`.
 Use try-with-resources to ensure the client is properly closed:
 
-```java Java icon=code theme={"system"}
+```java
 // version 4 (recommended)
 try (var client = new SearchClient("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY")) {
     // use client
@@ -130,7 +130,7 @@ Version 4 introduces two major changes to the API surface:
   to each method that returns typed results,
   such as `searchSingleIndex` or `getObject`.
 
-```java Java icon=code highlight={7-12} theme={"system"}
+```java
 // version 3
 SearchClient client = DefaultSearchClient.create("ALGOLIA_APPLICATION_ID", "ALGOLIA_API_KEY");
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
@@ -145,19 +145,17 @@ client.searchSingleIndex(
 );
 ```
 
-<Tip>
   If you have many files to update,
   search your codebase for `initIndex` or `.initIndex(` to find every place that needs changing.
-</Tip>
 
 ## Update search calls
 
 ### Search a single index
 
-The `index.search()` method is now [`client.searchSingleIndex()`](/doc/libraries/sdk/methods/search/search-single-index).
+The `index.search()` method is now `client.searchSingleIndex()`.
 Pass the index name, a `SearchParamsObject`, and the target class:
 
-```java Java icon=code highlight={6-10} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 SearchResult<Record> results = index.search(new Query("QUERY"));
@@ -172,10 +170,10 @@ var results = client.searchSingleIndex(
 
 ### Search multiple indices
 
-The `client.multipleQueries()` method is now [`client.search()`](/doc/libraries/sdk/methods/search/search).
+The `client.multipleQueries()` method is now `client.search()`.
 Each request in the list requires an `indexName`:
 
-```java Java icon=code highlight={8-14} theme={"system"}
+```java
 // version 3
 client.multipleQueries(Arrays.asList(
     new IndexQuery("INDEX_1", new Query("QUERY")),
@@ -197,7 +195,7 @@ var results = client.search(
 The `index.searchForFacetValues()` method becomes `client.searchForFacetValues()`
 with an `indexName` parameter:
 
-```java Java icon=code highlight={6-10} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.searchForFacetValues("category", "book", new Query());
@@ -217,7 +215,7 @@ with `indexName` as a parameter.
 
 ### Add or replace records
 
-```java Java icon=code highlight={7-9} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.saveObject(record);
@@ -231,7 +229,7 @@ client.saveObjects("INDEX_NAME", records);
 
 ### Partially update records
 
-```java Java icon=code highlight={6-10} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.partialUpdateObject(new Record().setObjectID("1").setName("Updated"));
@@ -246,7 +244,7 @@ client.partialUpdateObject(
 
 ### Delete records
 
-```java Java icon=code highlight={6} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.deleteObject("1");
@@ -259,7 +257,7 @@ client.deleteObject("INDEX_NAME", "1");
 
 ### Get and set settings
 
-```java Java icon=code highlight={7-11} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 IndexSettings settings = index.getSettings();
@@ -275,7 +273,7 @@ client.setSettings(
 
 ### Save synonyms and rules
 
-```java Java icon=code highlight={7-8} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.saveSynonyms(synonymsList);
@@ -286,19 +284,17 @@ client.saveSynonyms("INDEX_NAME", synonymsList);
 client.saveRules("INDEX_NAME", rulesList);
 ```
 
-<Note>
   In version 3, `index.replaceAllRules()` and `index.replaceAllSynonyms()` replaced all rules or synonyms.
   In version 4, use `client.saveRules()` or `client.saveSynonyms()` with the `clearExistingRules` or `clearExistingSynonyms` parameter set to `true`.
-</Note>
 
 ## Update index management
 
 The `copyIndex`, `moveIndex`, `copyRules`, `copySynonyms`, and `copySettings`
-methods are all replaced by a single [`operationIndex`](/doc/rest-api/search/operation-index) method.
+methods are all replaced by a single `operationIndex` method.
 
 ### Copy an index
 
-```java Java icon=code highlight={5-8} theme={"system"}
+```java
 // version 3
 client.copyIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
 
@@ -311,7 +307,7 @@ client.operationIndex(
 
 ### Move (rename) an index
 
-```java Java icon=code highlight={5-8} theme={"system"}
+```java
 // version 3
 client.moveIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME");
 
@@ -326,7 +322,7 @@ client.operationIndex(
 
 In version 4, use the `scope` parameter to limit the operation to specific data:
 
-```java Java icon=code theme={"system"}
+```java
 // version 4: copy only rules and settings from one index to another
 client.operationIndex(
     "SOURCE_INDEX_NAME",
@@ -340,9 +336,9 @@ client.operationIndex(
 ### Check if an index exists
 
 In version 3, you could check if an index existed using the `exists` method on the index object.
-In version 4, use the [`indexExists`](/doc/libraries/sdk/methods/search/index-exists) helper method on the client:
+In version 4, use the `indexExists` helper method on the client:
 
-```java Java icon=code highlight={5-6} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.exists();
@@ -356,7 +352,7 @@ client.indexExists("INDEX_NAME");
 Version 3 supported chaining `.waitTask()` on operations.
 Version 4 replaces this pattern with dedicated wait helpers.
 
-```java Java icon=code highlight={6-7} theme={"system"}
+```java
 // version 3
 SearchIndex<Record> index = client.initIndex("INDEX_NAME", Record.class);
 index.saveObject(record).waitTask();
@@ -368,9 +364,9 @@ client.waitForTask("INDEX_NAME", response.getTaskID());
 
 Version 4 includes three wait helpers:
 
-* [`waitForTask`](/doc/libraries/sdk/methods/search/wait-for-task): wait until indexing operations are done.
-* [`waitForAppTask`](/doc/libraries/sdk/methods/search/wait-for-app-task): wait for application-level tasks.
-* [`waitForApiKey`](/doc/libraries/sdk/methods/search/wait-for-api-key): wait for API key operations.
+* `waitForTask`: wait until indexing operations are done.
+* `waitForAppTask`: wait for application-level tasks.
+* `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -382,7 +378,7 @@ The `safe` parameter has been removed. In version 3, passing `safe = true` cause
 
 The `scopes` parameter is now required and must be passed explicitly.
 
-```java Java icon=code highlight={4-10} theme={"system"}
+```java
 // version 3
 index.replaceAllObjects(objects, true);
 
@@ -402,7 +398,7 @@ The `autoGenerateObjectID` parameter has been removed. In version 4, every objec
 * `waitForTasks` (default `false`)
 * `batchSize` (default `1,000`)
 
-```java Java icon=code highlight={4-9} theme={"system"}
+```java
 // version 3
 index.saveObjects(objects, true);
 
@@ -421,7 +417,7 @@ Two new optional parameters are available:
 * `waitForTasks` (default `false`)
 * `batchSize` (default `1,000`)
 
-```java Java icon=code highlight={4-8} theme={"system"}
+```java
 // version 3
 index.deleteObjects(Arrays.asList("id1", "id2"));
 
@@ -436,7 +432,7 @@ client.deleteObjects("INDEX_NAME", Arrays.asList("id1", "id2"), true);
 
 The `createIfNotExists` parameter is now required—the overload without it has been removed (it previously defaulted to `false`).
 
-```java Java icon=code highlight={6-8} theme={"system"}
+```java
 // version 3
 // createIfNotExists defaulted to false when omitted
 index.partialUpdateObjects(objects);
@@ -451,7 +447,7 @@ client.partialUpdateObjects("INDEX_NAME", objects, true);
 
 These helpers no longer return iterable types (`IndexIterable`, `RulesIterable`, `SynonymsIterable`). In version 4, they accept an `aggregator` callback invoked with each page of results.
 
-```java Java icon=code highlight={6-13} theme={"system"}
+```java
 // version 3
 for (MyObject obj : index.browseObjects(new BrowseIndexQuery("query"))) {
     process(obj);
@@ -471,7 +467,7 @@ client.browseObjects(
 
 The helper was renamed from `waitTask` to `waitForTask`. It now returns `GetTaskResponse` instead of `void`, and the `timeToWait` millisecond parameter is replaced by `maxRetries` (default `50`) and a `timeout` function (default: exponential backoff capped at 5 seconds).
 
-```java Java icon=code highlight={5-11} theme={"system"}
+```java
 // version 3
 // Returns void; flat timeToWait in milliseconds
 index.waitTask(taskId, 100L);
@@ -489,7 +485,7 @@ client.waitForTask("INDEX_NAME", taskId, 50,
 
 This is a new helper in version 4.
 
-```java Java icon=code theme={"system"}
+```java
 GetTaskResponse response = client.waitForAppTask(taskId);
 ```
 
@@ -497,7 +493,7 @@ GetTaskResponse response = client.waitForAppTask(taskId);
 
 This is a new standalone helper in version 4.
 
-```java Java icon=code theme={"system"}
+```java
 // Wait for a key to be created:
 client.waitForApiKey("my-api-key", ApiKeyOperation.ADD);
 
@@ -510,7 +506,7 @@ client.waitForApiKey("my-api-key", ApiKeyOperation.UPDATE,
 
 The method was renamed from `generateSecuredAPIKey` to `generateSecuredApiKey` (camelCase normalization). The parameter type also changed from `SecuredApiKeyRestriction` (singular) to `SecuredApiKeyRestrictions` (plural).
 
-```java Java icon=code highlight={5-7} theme={"system"}
+```java
 // version 3
 String key = client.generateSecuredAPIKey("parentApiKey",
     new SecuredApiKeyRestriction().setValidUntil(1893456000L));
@@ -524,7 +520,7 @@ String key = client.generateSecuredApiKey("parentApiKey",
 
 The parameter was renamed from `securedAPIKey` to `securedApiKey` (camelCase normalization).
 
-```java Java icon=code highlight={4-5} theme={"system"}
+```java
 // version 3
 Duration remaining = client.getSecuredApiKeyRemainingValidity(securedAPIKey);
 
@@ -536,7 +532,7 @@ Duration remaining = client.getSecuredApiKeyRemainingValidity(securedApiKey);
 
 This helper is new in version 4.
 
-```java Java icon=code theme={"system"}
+```java
 boolean exists = client.indexExists("INDEX_NAME");
 ```
 
@@ -544,7 +540,7 @@ boolean exists = client.indexExists("INDEX_NAME");
 
 `chunkedBatch` is now a public helper. In version 3, chunking was an internal detail of `saveObjects`.
 
-```java Java icon=code theme={"system"}
+```java
 List<BatchResponse> responses = client.chunkedBatch(
     "INDEX_NAME", objects, Action.ADD_OBJECT, true);
 ```
@@ -555,7 +551,7 @@ In version 3, the static `AccountClient` class provided `copyIndex` and `copyInd
 
 In version 4, `AccountClient` is removed. You can compose existing helpers across two clients to achieve the same result.
 
-```java Java icon=code expandable highlight={4-25} theme={"system"}
+```java
 // version 3
 MultiResponse response = AccountClient.copyIndex(sourceIndex, destinationIndex);
 
@@ -587,7 +583,7 @@ dst.replaceAllObjects("DEST_INDEX", objects);
 
 New in version 4. Routes objects through the Algolia Push connector. Requires the transformation region to be set at client initialization.
 
-```java Java icon=code theme={"system"}
+```java
 List<WatchResponse> responses = client.saveObjectsWithTransformation(
     "INDEX_NAME", objects, true);
 ```
@@ -596,7 +592,7 @@ List<WatchResponse> responses = client.saveObjectsWithTransformation(
 
 New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the transformation region to be set at client initialization.
 
-```java Java icon=code theme={"system"}
+```java
 ReplaceAllObjectsWithTransformationResponse response =
     client.replaceAllObjectsWithTransformation("INDEX_NAME", objects, 1000,
         Arrays.asList(ScopeType.SETTINGS, ScopeType.RULES, ScopeType.SYNONYMS));
@@ -606,7 +602,7 @@ ReplaceAllObjectsWithTransformationResponse response =
 
 New in version 4. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
 
-```java Java icon=code theme={"system"}
+```java
 List<WatchResponse> responses =
     client.partialUpdateObjectsWithTransformation(
         "INDEX_NAME", objects, false, false, 1000);
