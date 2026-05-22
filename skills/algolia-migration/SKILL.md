@@ -109,17 +109,3 @@ If the skill doesn't trigger automatically, invoke it directly:
 - **`/algolia-migration`** — Load the full skill for any Algolia client upgrade task
 
 This is useful when the request is brief (e.g., "update my Algolia imports") and the skill might not auto-trigger.
-
-## Reference Docs
-
-- [references/javascript.md](references/javascript.md) — JavaScript v4 → v5
-- [references/python.md](references/python.md) — Python v3 → v4
-- [references/go.md](references/go.md) — Go v3 → v4
-- [references/php.md](references/php.md) — PHP v3 → v4
-- [references/java.md](references/java.md) — Java v3 → v4
-- [references/csharp.md](references/csharp.md) — C# v6 → v7
-- [references/ruby.md](references/ruby.md) — Ruby v2 → v3
-- [references/kotlin.md](references/kotlin.md) — Kotlin v2 → v3
-- [references/scala.md](references/scala.md) — Scala v1 → v2
-- [references/swift.md](references/swift.md) — Swift v8 → v9
-- [references/dart.md](references/dart.md) — Dart (new client)
