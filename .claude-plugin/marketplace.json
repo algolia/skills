@@ -47,7 +47,7 @@
     },
     {
       "name": "algolia-migration",
-      "description": "Migrate existing Algolia backend/server-side API client code, or frontend implementations to the latest major version. Use when upgrading algoliasearch packages, fixing initIndex removal, replacing .wait() chaining, updating imports after a version bump, or handling any breaking changes across JS (v4→v5), Python (v3→v4), Go (v3→v4), PHP (v3→v4), Java (v3→v4), C# (v6→v7), Ruby (v2→v3), Kotlin (v2→v3), Scala (v1→v2), Swift (v8→v9), or Dart. Do NOT use for new project setup, InstantSearch frontend widgets, analytics queries, or recommendations.",
+      "description": "Migrate existing Algolia API client code to the latest major version. Use when upgrading algoliasearch packages, fixing initIndex removal, replacing .wait() chaining, updating imports after a version bump, or handling any breaking changes across JS (v4→v5), Python (v3→v4), Go (v3→v4), PHP (v3→v4), Java (v3→v4), C# (v6→v7), Ruby (v2→v3), Scala (v1→v2), or Swift (v8→v9). Do NOT use for new project setup, InstantSearch frontend widgets, analytics queries, or recommendations.",
       "source": "./",
       "strict": false,
       "skills": [

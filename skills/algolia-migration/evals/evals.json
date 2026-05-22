@@ -96,20 +96,6 @@
       ]
     },
     {
-      "id": 8,
-      "prompt": "We're migrating a Kotlin project from algoliasearch-client-kotlin v2 to v3. Current code:\n\n```kotlin\nval client = ClientSearch(ApplicationID(appId), APIKey(apiKey))\nval index = client.initIndex(IndexName(\"products\"))\nval results = index.search(query { query = \"laptop\" })\nindex.saveObjects(Product.serializer(), products).wait()\n```\n\nUpdate it for v3.",
-      "expected_output": "Updated Kotlin code with new package, SearchClient, no initIndex, no DSL, no type wrappers, waitForTask",
-      "files": [],
-      "expectations": [
-        "Updates dependency to com.algolia:algoliasearch-client-kotlin:3.+",
-        "Updates import from com.algolia.search to com.algolia.client",
-        "Replaces ClientSearch(ApplicationID(...), APIKey(...)) with SearchClient(appId = ..., apiKey = ...) using plain strings",
-        "Removes initIndex() and the index variable",
-        "Replaces query { query = \"laptop\" } DSL with SearchParamsObject(query = \"laptop\") data class",
-        "Replaces index.saveObjects(Product.serializer(), products).wait() with client.saveObjects(indexName, objects as List<JsonObject>, waitForTasks = true)"
-      ]
-    },
-    {
       "id": 9,
       "prompt": "Upgrading a Scala project from Algolia v1 to v2. Current code:\n\n```scala\nval client = new AlgoliaClient(appId, apiKey)\nimport algolia.AlgoliaDsl._\nclient.execute { search into \"products\" query Query(query = Some(\"laptop\")) }\nclient.execute { index into \"products\" objects Seq(product1, product2) }\n```\n\nUpdate it for v2.",
       "expected_output": "Updated Scala code with new dependency, new imports, no execute DSL, direct method calls returning Future",
