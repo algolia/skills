@@ -47,7 +47,7 @@ npx skills add https://github.com/algolia/skills
 
 ```bash
 git clone https://github.com/algolia/skills.git
-cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
+cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-migration
 ```
 
 <details>
