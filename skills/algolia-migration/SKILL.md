@@ -35,7 +35,7 @@ metadata:
 | Kotlin     | v2 → v3      | [references/kotlin.md](references/kotlin.md) |
 | Scala      | v1 → v2      | [references/scala.md](references/scala.md) |
 | Swift      | v8 → v9      | [references/swift.md](references/swift.md) |
-| Dart       | new client   | [references/dart.md](references/dart.md) |
+| Dart       | new client   | Unsupported |
 
 Open the matching reference file before writing any migration code.
 
