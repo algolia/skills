@@ -371,18 +371,14 @@ The following sections document breaking changes in helper method signatures and
 
 The `'safe'` request option has been removed. In version 3, passing `'safe' => true` caused the helper to wait after each step. In version 4, the helper always waits—equivalent to the previous `'safe' => true` behavior.
 
-The `scopes` parameter is now required and must be passed explicitly.
+The `scopes` parameter is optional. When omitted, it defaults to `['settings', 'rules', 'synonyms']`.
 
 ```php
 // version 3
 $index->replaceAllObjects($objects, ['safe' => true]);
 
 // version 4
-$client->replaceAllObjects([
-  'indexName' => 'INDEX_NAME',
-  'objects' => $objects,
-  'scopes' => ['settings', 'rules', 'synonyms'],
-]);
+$client->replaceAllObjects('INDEX_NAME', $objects);
 ```
 
 ### `saveObjects`
@@ -395,10 +391,7 @@ $index->saveObjects($objects, ['autoGenerateObjectIDIfNotExist' => true]);
 
 // version 4
 // Objects must include objectID, or use chunkedBatch with 'addObject' action
-$client->saveObjects([
-  'indexName' => 'INDEX_NAME',
-  'objects' => $objects,
-]);
+$client->saveObjects('INDEX_NAME', $objects);
 ```
 
 ### `partialUpdateObjects`
@@ -554,8 +547,8 @@ $dst->setSettings('DEST_INDEX', $settings);
 
 // Copy rules
 $rules = [];
-foreach ($src->browseRules('SOURCE_INDEX') as $response) {
-    $rules = array_merge($rules, $response->getHits());
+foreach ($src->browseRules('SOURCE_INDEX') as $rule) {
+    $rules[] = $rule;
 }
 if (!empty($rules)) {
     $dst->saveRules('DEST_INDEX', $rules);
@@ -563,8 +556,8 @@ if (!empty($rules)) {
 
 // Copy synonyms
 $synonyms = [];
-foreach ($src->browseSynonyms('SOURCE_INDEX') as $response) {
-    $synonyms = array_merge($synonyms, $response->getHits());
+foreach ($src->browseSynonyms('SOURCE_INDEX') as $synonym) {
+    $synonyms[] = $synonym;
 }
 if (!empty($synonyms)) {
     $dst->saveSynonyms('DEST_INDEX', $synonyms);
@@ -572,8 +565,8 @@ if (!empty($synonyms)) {
 
 // Copy objects
 $objects = [];
-foreach ($src->browseObjects('SOURCE_INDEX') as $response) {
-    $objects = array_merge($objects, $response->getHits());
+foreach ($src->browseObjects('SOURCE_INDEX') as $object) {
+    $objects[] = $object;
 }
 $dst->replaceAllObjects('DEST_INDEX', $objects);
 ```
@@ -583,7 +576,7 @@ $dst->replaceAllObjects('DEST_INDEX', $objects);
 New in version 4. Routes objects through the Algolia Push connector. Requires `setTransformationRegion` to be called at client initialization.
 
 ```php
-$client->setTransformationRegion('us');
+$client->setTransformationOptions(new TransformationOptions('us'));
 
 $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
 ```
