@@ -9,7 +9,7 @@
       "expectations": [
         "Removes client.initIndex() and the index variable",
         "Replaces index.search() with client.searchSingleIndex({ indexName: 'products', searchParams: { query, facetFilters: [...] } })",
-        "Replaces index.saveObjects(records).wait() with const { taskID } = await client.saveObjects(...) followed by client.waitForTask({ indexName: 'products', taskID })",
+        "Replaces index.saveObjects(records).wait() with await client.saveObjects({ indexName: 'products', objects: records, waitForTasks: true }) — saveObjects returns BatchResponse[] so waitForTasks is the correct way to wait",
         "Does NOT use the old .wait() chaining pattern",
         "Advises running grep -r 'initIndex' to find all other call sites"
       ]

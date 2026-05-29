@@ -192,9 +192,11 @@ const { taskID } = await client.saveObject({
 });
 // saveObjects works the same way:
 // (note: `objects` instead of `body` for the batch version)
-const { taskID } = await client.saveObjects({
+// saveObjects returns an array of BatchResponse — use waitForTasks or destructure the first element
+await client.saveObjects({
   indexName: "INDEX_NAME",
   objects: [{ objectID: "1", name: "Record" }],
+  waitForTasks: true,
 });
 ```
 
@@ -340,12 +342,12 @@ Version 5 replaces this pattern with dedicated wait helpers.
 const index = client.initIndex("INDEX_NAME");
 await index.saveObjects(records).wait();
 
-// version 5
-const { taskID } = await client.saveObjects({
+// version 5 — saveObjects returns BatchResponse[]; use waitForTasks to block until done
+await client.saveObjects({
   indexName: "INDEX_NAME",
   objects: records,
+  waitForTasks: true,
 });
-await client.waitForTask({ indexName: "INDEX_NAME", taskID });
 ```
 
 Version 5 includes three wait helpers:
