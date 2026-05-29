@@ -256,7 +256,7 @@ client.CopyIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
   "SOURCE_INDEX_NAME",
   search.NewEmptyOperationIndexParams().
-    SetOperation(search.OperationType("copy")).
+    SetOperation(search.OPERATION_TYPE_COPY).
     SetDestination("DESTINATION_INDEX_NAME")))
 ```
 
@@ -270,7 +270,7 @@ client.MoveIndex("SOURCE_INDEX_NAME", "DESTINATION_INDEX_NAME")
 response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
   "SOURCE_INDEX_NAME",
   search.NewEmptyOperationIndexParams().
-    SetOperation(search.OperationType("move")).
+    SetOperation(search.OPERATION_TYPE_MOVE).
     SetDestination("DESTINATION_INDEX_NAME")))
 ```
 
@@ -283,11 +283,11 @@ In version 4, use the `SetScope` parameter to limit the operation to specific da
 response, err := client.OperationIndex(client.NewApiOperationIndexRequest(
   "SOURCE_INDEX_NAME",
   search.NewEmptyOperationIndexParams().
-    SetOperation(search.OperationType("copy")).
+    SetOperation(search.OPERATION_TYPE_COPY).
     SetDestination("DESTINATION_INDEX_NAME").
     SetScope([]search.ScopeType{
-      search.ScopeType("rules"),
-      search.ScopeType("settings"),
+      search.SCOPE_TYPE_RULES,
+      search.SCOPE_TYPE_SETTINGS,
     })))
 ```
 
@@ -318,7 +318,7 @@ res.Wait()
 
 // version 4
 response, err := client.SaveObjects("INDEX_NAME", records)
-client.WaitForTask("INDEX_NAME", *response[0].TaskID)
+client.WaitForTask("INDEX_NAME", response[0].TaskID)
 ```
 
 Version 4 includes three wait helpers:
@@ -340,11 +340,7 @@ The `opt.Safe()` functional option has been removed. In version 3, passing `opt.
 res, err := index.ReplaceAllObjects(objects, opt.Safe(true))
 
 // version 4
-res, err := client.ReplaceAllObjects(search.ReplaceAllObjectsParams{
-    IndexName: "INDEX_NAME",
-    Objects:   objects,
-    Scopes:    []search.ScopeType{search.SCOPETYPE_SETTINGS, search.SCOPETYPE_RULES, search.SCOPETYPE_SYNONYMS},
-})
+res, err := client.ReplaceAllObjects("INDEX_NAME", objects)
 ```
 
 ### `SaveObjects`
@@ -357,10 +353,7 @@ res, err := index.SaveObjects(objects, opt.AutoGenerateObjectIDIfNotExist(true))
 
 // version 4
 // Objects must include ObjectID, or use ChunkedBatch with ACTION_ADD_OBJECT
-res, err := client.SaveObjects(search.SaveObjectsParams{
-    IndexName: "INDEX_NAME",
-    Objects:   objects,
-})
+res, err := client.SaveObjects("INDEX_NAME", objects)
 ```
 
 ### `PartialUpdateObjects`
@@ -374,16 +367,15 @@ res, err := index.PartialUpdateObjects(objects, opt.CreateIfNotExists(true))
 
 // version 4
 // Default: createIfNotExists = true
-res, err := client.PartialUpdateObjects(search.PartialUpdateObjectsParams{
-    IndexName:         "INDEX_NAME",
-    Objects:           objects,
-    CreateIfNotExists: algoliaUtils.ToPtr(false), // explicitly set false to match old default
-})
+res, err := client.PartialUpdateObjects("INDEX_NAME", objects,
+    search.WithCreateIfNotExists(false), // explicitly set false to match old default
+)
 ```
 
 ### `BrowseObjects`, `BrowseRules`, `BrowseSynonyms`
 
-The `ObjectIterator`, `RuleIterator`, and `SynonymIterator` types have been removed. These helpers now use an `Aggregator` callback that is called with each page of results.
+The `ObjectIterator`, `RuleIterator`, and `SynonymIterator` types have been removed. These helpers now use an `Aggregator` callback passed via `WithAggregator` that is called with each page of results.
+The index name is a separate string parameter, and the params object is `BrowseParamsObject`.
 
 ```go
 // version 3
@@ -397,14 +389,15 @@ for {
 }
 
 // version 4
-objects := []map[string]any{}
+var objects []map[string]any
 
-_, err := client.BrowseObjects(search.BrowseObjectsParams{
-    IndexName: "INDEX_NAME",
-    Aggregator: func(response *search.BrowseResponse) {
-        objects = append(objects, response.Hits...)
-    },
-})
+err := client.BrowseObjects("INDEX_NAME", search.BrowseParamsObject{},
+    search.WithAggregator(func(res any, err error) {
+        if r, ok := res.(*search.BrowseResponse); ok {
+            objects = append(objects, r.Hits...)
+        }
+    }),
+)
 ```
 
 ### `DeleteObjects`
@@ -420,7 +413,7 @@ res, err := index.DeleteObjects([]string{"id1", "id2"})
 
 // version 4
 res, err := client.DeleteObjects("INDEX_NAME", []string{"id1", "id2"},
-    search.WithDeleteObjectsWaitForTasks(true),
+    search.WithWaitForTasks(true),
 )
 ```
 
@@ -437,8 +430,8 @@ resp, err := client.WaitForTask("INDEX_NAME", taskID)
 
 // With explicit retry controls:
 resp, err := client.WaitForTask("INDEX_NAME", taskID,
-    search.WithWaitForTaskMaxRetries(50),
-    search.WithWaitForTaskTimeout(func(count int) time.Duration {
+    search.WithMaxRetries(50),
+    search.WithTimeout(func(count int) time.Duration {
         return min(time.Duration(count)*200*time.Millisecond, 5*time.Second)
     }),
 )
@@ -458,12 +451,12 @@ This is a new standalone helper in version 4. In version 3, waiting for API key 
 
 ```go
 // Wait for a key to be created:
-resp, err := client.WaitForApiKey("my-api-key", search.APIKEYOPERATION_ADD, nil)
+resp, err := client.WaitForApiKey("my-api-key", search.API_KEY_OPERATION_ADD)
 
 // Wait for a key update (pass the expected final state):
 apiKey := &search.ApiKey{Acl: []search.Acl{search.ACL_SEARCH}}
-resp, err := client.WaitForApiKey("my-api-key", search.APIKEYOPERATION_UPDATE,
-    search.WithWaitForApiKeyApiKey(apiKey),
+resp, err := client.WaitForApiKey("my-api-key", search.API_KEY_OPERATION_UPDATE,
+    search.WithApiKey(apiKey),
 )
 ```
 
@@ -515,8 +508,8 @@ duration, err := client.GetSecuredApiKeyRemainingValidity(key)
 
 ```go
 res, err := client.ChunkedBatch("INDEX_NAME", objects, search.ACTION_ADD_OBJECT,
-    search.WithChunkedBatchWaitForTasks(true),
-    search.WithChunkedBatchBatchSize(1000),
+    search.WithWaitForTasks(true),
+    search.WithBatchSize(1000),
 )
 ```
 
@@ -532,13 +525,15 @@ account := search.NewAccount(srcClient, destClient)
 _, err := account.CopyIndex(srcIndex, destIndex)
 
 // version 4
-ctx := context.Background()
 src, _ := search.NewClient("SRC_APP_ID", "SRC_API_KEY")
 dst, _ := search.NewClient("DST_APP_ID", "DST_API_KEY")
 
 // Copy settings
-settings, _ := src.GetSettings(ctx, "SOURCE_INDEX")
-dst.SetSettings(ctx, "DEST_INDEX", *settings)
+settingsResp, _ := src.GetSettings(src.NewApiGetSettingsRequest("SOURCE_INDEX"))
+settingsBytes, _ := json.Marshal(settingsResp)
+var indexSettings search.IndexSettings
+json.Unmarshal(settingsBytes, &indexSettings)
+dst.SetSettings(dst.NewApiSetSettingsRequest("DEST_INDEX", &indexSettings))
 
 // Copy rules
 var rules []search.Rule
@@ -550,7 +545,7 @@ src.BrowseRules("SOURCE_INDEX", search.SearchRulesParams{},
     }),
 )
 if len(rules) > 0 {
-    dst.SaveRules(ctx, "DEST_INDEX", rules)
+    dst.SaveRules(dst.NewApiSaveRulesRequest("DEST_INDEX", rules))
 }
 
 // Copy synonyms
@@ -563,7 +558,7 @@ src.BrowseSynonyms("SOURCE_INDEX", search.SearchSynonymsParams{},
     }),
 )
 if len(synonyms) > 0 {
-    dst.SaveSynonyms(ctx, "DEST_INDEX", synonyms)
+    dst.SaveSynonyms(dst.NewApiSaveSynonymsRequest("DEST_INDEX", synonyms))
 }
 
 // Copy objects
@@ -606,7 +601,7 @@ res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
 
 ### `PartialUpdateObjectsWithTransformation`
 
-New in version 4. Routes partial updates through the Push connector. The `createIfNotExists` option defaults to `false`.
+New in version 4. Routes partial updates through the Push connector. The `createIfNotExists` option defaults to `true`.
 
 ```go
 res, err := client.PartialUpdateObjectsWithTransformation("INDEX_NAME", objects,
