@@ -286,7 +286,7 @@ await client.OperationIndexAsync(
     "SOURCE_INDEX_NAME",
     new OperationIndexParams
     {
-        Operation = Enum.Parse<OperationType>("Copy"),
+        Operation = OperationType.Copy,
         Destination = "DESTINATION_INDEX_NAME"
     }
 );
@@ -303,7 +303,7 @@ await client.OperationIndexAsync(
     "SOURCE_INDEX_NAME",
     new OperationIndexParams
     {
-        Operation = Enum.Parse<OperationType>("Move"),
+        Operation = OperationType.Move,
         Destination = "DESTINATION_INDEX_NAME"
     }
 );
@@ -319,8 +319,21 @@ await client.OperationIndexAsync(
     "SOURCE_INDEX_NAME",
     new OperationIndexParams
     {
-        Operation = Enum.Parse<OperationType>("Copy"),
+        Operation = OperationType.Copy,
         Destination = "DESTINATION_INDEX_NAME",
+        Scope = new List<ScopeType> { ScopeType.Rules, ScopeType.Settings }
+    }
+);
+```
+
+Note: the `Operation` and `Destination` parameters can also be passed via the constructor:
+
+```cs
+// version 7 (constructor form)
+await client.OperationIndexAsync(
+    "SOURCE_INDEX_NAME",
+    new OperationIndexParams(OperationType.Copy, "DESTINATION_INDEX_NAME")
+    {
         Scope = new List<ScopeType> { ScopeType.Rules, ScopeType.Settings }
     }
 );
@@ -412,7 +425,7 @@ The following sections document breaking changes in helper method signatures and
 
 The `safe` parameter has been removed. In version 6, `safe: true` caused the helper to wait after each step. In version 7, the helper always waits—equivalent to the previous `safe: true` behavior.
 
-The `scopes` parameter is now required and must be passed explicitly.
+The `scopes` parameter is optional. When omitted, it defaults to all three scopes: `Settings`, `Rules`, and `Synonyms`.
 
 ```csharp
 // version 6
@@ -421,8 +434,7 @@ await index.ReplaceAllObjectsAsync(objects, safe: true);
 // version 7
 await client.ReplaceAllObjectsAsync(
     indexName: "INDEX_NAME",
-    objects: objects,
-    scopes: new List<ScopeType> { ScopeType.Settings, ScopeType.Rules, ScopeType.Synonyms }
+    objects: objects
 );
 ```
 
@@ -466,12 +478,13 @@ The method was renamed from the plural `GenerateSecuredApiKeys` to the singular 
 var key = SearchClient.GenerateSecuredApiKeys("parentApiKey", new SecuredApiKeyRestriction { ... });
 
 // version 7
-var key = SearchClient.GenerateSecuredApiKey("parentApiKey", new SecuredApiKeyRestriction { ... });
+var key = SearchClient.GenerateSecuredApiKey("parentApiKey", new SecuredApiKeyRestrictions { ... });
 ```
 
 ### `BrowseObjects`, `BrowseRules`, `BrowseSynonyms`
 
-These helpers no longer return iterator types (`IndexIterator<T>`, `RulesIterator`, `SynonymsIterator`). In version 7, they accept an `aggregator` action invoked with each page of results.
+These helpers no longer return iterator types (`IndexIterator<T>`, `RulesIterator`, `SynonymsIterator`). In version 7, they return `IEnumerable<T>` directly.
+The index name is now a separate `string` parameter, and the params object has changed to `BrowseParamsObject`, `SearchRulesParams`, and `SearchSynonymsParams` respectively.
 
 ```csharp
 // version 6
@@ -482,12 +495,10 @@ foreach (var obj in iterator)
 }
 
 // version 7
-var objects = new List<MyModel>();
-
-await client.BrowseObjectsAsync<MyModel>(
-    new BrowseObjectsParams { IndexName = "INDEX_NAME" },
-    response => objects.AddRange(response.Hits)
-);
+var objects = (await client.BrowseObjectsAsync<MyModel>(
+    "INDEX_NAME",
+    new BrowseParamsObject()
+)).ToList();
 ```
 
 ### `DeleteObjects`
@@ -599,20 +610,17 @@ var settings = await src.GetSettingsAsync("SOURCE_INDEX");
 await dst.SetSettingsAsync("DEST_INDEX", settings);
 
 // Copy rules
-var rules = new List<Rule>();
-await src.BrowseRulesAsync("SOURCE_INDEX", r => rules.AddRange(r.Hits));
+var rules = (await src.BrowseRulesAsync("SOURCE_INDEX", new SearchRulesParams())).ToList();
 if (rules.Any())
     await dst.SaveRulesAsync("DEST_INDEX", rules);
 
 // Copy synonyms
-var synonyms = new List<SynonymHit>();
-await src.BrowseSynonymsAsync("SOURCE_INDEX", r => synonyms.AddRange(r.Hits));
+var synonyms = (await src.BrowseSynonymsAsync("SOURCE_INDEX", new SearchSynonymsParams())).ToList();
 if (synonyms.Any())
     await dst.SaveSynonymsAsync("DEST_INDEX", synonyms);
 
 // Copy objects
-var objects = new List<MyModel>();
-await src.BrowseObjectsAsync<MyModel>("SOURCE_INDEX", r => objects.AddRange(r.Hits));
+var objects = (await src.BrowseObjectsAsync<MyModel>("SOURCE_INDEX", new BrowseParamsObject())).ToList();
 await dst.ReplaceAllObjectsAsync("DEST_INDEX", objects);
 ```
 
@@ -644,7 +652,7 @@ var response = await client.ReplaceAllObjectsWithTransformationAsync(
 
 ### `PartialUpdateObjectsWithTransformation`
 
-New in version 7. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
+New in version 7. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `true`.
 
 ```csharp
 var responses = await client.PartialUpdateObjectsWithTransformationAsync(
