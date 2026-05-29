@@ -362,7 +362,7 @@ The following sections document breaking changes in helper method signatures and
 
 The `safe` option has been removed. In version 4, `safe: true` caused the helper to wait after each step. In version 5, the helper always waits—equivalent to the previous `safe: true` behavior.
 
-The `scopes` parameter is now required and must be passed explicitly.
+The `scopes` parameter is optional. When omitted, it defaults to `["settings", "rules", "synonyms"]`.
 
 ```js
 // version 4
@@ -376,7 +376,6 @@ await client.replaceAllObjects({
 await client.replaceAllObjects({
   indexName: "INDEX_NAME",
   objects: myObjects,
-  scopes: ["settings", "rules", "synonyms"],
 });
 ```
 
