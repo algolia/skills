@@ -364,8 +364,7 @@ var index = client.InitIndex("INDEX_NAME");
 index.SaveObjects(records).Wait();
 
 // version 7
-var response = await client.SaveObjectsAsync("INDEX_NAME", records);
-await client.WaitForTaskAsync("INDEX_NAME", response.TaskID);
+await client.SaveObjectsAsync("INDEX_NAME", records, waitForTasks: true, requestOptions: null);
 ```
 
 Version 7 includes three wait helpers:

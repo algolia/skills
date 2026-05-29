@@ -71,15 +71,16 @@ All index copy and move operations, including scoped copies (`copyRules`, `copyS
 
 `autoGenerateObjectIDIfNotExist` is removed. Every object passed to `saveObjects` must include an explicit `objectID`. To let the API generate IDs, use `chunkedBatch` with `action: addObject`.
 
-### 5. `replaceAllObjects` requires explicit `scopes`
+### 5. `replaceAllObjects` — `scopes` is optional
 
-The `safe` option is removed. Pass `scopes: ["settings", "rules", "synonyms"]` explicitly (or whichever subset you want to carry over).
+The `safe` option is removed. The `scopes` parameter defaults to `["settings", "rules", "synonyms"]` in every language — you only need to pass it explicitly if you want a subset.
 
 ### 6. Browse helpers change pattern
 
 The old iterator/chained patterns are gone. The new pattern **varies by language** — check the reference file:
 
-- **Aggregator callback** (JS, Python, Go, Ruby, Scala, Swift, C#, Java): pass an `aggregator` function that receives each page response
+- **Aggregator callback** (JS, Python, Go, Ruby, Scala, Swift): pass an `aggregator` function that receives each page response
+- **Iterable** (C#, Java): the helper returns an `IEnumerable<T>` / `Iterable<T>` — iterate with `foreach` or `.forEach()`
 - **Iterable / foreach** (PHP): the method returns `ObjectIterator` — iterate with a for-each loop
 
 ### 7. `AccountClient` is gone
