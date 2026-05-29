@@ -126,14 +126,13 @@
     {
       "id": 11,
       "prompt": "I'm building a Flutter app using the Algolia Dart client for the first time. Previously I was using the community dart_algolia package. How do I save multiple records and wait for indexing to complete?",
-      "expected_output": "Dart code using saveObject for single records or batch() with BatchWriteParams for multiple, followed by waitForTask",
+      "expected_output": "Out-of-scope response: Dart is a new client with no legacy migration path, so this skill does not cover it",
       "files": [],
       "expectations": [
-        "Installs algoliasearch via dart pub add 'algoliasearch:^1.0' (not dart_algolia)",
-        "Initializes with SearchClient(appId: 'APP_ID', apiKey: 'API_KEY')",
-        "Uses saveObject() for a single record — returns SaveObjectResponse with taskID",
-        "Uses batch() with BatchWriteParams and BatchRequest(action: Action.addObject, body: ...) for multiple records — there is no saveObjects() helper",
-        "Calls waitForTask(indexName: ..., taskID: response.taskID) after the operation"
+        "States that Dart (Flutter) is outside the scope of this migration skill",
+        "Explains that the Algolia Dart client is a new client, not a migration from a previous major version",
+        "Suggests consulting the official Algolia Dart client documentation instead",
+        "Does NOT attempt to provide Dart migration code"
       ]
     }
   ]
