@@ -327,7 +327,7 @@ client.execute {
 }
 
 // version 2
-val settings: Future[IndexSettings] =
+val settings: Future[SettingsResponse] =
   client.getSettings(
     indexName = "INDEX_NAME"
   )
@@ -450,8 +450,7 @@ This method wasn't available in version 1.
 
 ```scala
 // version 2
-val exists: Future[Boolean] =
-  client.indexExists(indexName = "INDEX_NAME")
+val exists: Future[Boolean] = client.indexExists(indexName = "INDEX_NAME")
 ```
 
 ## Update task handling
@@ -550,7 +549,7 @@ val responses = client.deleteObjects(
 
 ### `partialUpdateObjects`
 
-New in version 2. `createIfNotExists` is a required parameter with no default.
+New in version 2. `createIfNotExists` defaults to `false`.
 
 ```scala
 val responses = client.partialUpdateObjects(
@@ -569,7 +568,7 @@ val hits = scala.collection.mutable.ListBuffer.empty[JsonObject]
 
 client.browseObjects(
   indexName = "INDEX_NAME",
-  params = BrowseParamsObject(),
+  browseParams = BrowseParamsObject(),
   aggregator = response => hits ++= response.hits
 )
 ```
@@ -614,7 +613,7 @@ client.waitForApiKey(
 New in version 2. Returns `true` if the index exists.
 
 ```scala
-val exists: Boolean = client.indexExists(indexName = "INDEX_NAME")
+val exists: Future[Boolean] = client.indexExists(indexName = "INDEX_NAME")
 ```
 
 ### `chunkedBatch`
@@ -646,8 +645,12 @@ val remaining: Duration = client.getSecuredApiKeyRemainingValidity(
 There is no built-in cross-application copy helper in the Scala client, but you can compose existing helpers across two clients to achieve the same result.
 
 ```scala
-val src = new SearchClient("SRC_APP_ID", "SRC_API_KEY")
-val dst = new SearchClient("DST_APP_ID", "DST_API_KEY")
+val src = SearchClient(appId = "SRC_APP_ID", apiKey = "SRC_API_KEY")
+val dst = SearchClient(appId = "DST_APP_ID", apiKey = "DST_API_KEY")
+
+val rules    = scala.collection.mutable.Buffer.empty[Rule]
+val synonyms = scala.collection.mutable.Buffer.empty[SynonymHit]
+val objects  = scala.collection.mutable.Buffer.empty[Any]
 
 for {
   // Copy settings
@@ -655,18 +658,15 @@ for {
   _ <- dst.setSettings("DEST_INDEX", settings)
 
   // Copy rules
-  rules = scala.collection.mutable.Buffer.empty[Rule]
-  _ <- src.browseRules("SOURCE_INDEX", aggregator = r => rules ++= r.hits)
+  _ <- src.browseRules("SOURCE_INDEX", SearchRulesParams(), aggregator = r => rules ++= r.hits)
   _ <- if (rules.nonEmpty) dst.saveRules("DEST_INDEX", rules.toList) else Future.unit
 
   // Copy synonyms
-  synonyms = scala.collection.mutable.Buffer.empty[SynonymHit]
-  _ <- src.browseSynonyms("SOURCE_INDEX", aggregator = r => synonyms ++= r.hits)
+  _ <- src.browseSynonyms("SOURCE_INDEX", SearchSynonymsParams(), aggregator = r => synonyms ++= r.hits)
   _ <- if (synonyms.nonEmpty) dst.saveSynonyms("DEST_INDEX", synonyms.toList) else Future.unit
 
   // Copy objects
-  objects = scala.collection.mutable.Buffer.empty[JsObject]
-  _ <- src.browseObjects("SOURCE_INDEX", aggregator = r => objects ++= r.hits)
+  _ <- src.browseObjects("SOURCE_INDEX", BrowseParamsObject(), aggregator = r => objects ++= r.hits)
   _ <- dst.replaceAllObjects("DEST_INDEX", objects.toList)
 } yield ()
 ```
