@@ -414,7 +414,7 @@ The following sections document breaking changes in helper method signatures and
 
 The `safe` option has been removed. In version 3, passing `safe=True` in `request_options` caused the helper to wait after each step. In version 4, the helper always waits—equivalent to the previous `safe=True` behavior.
 
-The `scopes` parameter is now required and must be passed explicitly.
+The `scopes` parameter is optional. When omitted, it defaults to `["settings", "rules", "synonyms"]`.
 
 ```python
 # version 3
@@ -427,7 +427,6 @@ index.replace_all_objects(
 await client.replace_all_objects(
     index_name="INDEX_NAME",
     objects=my_objects,
-    scopes=["settings", "rules", "synonyms"],
 )
 ```
 
@@ -442,10 +441,7 @@ Two new optional parameters are available:
 
 ```python
 # version 3
-index.save_objects(
-    objects=my_objects,
-    {"autoGenerateObjectIDIfNotExist": True},
-)
+index.save_objects(my_objects, {"autoGenerateObjectIDIfNotExist": True})
 
 # version 4
 await client.save_objects(
@@ -482,10 +478,7 @@ The `create_if_not_exists` parameter moved from `request_options` to an explicit
 
 ```python
 # version 3
-index.partial_update_objects(
-    objects=my_objects,
-    {"createIfNotExists": True},
-)
+index.partial_update_objects(my_objects, {"createIfNotExists": True})
 
 # version 4
 await client.partial_update_objects(
@@ -611,12 +604,12 @@ from algoliasearch.account_client import AccountClient
 AccountClient.copy_index(source_index, destination_index)
 
 # version 4
-src = SearchClient.create("SRC_APP_ID", "SRC_API_KEY")
-dst = SearchClient.create("DST_APP_ID", "DST_API_KEY")
+src = SearchClient("SRC_APP_ID", "SRC_API_KEY")
+dst = SearchClient("DST_APP_ID", "DST_API_KEY")
 
 # Copy settings
 settings = await src.get_settings(index_name="SOURCE_INDEX")
-await dst.set_settings(index_name="DEST_INDEX", index_settings=settings)
+await dst.set_settings(index_name="DEST_INDEX", index_settings=settings.to_dict())
 
 # Copy rules
 rules = []
@@ -642,7 +635,7 @@ New in version 4. Routes objects through the Algolia Push connector. Requires `t
 
 ```python
 client = SearchClient.create_with_config(
-    SearchConfig("APP_ID", "API_KEY", transformation_region="us")
+    SearchConfig("APP_ID", "API_KEY", transformation_options=TransformationOptions(region="us"))
 )
 
 await client.save_objects_with_transformation(
