@@ -264,7 +264,7 @@ IndexSettings settings = index.getSettings();
 index.setSettings(new IndexSettings().setSearchableAttributes(Arrays.asList("title", "author")));
 
 // version 4
-IndexSettings settings = client.getSettings("INDEX_NAME");
+SettingsResponse settings = client.getSettings("INDEX_NAME");
 client.setSettings(
     "INDEX_NAME",
     new IndexSettings().setSearchableAttributes(Arrays.asList("title", "author"))
@@ -376,19 +376,14 @@ The following sections document breaking changes in helper method signatures and
 
 The `safe` parameter has been removed. In version 3, passing `safe = true` caused the helper to wait after each step. In version 4, the helper always waits—equivalent to the previous `safe = true` behavior.
 
-The `scopes` parameter is now required and must be passed explicitly.
+The `scopes` parameter is optional. When omitted, it defaults to all three: `SETTINGS`, `RULES`, and `SYNONYMS`.
 
 ```java
 // version 3
 index.replaceAllObjects(objects, true);
 
 // version 4
-client.replaceAllObjects(
-  new ReplaceAllObjectsParams()
-    .setIndexName("INDEX_NAME")
-    .setObjects(objects)
-    .setScopes(Arrays.asList(ScopeType.SETTINGS, ScopeType.RULES, ScopeType.SYNONYMS))
-);
+client.replaceAllObjects("INDEX_NAME", objects);
 ```
 
 ### `saveObjects`
@@ -407,7 +402,7 @@ index.saveObjects(objects, true);
 client.saveObjects("INDEX_NAME", objects);
 
 // With wait:
-client.saveObjects("INDEX_NAME", objects, true);
+client.saveObjects("INDEX_NAME", objects, true, null);
 ```
 
 ### `deleteObjects`
@@ -425,7 +420,7 @@ index.deleteObjects(Arrays.asList("id1", "id2"));
 client.deleteObjects("INDEX_NAME", Arrays.asList("id1", "id2"));
 
 // With wait:
-client.deleteObjects("INDEX_NAME", Arrays.asList("id1", "id2"), true);
+client.deleteObjects("INDEX_NAME", Arrays.asList("id1", "id2"), true, null);
 ```
 
 ### `partialUpdateObjects`
@@ -445,7 +440,7 @@ client.partialUpdateObjects("INDEX_NAME", objects, true);
 
 ### `browseObjects`, `browseRules`, `browseSynonyms`
 
-These helpers no longer return iterable types (`IndexIterable`, `RulesIterable`, `SynonymsIterable`). In version 4, they accept an `aggregator` callback invoked with each page of results.
+These helpers no longer return iterable types (`IndexIterable`, `RulesIterable`, `SynonymsIterable`). In version 4, they return a lazy `Iterable<T>` that you can iterate or stream directly.
 
 ```java
 // version 3
@@ -454,13 +449,9 @@ for (MyObject obj : index.browseObjects(new BrowseIndexQuery("query"))) {
 }
 
 // version 4
-List<Object> objects = new ArrayList<>();
-client.browseObjects(
-  "INDEX_NAME",
-  new BrowseParamsObject(),
-  MyObject.class,
-  response -> objects.addAll(response.getHits())
-);
+List<MyObject> objects = new ArrayList<>();
+client.browseObjects("INDEX_NAME", new BrowseParamsObject(), MyObject.class)
+    .forEach(objects::add);
 ```
 
 ### `waitForTask`
@@ -560,22 +551,23 @@ SearchClient src = new SearchClient("SRC_APP_ID", "SRC_API_KEY");
 SearchClient dst = new SearchClient("DST_APP_ID", "DST_API_KEY");
 
 // Copy settings
-IndexSettings settings = src.getSettings("SOURCE_INDEX");
-dst.setSettings("DEST_INDEX", settings);
+SettingsResponse settingsResp = src.getSettings("SOURCE_INDEX");
+IndexSettings indexSettings = new ObjectMapper().convertValue(settingsResp, IndexSettings.class);
+dst.setSettings("DEST_INDEX", indexSettings);
 
 // Copy rules
 List<Rule> rules = new ArrayList<>();
-src.browseRules("SOURCE_INDEX", Rule.class, r -> rules.addAll(r.getHits()));
+src.browseRules("SOURCE_INDEX").forEach(rules::add);
 if (!rules.isEmpty()) dst.saveRules("DEST_INDEX", rules);
 
 // Copy synonyms
 List<SynonymHit> synonyms = new ArrayList<>();
-src.browseSynonyms("SOURCE_INDEX", SynonymHit.class, r -> synonyms.addAll(r.getHits()));
+src.browseSynonyms("SOURCE_INDEX").forEach(synonyms::add);
 if (!synonyms.isEmpty()) dst.saveSynonyms("DEST_INDEX", synonyms);
 
 // Copy objects
 List<MyModel> objects = new ArrayList<>();
-src.browseObjects("SOURCE_INDEX", MyModel.class, r -> objects.addAll(r.getHits()));
+src.browseObjects("SOURCE_INDEX", MyModel.class).forEach(objects::add);
 dst.replaceAllObjects("DEST_INDEX", objects);
 ```
 
