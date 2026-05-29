@@ -358,18 +358,14 @@ client.replace_all_objects("INDEX_NAME", objects)
 
 The `safe:` option has been removed. In version 2, `safe: true` caused the helper to wait after each step. In version 3, the helper always waits—equivalent to the previous `safe: true` behavior.
 
-The `scopes` parameter is now required and must be passed explicitly.
+The `scopes` parameter is optional. When omitted, it defaults to all three: `settings`, `rules`, and `synonyms`.
 
 ```ruby
 # version 2
 index.replace_all_objects(objects, safe: true)
 
 # version 3
-client.replace_all_objects(
-  index_name: "INDEX_NAME",
-  objects: objects,
-  scopes: ["settings", "rules", "synonyms"]
-)
+client.replace_all_objects("INDEX_NAME", objects)
 ```
 
 ### `save_objects` and `delete_objects`
@@ -388,7 +384,7 @@ client.delete_objects("INDEX_NAME", ["id1", "id2"], wait_for_tasks: false, batch
 
 ### `browse_objects`, `browse_rules`, `browse_synonyms`
 
-These helpers moved from the index object to the client and now accept `index_name` as an explicit first argument. The block receives the full page response—use `response.hits` to access the objects for that page.
+These helpers moved from the index object to the client and now accept `index_name` as an explicit first argument. The block receives individual records—one record per block call, not a page object.
 
 ```ruby
 # version 2
@@ -397,8 +393,8 @@ index.browse_objects do |object|
 end
 
 # version 3
-client.browse_objects("INDEX_NAME") do |response|
-  response.hits.each { |obj| process(obj) }
+client.browse_objects("INDEX_NAME") do |object|
+  process(object)
 end
 ```
 
@@ -486,8 +482,8 @@ account_client = Algolia::AccountClient.new
 account_client.copy_index(src_index, dest_index)
 
 # version 3
-src = Algolia::Search::Client.create("SRC_APP_ID", "SRC_API_KEY")
-dst = Algolia::Search::Client.create("DST_APP_ID", "DST_API_KEY")
+src = Algolia::SearchClient.create("SRC_APP_ID", "SRC_API_KEY")
+dst = Algolia::SearchClient.create("DST_APP_ID", "DST_API_KEY")
 
 # Copy settings
 settings = src.get_settings("SOURCE_INDEX")
@@ -495,17 +491,17 @@ dst.set_settings("DEST_INDEX", settings)
 
 # Copy rules
 rules = []
-src.browse_rules("SOURCE_INDEX") { |response| rules.concat(response.hits) }
+src.browse_rules("SOURCE_INDEX") { |rule| rules << rule }
 dst.save_rules("DEST_INDEX", rules) unless rules.empty?
 
 # Copy synonyms
 synonyms = []
-src.browse_synonyms("SOURCE_INDEX") { |response| synonyms.concat(response.hits) }
+src.browse_synonyms("SOURCE_INDEX") { |synonym| synonyms << synonym }
 dst.save_synonyms("DEST_INDEX", synonyms) unless synonyms.empty?
 
 # Copy objects
 objects = []
-src.browse_objects("SOURCE_INDEX") { |response| objects.concat(response.hits) }
+src.browse_objects("SOURCE_INDEX") { |object| objects << object }
 dst.replace_all_objects("DEST_INDEX", objects)
 ```
 
@@ -556,7 +552,7 @@ The following tables list all method names that changed between version 2 and ve
 | `index.delete_objects`                          | → | `client.delete_objects`                         |
 | `index.delete_rule`                             | → | `client.delete_rule`                            |
 | `index.delete_synonym`                          | → | `client.delete_synonym`                         |
-| `index.exists?`                                 | → | `client.index_exists`                           |
+| `index.exists?`                                 | → | `client.index_exists?`                          |
 | `index.find_object`                             | → | `client.search_single_index`                    |
 | `index.get_object`                              | → | `client.get_object`                             |
 | `index.get_objects`                             | → | `client.get_objects`                            |
