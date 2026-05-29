@@ -438,11 +438,11 @@ let index = client.index(withName: "INDEX_NAME")
 index.saveObjects(records).wait()
 
 // version 9
-let response = try await client.saveObjects(
+try await client.saveObjects(
     indexName: "INDEX_NAME",
-    objects: records
+    objects: records,
+    waitForTasks: true
 )
-try await client.waitForTask(indexName: "INDEX_NAME", taskID: Int64(response.taskID))
 ```
 
 Version 9 includes three wait helpers:
@@ -470,8 +470,7 @@ index.replaceAllObjects(with: objects, safe: true) { result in
 // version 9
 let response = try await client.replaceAllObjects(
     indexName: "INDEX_NAME",
-    objects: objects,
-    scopes: [.settings, .rules, .synonyms]
+    objects: objects
 )
 ```
 
@@ -571,11 +570,11 @@ let key = SearchClient.generateSecuredAPIKey(
 let remaining = SearchClient.getSecuredAPIKeyRemainingValidity(of: key)
 
 // version 9
-let key = try SearchClient.generateSecuredApiKey(
+let key = try client.generateSecuredApiKey(
     parentApiKey: "parentApiKey",
     restrictions: SecuredApiKeyRestrictions(validUntil: 1893456000)
 )
-let remaining = try SearchClient.getSecuredApiKeyRemainingValidity(for: key)
+let remaining = client.getSecuredApiKeyRemainingValidity(securedApiKey: key)
 ```
 
 ### `waitForTask`
@@ -653,27 +652,38 @@ let tasks = try AccountClient.copyIndex(source: srcIndex, destination: destIndex
 let src = try SearchClient(appID: "SRC_APP_ID", apiKey: "SRC_API_KEY")
 let dst = try SearchClient(appID: "DST_APP_ID", apiKey: "DST_API_KEY")
 
-// Copy settings
-let settings = try await src.getSettings(indexName: "SOURCE_INDEX")
-try await dst.setSettings(indexName: "DEST_INDEX", indexSettings: settings)
+// Copy settings — getSettings returns SettingsResponse; encode/decode to get IndexSettings
+let settingsResponse = try await src.getSettings(indexName: "SOURCE_INDEX")
+let settingsData = try JSONEncoder().encode(settingsResponse)
+let indexSettings = try JSONDecoder().decode(IndexSettings.self, from: settingsData)
+try await dst.setSettings(indexName: "DEST_INDEX", indexSettings: indexSettings)
 
 // Copy rules
 var rules: [Rule] = []
-try await src.browseRules(indexName: "SOURCE_INDEX") { rules.append(contentsOf: $0.hits) }
+try await src.browseRules(
+    indexName: "SOURCE_INDEX",
+    searchRulesParams: SearchRulesParams()
+) { rules.append(contentsOf: $0.hits) }
 if !rules.isEmpty {
     try await dst.saveRules(indexName: "DEST_INDEX", rules: rules)
 }
 
 // Copy synonyms
 var synonyms: [SynonymHit] = []
-try await src.browseSynonyms(indexName: "SOURCE_INDEX") { synonyms.append(contentsOf: $0.hits) }
+try await src.browseSynonyms(
+    indexName: "SOURCE_INDEX",
+    searchSynonymsParams: SearchSynonymsParams()
+) { synonyms.append(contentsOf: $0.hits) }
 if !synonyms.isEmpty {
-    try await dst.saveSynonyms(indexName: "DEST_INDEX", synonyms: synonyms)
+    try await dst.saveSynonyms(indexName: "DEST_INDEX", synonymHit: synonyms)
 }
 
 // Copy objects
-var objects: [MyModel] = []
-try await src.browseObjects(indexName: "SOURCE_INDEX") { objects.append(contentsOf: $0.hits) }
+var objects: [Hit] = []
+try await src.browseObjects(
+    indexName: "SOURCE_INDEX",
+    browseParams: BrowseParamsObject()
+) { objects.append(contentsOf: $0.hits) }
 try await dst.replaceAllObjects(indexName: "DEST_INDEX", objects: objects)
 ```
 
