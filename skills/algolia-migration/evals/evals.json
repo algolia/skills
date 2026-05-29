@@ -1,0 +1,139 @@
+{
+  "skill_name": "algolia-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm upgrading our Node.js backend from algoliasearch v4 to v5. We have this code throughout the codebase:\n\n```js\nconst index = client.initIndex('products');\nconst { hits } = await index.search(query, { facetFilters: ['category:shoes'] });\nawait index.saveObjects(records).wait();\n```\n\nUpdate it for v5.",
+      "expected_output": "Updated JavaScript code removing initIndex, using searchSingleIndex and saveObjects with explicit waitForTask",
+      "files": [],
+      "expectations": [
+        "Removes client.initIndex() and the index variable",
+        "Replaces index.search() with client.searchSingleIndex({ indexName: 'products', searchParams: { query, facetFilters: [...] } })",
+        "Replaces index.saveObjects(records).wait() with await client.saveObjects({ indexName: 'products', objects: records, waitForTasks: true }) — saveObjects returns BatchResponse[] so waitForTasks is the correct way to wait",
+        "Does NOT use the old .wait() chaining pattern",
+        "Advises running grep -r 'initIndex' to find all other call sites"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're migrating our Python backend from algoliasearch v3 to v4. Here's our current setup:\n\n```python\nfrom algoliasearch.search_client import SearchClient\nclient = SearchClient.create(APP_ID, API_KEY)\nindex = client.init_index('catalog')\nresults = index.search('laptop', {'filters': 'brand:Dell'})\nindex.save_objects(objects)\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated Python code with new imports, SearchClientSync, removed init_index, using search_single_index and save_objects on client directly",
+      "files": [],
+      "expectations": [
+        "Updates import to: from algoliasearch.search.client import SearchClientSync",
+        "Replaces SearchClient.create() with SearchClientSync('APP_ID', 'API_KEY')",
+        "Removes client.init_index() and the index variable",
+        "Replaces index.search() with client.search_single_index(index_name='catalog', search_params=SearchParams(query='laptop', filters='brand:Dell')) or equivalent dict",
+        "Replaces index.save_objects() with client.save_objects(index_name='catalog', objects=objects)",
+        "Notes that autoGenerateObjectIDIfNotExist is removed and every object needs an objectID"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our Go service uses v3 of the Algolia client. We need to upgrade to v4. Current code:\n\n```go\nclient := search.NewClient(appID, apiKey)\nindex := client.InitIndex(\"orders\")\nres, err := index.SaveObjects(orders)\nif err != nil { panic(err) }\nerr = index.WaitTask(res.TaskID)\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated Go code with v4 import path, error-returning NewClient, removed InitIndex, SaveObjects on client, WaitForTask",
+      "files": [],
+      "expectations": [
+        "Updates import path from v3 to v4: github.com/algolia/algoliasearch-client-go/v4/algolia/search",
+        "Updates client, err := search.NewClient(...) and handles the error",
+        "Removes index := client.InitIndex() and the index variable",
+        "Calls client.SaveObjects with the indexName as part of the request struct",
+        "Replaces index.WaitTask() with client.WaitForTask('orders', taskID)",
+        "Notes that WaitForTask returns (*GetTaskResponse, error) not just error"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need to migrate a PHP application from Algolia v3 to v4. The code copies an index and waits for the task:\n\n```php\n$client->copyIndex('products', 'products_backup');\n$response = $client->moveIndex('products_staging', 'products');\n$client->waitTask('products', $response['taskID']);\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated PHP code using operationIndex for copy/move and waitForTask",
+      "files": [],
+      "expectations": [
+        "Replaces copyIndex() with operationIndex() using operation: 'copy'",
+        "Replaces moveIndex() with operationIndex() using operation: 'move'",
+        "Replaces waitTask() with waitForTask()",
+        "Uses correct namespace Algolia\\AlgoliaSearch\\Api\\SearchClient",
+        "Uses OperationIndexParams model or associative array with setOperation/setDestination"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We're upgrading our Ruby app from the algoliasearch gem (v2) to algolia gem (v3). The code uses bang methods and the index object:\n\n```ruby\nclient = Algolia::Search::Client.create(app_id, api_key)\nindex  = client.init_index('inventory')\nindex.save_objects!(objects)\nresults = index.search('widget')\n```\n\nUpdate it for v3.",
+      "expected_output": "Updated Ruby code with flattened module name, removed init_index, removed bang method, using client methods directly",
+      "files": [],
+      "expectations": [
+        "Updates client to Algolia::SearchClient.create(app_id, api_key) (flattened module path)",
+        "Removes index = client.init_index() and the index variable",
+        "Replaces save_objects! (bang method) with client.save_objects('inventory', objects, true) — third argument true for wait",
+        "Replaces index.search() with client.search_single_index('inventory', Algolia::Search::SearchParamsObject.new(query: 'widget'))",
+        "Notes the gem name changed from algoliasearch to algolia"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We're upgrading our Java backend from Algolia v3 to v4. Current code:\n\n```java\nSearchClient client = DefaultSearchClient.create(APP_ID, API_KEY);\nSearchIndex<Product> index = client.initIndex(\"products\", Product.class);\nSearchResult<Product> results = index.search(new Query(\"laptop\"));\nindex.saveObjects(products).waitTask();\n```\n\nUpdate it for v4.",
+      "expected_output": "Updated Java code with new dependency, new package imports, removed initIndex, client-based methods, waitForTask",
+      "files": [],
+      "expectations": [
+        "Replaces algoliasearch-core + algoliasearch-apache with single algoliasearch Maven/Gradle dependency",
+        "Updates import from com.algolia.search.DefaultSearchClient to com.algolia.api.SearchClient",
+        "Replaces DefaultSearchClient.create() with new SearchClient(...) inside try-with-resources",
+        "Removes initIndex() and the index variable; generic type now passed per-method",
+        "Replaces index.search() with client.searchSingleIndex('products', new SearchParamsObject().setQuery('laptop'), Hit.class)",
+        "Replaces index.saveObjects(products).waitTask() with client.saveObjects(\"products\", products, true, null) — the 4-arg overload where the third boolean enables built-in task waiting and the fourth is RequestOptions"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Our C# project uses Algolia v6 and we need to upgrade to v7. Current code:\n\n```csharp\nvar index = client.InitIndex(\"orders\");\nvar results = index.Search<Order>(new Query(\"pending\"));\nindex.SaveObjects(orders).Wait();\n```\n\nAlso our Order class uses [JsonProperty(\"order_id\")] attributes.",
+      "expected_output": "Updated C# code removing InitIndex, async SearchSingleIndexAsync, WaitForTaskAsync, and Newtonsoft attribute replaced with System.Text.Json",
+      "files": [],
+      "expectations": [
+        "Updates package to Algolia.Search version 7.*",
+        "Removes var index = client.InitIndex() and the index variable",
+        "Replaces index.Search<Order>() with await client.SearchSingleIndexAsync<Hit>(\"orders\", new SearchParams(new SearchParamsObject { Query = \"pending\" }))",
+        "Replaces index.SaveObjects().Wait() with await client.SaveObjectsAsync(\"orders\", orders, waitForTasks: true) — SaveObjectsAsync returns List<BatchResponse> so use the built-in waitForTasks parameter rather than chaining WaitForTaskAsync",
+        "Replaces [JsonProperty(\"order_id\")] with [JsonPropertyName(\"order_id\")] from System.Text.Json.Serialization"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Upgrading a Scala project from Algolia v1 to v2. Current code:\n\n```scala\nval client = new AlgoliaClient(appId, apiKey)\nimport algolia.AlgoliaDsl._\nclient.execute { search into \"products\" query Query(query = Some(\"laptop\")) }\nclient.execute { index into \"products\" objects Seq(product1, product2) }\n```\n\nUpdate it for v2.",
+      "expected_output": "Updated Scala code with new dependency, new imports, no execute DSL, direct method calls returning Future",
+      "files": [],
+      "expectations": [
+        "Updates sbt dependency from algoliasearch-scala to algoliasearch-client-scala",
+        "Updates import from algolia.AlgoliaClient to algoliasearch.api.SearchClient",
+        "Removes the AlgoliaDsl._ import",
+        "Replaces client.execute { search into ... } with client.searchSingleIndex(indexName = \"products\", searchParams = Some(SearchParamsObject(query = Some(\"laptop\"))))",
+        "Replaces client.execute { index into ... objects ... } with client.saveObjects(indexName = \"products\", objects = Seq(...))",
+        "Notes that all methods return Future[...] and must be awaited with flatMap or Await"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "We have a Swift iOS app using Algolia v8 with completion handlers. Upgrading to v9. Current code:\n\n```swift\nlet index = client.index(withName: \"products\")\nindex.search(query: Query(\"shoes\")) { result in\n    switch result {\n    case .success(let response): print(response.hits)\n    case .failure(let error): print(error)\n    }\n}\n```\n\nUpdate it for v9.",
+      "expected_output": "Updated Swift code removing index(withName:), using async/await, try SearchClient init, searchSingleIndex",
+      "files": [],
+      "expectations": [
+        "Updates Swift Package Manager dependency to from: \"9.0.0\"",
+        "Updates import from AlgoliaSearchClient to import AlgoliaCore and import AlgoliaSearch",
+        "Adds try to client initialization: let client = try SearchClient(appID: ..., apiKey: ...)",
+        "Removes let index = client.index(withName:) and the index variable",
+        "Replaces completion handler pattern with async/await: let response: SearchResponse<Hit> = try await client.searchSingleIndex(indexName: \"products\", searchParams: ...)",
+        "Wraps the call in a Task { } or async function since all API calls are now async"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I'm building a Flutter app using the Algolia Dart client for the first time. Previously I was using the community dart_algolia package. How do I save multiple records and wait for indexing to complete?",
+      "expected_output": "Out-of-scope response: Dart is a new client with no legacy migration path, so this skill does not cover it",
+      "files": [],
+      "expectations": [
+        "States that Dart (Flutter) is outside the scope of this migration skill",
+        "Explains that the Algolia Dart client is a new client, not a migration from a previous major version",
+        "Suggests consulting the official Algolia Dart client documentation instead",
+        "Does NOT attempt to provide Dart migration code"
+      ]
+    }
+  ]
+}
