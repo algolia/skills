@@ -86,6 +86,8 @@ The old iterator/chained patterns are gone. The new pattern **varies by language
 
 Cross-application index copies now require composing helpers across two client instances manually: get settings from source, set on destination; browse + save for rules, synonyms, and objects.
 
+JavaScript exception: v5 ships `client.accountCopyIndex({ sourceIndexName, destinationAppID, destinationApiKey, destinationIndexName, ... })` as a built-in. No manual composition needed, but the call signature differs from v4's `accountCopyIndex(srcIndex, destIndex)` — see references/javascript.md.
+
 ### 8. Dedicated clients per API
 
 Each API now has its own client class. If the code previously imported one monolithic client, update imports for `RecommendClient`, `AnalyticsClient`, `AbtestingClient`, etc.
