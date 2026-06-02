@@ -96,6 +96,20 @@
       ]
     },
     {
+      "id": 8,
+      "prompt": "Upgrading a Kotlin Android backend from Algolia v2 to v3. Current code uses the DSL and type wrappers:\n\n```kotlin\nimport com.algolia.search.client.ClientSearch\nimport com.algolia.search.model.ApplicationID\nimport com.algolia.search.model.APIKey\nimport com.algolia.search.model.IndexName\nimport com.algolia.search.dsl.query\n\nval client = ClientSearch(ApplicationID(appId), APIKey(apiKey))\nval index = client.initIndex(IndexName(\"products\"))\nval results = index.search(query { attributesToRetrieve { +\"name\"; +\"category\" } })\nindex.saveObjects(MyRecord.serializer(), records).wait()\n```\n\nUpdate it for v3.",
+      "expected_output": "Updated Kotlin code with new imports, removed type wrappers, removed DSL, removed initIndex, client methods with named arguments, explicit waitForTask",
+      "files": [],
+      "expectations": [
+        "Updates imports from com.algolia.search to com.algolia.client.api.SearchClient and com.algolia.client.model.search.*",
+        "Replaces ClientSearch(ApplicationID, APIKey) with SearchClient(appId = ..., apiKey = ...) using plain strings",
+        "Removes the initIndex call and IndexName(...) wrapper",
+        "Replaces the query { ... } DSL with a SearchParamsObject(attributesToRetrieve = listOf(...)) data class",
+        "Replaces index.search() with client.searchSingleIndex(indexName = \"products\", searchParamsObject = SearchParamsObject(...))",
+        "Replaces index.saveObjects(serializer, records).wait() with client.saveObjects(indexName = \"products\", objects = records.map { Json.encodeToJsonElement(it).jsonObject }, waitForTasks = true)"
+      ]
+    },
+    {
       "id": 9,
       "prompt": "Upgrading a Scala project from Algolia v1 to v2. Current code:\n\n```scala\nval client = new AlgoliaClient(appId, apiKey)\nimport algolia.AlgoliaDsl._\nclient.execute { search into \"products\" query Query(query = Some(\"laptop\")) }\nclient.execute { index into \"products\" objects Seq(product1, product2) }\n```\n\nUpdate it for v2.",
       "expected_output": "Updated Scala code with new dependency, new imports, no execute DSL, direct method calls returning Future",
