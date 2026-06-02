@@ -573,7 +573,7 @@ $dst->replaceAllObjects('DEST_INDEX', $objects);
 
 ### `saveObjectsWithTransformation`
 
-New in version 4. Routes objects through the Algolia Push connector. Requires `setTransformationRegion` to be called at client initialization.
+New in version 4. Routes objects through the Algolia Push connector. Requires `setTransformationOptions` to be called at client initialization.
 
 ```php
 $client->setTransformationOptions(new TransformationOptions('us'));
@@ -583,7 +583,7 @@ $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
 
 ### `replaceAllObjectsWithTransformation`
 
-New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `setTransformationRegion` at client initialization.
+New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `setTransformationOptions` at client initialization.
 
 ```php
 $client->replaceAllObjectsWithTransformation(

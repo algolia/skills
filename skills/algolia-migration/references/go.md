@@ -579,8 +579,8 @@ New in version 4. Routes objects through the Algolia Push connector. Requires th
 
 ```go
 res, err := client.SaveObjectsWithTransformation("INDEX_NAME", objects,
-    search.WithChunkedBatchWaitForTasks(true),
-    search.WithChunkedBatchBatchSize(1000),
+    search.WithWaitForTasks(true),
+    search.WithBatchSize(1000),
 )
 ```
 
@@ -590,11 +590,11 @@ New in version 4. Atomically replaces all objects via the Push connector (copy s
 
 ```go
 res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
-    search.WithReplaceAllObjectsBatchSize(1000),
-    search.WithReplaceAllObjectsScopes([]search.ScopeType{
-        search.SCOPETYPE_SETTINGS,
-        search.SCOPETYPE_RULES,
-        search.SCOPETYPE_SYNONYMS,
+    search.WithBatchSize(1000),
+    search.WithScopes([]search.ScopeType{
+        search.SCOPE_TYPE_SETTINGS,
+        search.SCOPE_TYPE_RULES,
+        search.SCOPE_TYPE_SYNONYMS,
     }),
 )
 ```
@@ -605,9 +605,9 @@ New in version 4. Routes partial updates through the Push connector. The `create
 
 ```go
 res, err := client.PartialUpdateObjectsWithTransformation("INDEX_NAME", objects,
-    search.WithPartialUpdateObjectsCreateIfNotExists(false),
-    search.WithChunkedBatchWaitForTasks(false),
-    search.WithChunkedBatchBatchSize(1000),
+    search.WithCreateIfNotExists(false),
+    search.WithWaitForTasks(false),
+    search.WithBatchSize(1000),
 )
 ```
 
