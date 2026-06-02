@@ -7,7 +7,7 @@ description: >-
   handling breaking changes from v3→v4 or v4→v5, replacing .wait() chaining,
   or any mention of "migrate Algolia client", "upgrade Algolia SDK", or a
   specific old-to-new version (e.g. "Python v3 to v4", "JS v4 to v5").
-  Covers JavaScript, Python, Go, PHP, Java, C#, Ruby, Scala, Swift. Kotlin and Dart are excluded from scope.
+  Covers JavaScript, Python, Go, PHP, Java, C#, Ruby, Kotlin, Scala, Swift. Dart is a new client and is excluded from scope.
   Do NOT use for new project setup (use algolia-cli or algolia-mcp instead),
   InstantSearch / frontend frameworks, analytics queries, or recommendations.
 license: MIT
@@ -32,6 +32,7 @@ metadata:
 | Java       | v3 → v4      | [references/java.md](references/java.md) |
 | C#         | v6 → v7      | [references/csharp.md](references/csharp.md) |
 | Ruby       | v2 → v3      | [references/ruby.md](references/ruby.md) |
+| Kotlin     | v2 → v3      | [references/kotlin.md](references/kotlin.md) |
 | Scala      | v1 → v2      | [references/scala.md](references/scala.md) |
 | Swift      | v8 → v9      | [references/swift.md](references/swift.md) |
 
