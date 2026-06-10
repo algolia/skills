@@ -110,6 +110,36 @@
       ]
     },
     {
+      "id": 8,
+      "prompt": "Add SSR to my React InstantSearch results page. I'm using Next.js Pages Router (not App Router).",
+      "expected_output": "Pages Router SSR using getServerState plus InstantSearchSSRProvider, with the same widget tree on server and client",
+      "files": [],
+      "expectations": [
+        "Uses getServerState from react-instantsearch/server inside getServerSideProps",
+        "Wraps the widget tree in InstantSearchSSRProvider with serverState",
+        "Passes renderToString from react-dom/server into getServerState",
+        "Configures routing with a serverUrl (or framework equivalent) so the server-side router can resolve URL state",
+        "Declares the searchClient at module scope, not inside getServerSideProps",
+        "Renders the same widget tree on server and client",
+        "Does NOT use InstantSearchNext (that's App Router only)",
+        "Reads getServerState.d.ts and InstantSearchSSRProvider.d.ts from node_modules before wiring props"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I need a custom widget that renders the available brands as round colored chips with each brand's logo, instead of the default checkbox list. Selecting a chip refines the results.",
+      "expected_output": "A custom widget built with useRefinementList that renders chips, with renderState fields read from the hook's installed type",
+      "files": [],
+      "expectations": [
+        "Uses useRefinementList from react-instantsearch (not useConnector with a raw connector, since a hook exists)",
+        "Reads node_modules/react-instantsearch/dist/es/connectors/useRefinementList.d.ts to learn the return type before destructuring",
+        "Calls refine(item.value) on chip click",
+        "Renders accessibility attributes (role, aria-pressed) explicitly since the built-in widget's accessibility is lost",
+        "Considers transformItems on RefinementList as a lighter-weight alternative before going custom",
+        "Does NOT rebuild refinement state from useHits + useState"
+      ]
+    },
+    {
       "id": 10,
       "prompt": "Set up my React InstantSearch project with the correct future flags so it's ready for the next major release.",
       "expected_output": "Future flags applied based on installed types and the live Upgrade guides, not training-data recall",

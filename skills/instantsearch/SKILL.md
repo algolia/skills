@@ -100,6 +100,9 @@ Also read and apply the library-level references (apply regardless of pattern):
 | Styling          | [styling.md](references/react/styling.md)                   | —   | —   |
 | Glossary         | [glossary.md](references/react/glossary.md)                 | —   | —   |
 | Source of truth  | [source-of-truth.md](references/react/source-of-truth.md)   | —   | —   |
+| Custom widgets   | [custom-widgets.md](references/react/custom-widgets.md)     | —   | —   |
+| Middleware       | [middleware.md](references/react/middleware.md)             | —   | —   |
+| SSR              | [ssr.md](references/react/ssr.md)                           | —   | —   |
 
 Consult types and live docs first (Step 2). Ask the user only if both fail. Never fall back to legacy libraries or guessed APIs.
 
