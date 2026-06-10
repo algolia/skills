@@ -1,0 +1,13 @@
+# Autocomplete Anti-patterns (InstantSearch.js)
+
+These are in addition to the [JS anti-patterns](../anti-patterns.md). Note: some anti-patterns from the React skill **do not apply** in vanilla JS because the recommended path is different.
+
+| Anti-pattern                                                                  | Why it's wrong                                                                                | What to do instead                                                                                |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Building autocomplete with `searchBox` + `hits` and a custom dropdown         | Reinvents `@algolia/autocomplete-js` poorly; loses keyboard nav, A11y, plugins                | Use `@algolia/autocomplete-js` per [features.md](features.md)                                     |
+| Forgetting `instance.destroy()` on SPA route change / teardown                | Leaks DOM and event listeners; double-mount on hot reload causes duplicate panels             | Save the `autocomplete(...)` return value and call `destroy()` at teardown                        |
+| Recreating the `searchClient` for every page render                           | Loses the request cache; thrashes network                                                     | Declare `searchClient` in module scope and import it                                              |
+| Recreating the `autocomplete(...)` instance on every reactive update          | Tears down and rebuilds the dropdown; flicker                                                 | Mount once; update via `instance.setQuery`, `setActiveItemId`, or option closures                |
+| Guessing `getSources` shape from training data                                | The shape evolves; `getItems` return values, `templates`, plugin contracts change             | Read installed `@algolia/autocomplete-js` types and the live doc before writing                   |
+| Mixing `instantsearch({...})` widgets and `@algolia/autocomplete-js` over the same input | Two state owners on one input; flaky behavior                                                 | Pick one: autocomplete-js for the dropdown experience, `searchBox` for results-page input        |
+| Styling `ais-*` classes when the rendered DOM is autocomplete-js (`aa-*`)     | Selectors don't match; styles silently noop                                                   | Style `aa-*` classes for autocomplete-js panels; `ais-*` only for InstantSearch widgets           |
