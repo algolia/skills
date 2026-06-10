@@ -106,6 +106,23 @@ Also read and apply the library-level references (apply regardless of pattern):
 | Custom widgets   | [custom-widgets.md](references/react/custom-widgets.md)     | —                                                         | —                                                        |
 | Middleware       | [middleware.md](references/react/middleware.md)             | —                                                         | —                                                        |
 | SSR              | [ssr.md](references/react/ssr.md)                           | —                                                         | —                                                        |
+| Pattern                                                      | React                                                                                                                                                                                            | Vue | JS  |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | --- |
+| Autocomplete                                                 | [features](references/react/autocomplete/features.md), [styling](references/react/autocomplete/styling.md), [anti-patterns](references/react/autocomplete/anti-patterns.md)                      | —   | —   |
+| Search results page (incl. faceted search, sort, pagination) | [features](references/react/search-results-page/features.md), [styling](references/react/search-results-page/styling.md), [anti-patterns](references/react/search-results-page/anti-patterns.md) | —   | —   |
+
+Also read and apply the library-level references (apply regardless of pattern):
+
+| Reference        | React                                                       | Vue | JS  |
+| ---------------- | ----------------------------------------------------------- | --- | --- |
+| Technology rules | [technology-rules.md](references/react/technology-rules.md) | —   | —   |
+| Anti-patterns    | [anti-patterns.md](references/react/anti-patterns.md)       | —   | —   |
+| Styling          | [styling.md](references/react/styling.md)                   | —   | —   |
+| Glossary         | [glossary.md](references/react/glossary.md)                 | —   | —   |
+| Source of truth  | [source-of-truth.md](references/react/source-of-truth.md)   | —   | —   |
+| Custom widgets   | [custom-widgets.md](references/react/custom-widgets.md)     | —   | —   |
+| Middleware       | [middleware.md](references/react/middleware.md)             | —   | —   |
+| SSR              | [ssr.md](references/react/ssr.md)                           | —   | —   |
 
 Consult types and live docs first (Step 2). Ask the user only if both fail. Never fall back to legacy libraries or guessed APIs.
 
