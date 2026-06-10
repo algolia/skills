@@ -77,6 +77,39 @@
       ]
     },
     {
+      "id": 6,
+      "prompt": "Add a search results page at /search for my Next.js App Router site. Users should be able to filter by brand and category, sort by price ascending or descending, and paginate. The index has replicas products_price_asc and products_price_desc.",
+      "expected_output": "A results page using InstantSearchNext with the canonical widget tree, refinements, sort, pagination, routing, insights, and a no-results boundary, with all non-trivial props sourced from installed types",
+      "files": [],
+      "expectations": [
+        "Uses InstantSearchNext from react-instantsearch-nextjs at the layout level, not wrapping a single page",
+        "Sets routing={true} and insights={true} on the provider",
+        "Uses Configure to set hitsPerPage, attributesToHighlight, and attributesToSnippet",
+        "Uses RefinementList for brand and HierarchicalMenu (or RefinementList/Menu, justified) for category",
+        "Uses SortBy with the provided replica index names (products, products_price_asc, products_price_desc)",
+        "Uses Pagination, not InfiniteHits, since the user did not ask for infinite scroll",
+        "Renders a NoResultsBoundary using useInstantSearch().results.nbHits",
+        "Uses Highlight on hit text attributes; does not render raw strings",
+        "Reads RefinementList and SortBy props from node_modules/react-instantsearch/dist/es/widgets before writing prop values it has not used before",
+        "Does NOT add getServerState (App Router handles SSR via InstantSearchNext)",
+        "Does NOT combine Pagination with InfiniteHits"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I want a searchable refinement list for brand (so the user can type to filter brands) and active filter chips that show as removable pills at the top of the results.",
+      "expected_output": "RefinementList with searchable + searchablePlaceholder configured from the type, plus CurrentRefinements wired with widget-aware classNames for the chip layout",
+      "files": [],
+      "expectations": [
+        "Reads RefinementList .d.ts to confirm the searchable, searchablePlaceholder, limit, and showMore props before using them",
+        "Adds searchable={true} and a searchablePlaceholder on RefinementList",
+        "Uses CurrentRefinements (not a custom hook) for the active-filter chips",
+        "Pairs CurrentRefinements with ClearRefinements where appropriate, with excludedAttributes considered when needed",
+        "Greps installed source for ais-CurrentRefinements-* class names before writing chip CSS",
+        "Does not rebuild a refinement list with useRefinementList when RefinementList suffices"
+      ]
+    },
+    {
       "id": 10,
       "prompt": "Set up my React InstantSearch project with the correct future flags so it's ready for the next major release.",
       "expected_output": "Future flags applied based on installed types and the live Upgrade guides, not training-data recall",

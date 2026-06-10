@@ -86,9 +86,10 @@ Pick the matching pattern reference for the library and the user's request. If n
 
 Patterns available for each library:
 
-| Pattern      | React                                                                                                                                                                       | Vue | JS  |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- |
-| Autocomplete | [features](references/react/autocomplete/features.md), [styling](references/react/autocomplete/styling.md), [anti-patterns](references/react/autocomplete/anti-patterns.md) | —   | —   |
+| Pattern                                                      | React                                                                                                                                                                                            | Vue | JS  |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | --- |
+| Autocomplete                                                 | [features](references/react/autocomplete/features.md), [styling](references/react/autocomplete/styling.md), [anti-patterns](references/react/autocomplete/anti-patterns.md)                      | —   | —   |
+| Search results page (incl. faceted search, sort, pagination) | [features](references/react/search-results-page/features.md), [styling](references/react/search-results-page/styling.md), [anti-patterns](references/react/search-results-page/anti-patterns.md) | —   | —   |
 
 Also read and apply the library-level references (apply regardless of pattern):
 
