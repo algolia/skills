@@ -145,6 +145,8 @@ algobot agents watch patch.json             # Auto-apply patches on file change
 - **Auth stored in `~/.algobot-cookie`** (AES-256-GCM). Inspect with `algobot auth show`.
 - **`--config` auto-discovers `agent-config.json`** in cwd. Explicit: `--config path/to/config.json`.
 - **algobot = dev/deploy tool; REST API = production invocation.** Use algobot to build and publish agents; call the Agent Studio completions API directly from your app. Don't guess the endpoint URL — run `algobot agents get <id>` to retrieve it, or check the Agent Studio dashboard.
+- **Completions URL has no `/agent-studio` prefix.** Use `agent-studio.<region>.algolia.com/1/agents/<id>/completions?stream=false&compatibilityMode=ai-sdk-4`. `compatibilityMode` is required (omitting → 422). Response: `{ id, role, content }` with `content` as a flat string.
+- **`agents create --provider <name>` does not link the provider.** Agent stays `draft`, publish 409s. After create, run `algobot agents patch <id> --json patch.json` with `{"providerId": "<uuid>"}`, then publish.
 
 ## Reference Docs
 

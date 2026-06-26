@@ -27,14 +27,26 @@ Produces `agent-config.json` with the agent's current config, and `PROMPT.md` if
   "name": "{{event_name}} Support Bot",
   "model": "gpt-4o",
   "instructions": "PROMPT.md",
-  "tools": [...],
-  "indexName": "{{index_name}}"
+  "tools": [
+    {
+      "type": "algolia_search_index",
+      "name": "search_products",
+      "indices": [
+        {
+          "index": "{{index_name}}",
+          "description": "Product catalog. Search by title, brand, or category."
+        }
+      ]
+    }
+  ]
 }
 ```
 
-- `"instructions": "PROMPT.md"` — loads instructions from the referenced `.md` file
-- `{{key}}` — mustache placeholder, resolved via `--var key=value`
+- `"instructions": "PROMPT.md"` — loads instructions from the referenced `.md` file.
+- `{{key}}` — mustache placeholder, resolved via `--var key=value`.
 - JSON config fields: JSON-safe escaping. Instructions (`.md`): raw substitution.
+
+> Top-level `indexName` is silently stripped — index names belong in `tools[].indices[].index`.
 
 ## Template Variables
 
