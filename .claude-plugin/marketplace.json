@@ -44,6 +44,15 @@
       "skills": [
         "./skills/instantsearch"
       ]
+    },
+    {
+      "name": "algolia-crawler",
+      "description": "Crawl and index web pages into Algolia for RAG using the Algolia CLI. Use when a user wants to set up the Algolia Crawler, index a website/docs/specific pages for RAG or an AI agent's knowledge base, write or debug a crawler recordExtractor, or handle JavaScript-rendered pages that won't index. Guides ingestion end-to-end with `algolia crawler` commands: inspect the page, write a RAG-optimized recordExtractor, validate with `algolia crawler test` before indexing, apply index settings explicitly, then reindex. Do NOT use for building the chatbot/agent layer itself (use algobot-cli), raw record/synonym/settings ops on an existing index (use algolia-cli), frontend search UI (use instantsearch), or read-only search/analytics (use algolia-mcp).",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-crawler"
+      ]
     }
   ]
 }
