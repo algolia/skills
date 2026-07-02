@@ -88,7 +88,7 @@ algolia crawler stats  <id>                        # crawl status summary
 Two CLI realities to plan around (details in [cli.md](references/cli.md#gotchas)):
 
 - **Set `renderJavaScript: true` (boolean).** The CLI only accepts the boolean form; the object form (`{ enabled, patterns, waitTime }`) makes `get`/`list`/`create -F` fail to parse. Boolean `true` uses the default render wait, which is enough for most pages — confirm with `crawler test` (empty values mean the page needs more render time).
-- **`create` prints nothing and there's no config-update or delete command.** After `create`, recover the id with `algolia crawler get <name>` or `algolia crawler list`. To change a config, re-create; to delete, use the Algolia dashboard.
+- **`create` prints nothing and there's no config-update or delete command.** After `create`, recover the id from `algolia crawler list` (`get` needs a UUID — it doesn't accept a name). If `list` errors because another crawler in the account uses a non-boolean `renderJavaScript`, there's no pure-CLI recovery — look the id up via the Crawler REST list endpoint (`GET /1/crawlers?name=<name>`). To change a config, re-create; to delete, use the dashboard or REST `DELETE`.
 
 ## References
 

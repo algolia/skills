@@ -42,6 +42,10 @@ Baseline was strong on chunking and semantic retrieval. It missed applying index
 ### Eval 4 — Whole-site crawl across page templates
 Given only a root URL, both runs configured autonomous sub-page discovery and acknowledged multiple page types, and both proposed a branching extractor / multiple actions. Only the with-skill run **validated the extractor against a representative page per template** (`crawler test` on more than one URL) and stayed CLI-only end to end — the baseline configured coverage but never sampled/tested across templates, the exact step that keeps a site-wide config from being overfit to the start page.
 
+## Real-world validation
+
+Beyond the eval prompts, the skill was run end-to-end to actually index the Algolia Agent Studio docs (`https://www.algolia.com/doc/guides/algolia-ai/agent-studio` and its `how-to/` sub-pages) — 13 pages, 130 self-contained `doc_section` records, verified with real queries. The run confirmed the JS-rendering and query-time-matching guidance, and surfaced one correction now folded in: `algolia crawler get` accepts a **UUID only** (not a crawler name), so id recovery after `create` uses `crawler list`, with a REST `?name=` fallback for when `list` is broken by a non-boolean `renderJavaScript` crawler elsewhere in the account.
+
 ## Method
 
 For each scenario, two subagents ran the same prompt — one with the skill available, one without — and produced an advisory answer with concrete commands/config (no live Algolia credentials were used). Outputs were graded against the per-eval `expectations` in `evals.json`.

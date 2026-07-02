@@ -28,7 +28,7 @@ You can also store them in a profile at `~/.config/algolia/config.toml` (`crawle
 # --- crawler lifecycle ---
 algolia crawler create <name> -F config.json     # create (prints nothing on success)
 algolia crawler list                              # list crawlers (find an id)
-algolia crawler get <id|name>                     # inspect crawler + config + status
+algolia crawler get <id>                          # inspect crawler + config + status (UUID only, not a name)
 algolia crawler test <id> --url <url> [-F cfg]    # extract records WITHOUT indexing
 algolia crawler reindex <id>                      # start a crawl that writes records
 algolia crawler run <id> | pause <id>             # resume / pause
@@ -56,10 +56,17 @@ json: cannot unmarshal object into Go struct field Config.config.renderJavaScrip
 This breaks `crawler get`, `crawler list`, and `crawler create -F` for that config. So:
 
 - **Use `renderJavaScript: true`.** In practice the default render wait is enough for most pages — validate with `crawler test` (empty field/score values mean the page needs more render time).
-- `crawler list` fails account-wide if *any* crawler in the app uses a non-boolean `renderJavaScript` — even one you didn't create. If `list` errors with the message above, use `crawler get <name>` to work with your specific crawler.
+- `crawler list` fails account-wide if *any* crawler in the app uses a non-boolean `renderJavaScript` — even one you didn't create. When `list` errors with the message above, use `crawler get <id>` for a crawler whose id you already have, or recover the id via the REST list endpoint (see the id-recovery note above) — `get` cannot look a crawler up by name.
 
-### `create` prints nothing on success
-`algolia crawler create` returns silently — it does not echo the new crawler id. Recover it right after with `algolia crawler get <name>` or by finding it in `algolia crawler list`.
+### `create` prints nothing on success — and id recovery can be fiddly
+`algolia crawler create` returns silently — it does not echo the new crawler id. Recover it from `algolia crawler list`. Note `algolia crawler get` takes a **UUID only** — passing a crawler *name* returns `malformed_id`, so `get <name>` is not a recovery path.
+
+If `list` itself errors (see the `renderJavaScript` gotcha below — one non-boolean crawler anywhere in the account breaks it), there is **no pure-CLI way to get the id**. Fall back to the Crawler REST list endpoint:
+
+```bash
+curl -sS -u "$ALGOLIA_CRAWLER_USER_ID:$ALGOLIA_CRAWLER_API_KEY" \
+  "https://crawler.algolia.com/api/1/crawlers?name=<crawler-name>" | jq -r '.items[0].id'
+```
 
 ### No config-update or delete command
 The CLI can create crawlers but has no command to *update* an existing crawler's config or to *delete* one. To change a config, re-create the crawler (delete the old one first). Crawler deletion is done from the Algolia dashboard.

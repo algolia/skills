@@ -49,7 +49,7 @@ CID=$(algolia crawler list | grep -i my-crawler | awk '{print $1}')   # recover 
 algolia crawler get "$CID" | jq '{name, renderJavaScript: .config.renderJavaScript}'
 ```
 
-`create` is silent on success, so fetch the id afterward with `crawler list` (or `crawler get my-crawler`). See [cli.md](cli.md#gotchas).
+`create` is silent on success, so fetch the id afterward from `crawler list` (as above) — `crawler get` needs a UUID, not a name. If `list` errors because another crawler in the account uses a non-boolean `renderJavaScript`, recover the id via the REST list endpoint instead. See [cli.md](cli.md#gotchas).
 
 ## 4. Validate before you index
 
