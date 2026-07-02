@@ -40,6 +40,20 @@
         "Recommends enabling semantic retrieval / NeuralSearch (or vectors) for natural-language questions",
         "Scopes the crawl (discoveryPatterns / pathsToMatch / maxUrls) to the docs section"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "We just launched our help center at https://help.acme.com and I want our AI assistant to answer from all of it. I'll only give you the root URL — the crawler should index every page under it on its own, and the setup needs to work across all the different page types (getting-started guides, API reference, release notes), not just the homepage. How do I set this up?",
+      "expected_output": "Configure autonomous sub-page discovery, identify the distinct page templates, validate the extractor against a representative page per template, cover them with a branching extractor or multiple actions, apply unified settings, and verify retrieval across page types — all via the CLI.",
+      "files": [],
+      "expectations": [
+        "Configures autonomous sub-page discovery from the single root URL (startUrls + discoveryPatterns, sitemaps if available, raised maxDepth/maxUrls) rather than a single-page crawl",
+        "Recognizes the site has multiple page templates/types and that the config must work across ALL of them, not just the start/home page",
+        "Validates against a representative page from EACH template with `algolia crawler test` (tests more than one URL), not just the homepage",
+        "Covers heterogeneous templates via a branching recordExtractor (by URL/DOM) or multiple actions with per-template pathsToMatch",
+        "Applies unified index settings across templates with `algolia settings import` and verifies retrieval with queries spanning different page types",
+        "Uses the Algolia CLI (algolia crawler ...) throughout"
+      ]
     }
   ]
 }

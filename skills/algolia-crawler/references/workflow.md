@@ -11,6 +11,8 @@ Before writing anything, look at the target page(s) and decide what a good *retr
 
 Keep records small and self-contained (see the RAG record mental model in SKILL.md).
 
+**Indexing a whole site or section?** First map the page *templates* you'll crawl (e.g. docs vs API reference vs blog) — each may need its own extraction, and one config has to work for all of them. See [site-crawls.md](site-crawls.md) for the discover → group → sample → cover workflow; the steps below then apply per template.
+
 ## 2. Write the config
 
 A Crawler config is a JSON file. The `recordExtractor` is stored as `{"__type": "function", "source": "<stringified function>"}`. Build it safely with `jq --rawfile` so quotes/newlines in the function don't break the JSON:
@@ -22,7 +24,8 @@ jq -n --arg appId "$APP_ID" --arg apiKey "$WRITE_KEY" --rawfile src extractor.js
   apiKey: $apiKey,                       # write key the crawler uses to index
   indexPrefix: "kb_",
   startUrls: ["https://example.com/page/"],
-  discoveryPatterns: ["https://example.com/page/**"],   # keep the crawl scoped
+  sitemaps: ["https://example.com/sitemap.xml"],        # optional: reliable sub-page discovery
+  discoveryPatterns: ["https://example.com/page/**"],   # URLs the crawler may follow
   exclusionPatterns: ["https://example.com/page/**/*.{png,jpg,svg,css,js}"],
   ignoreQueryParams: ["utm_*","ref","fbclid"],
   maxDepth: 2, maxUrls: 100, rateLimit: 8,
@@ -36,7 +39,7 @@ jq -n --arg appId "$APP_ID" --arg apiKey "$WRITE_KEY" --rawfile src extractor.js
 }' > config.json
 ```
 
-Scope the crawl tightly (`discoveryPatterns`, `maxDepth`, `maxUrls`) so it does not wander the whole domain. Keep `renderJavaScript` a boolean — the CLI rejects the object form ([cli.md](cli.md#the-renderjavascript-gotcha)).
+Scope the crawl to the section you want with `discoveryPatterns` (exclude assets and unrelated paths) instead of the whole domain — but raise `maxDepth`/`maxUrls` enough to cover all the sub-pages you *do* want. For a multi-template site, see [site-crawls.md](site-crawls.md). Keep `renderJavaScript` a boolean — the CLI rejects the object form ([cli.md](cli.md#the-renderjavascript-gotcha)).
 
 ## 3. Create the crawler
 
@@ -50,7 +53,7 @@ algolia crawler get "$CID" | jq '{name, renderJavaScript: .config.renderJavaScri
 
 ## 4. Validate before you index
 
-This is the most important step. `crawler test` runs the config against a live URL and returns the records it *would* produce **without indexing anything**. Iterate here, not on live crawls.
+This is the most important step. `crawler test` runs the config against a live URL and returns the records it *would* produce **without indexing anything**. Iterate here, not on live crawls. For a site-wide crawl, run it against a representative URL from **each** page template, not just one — see [site-crawls.md](site-crawls.md).
 
 ```bash
 algolia crawler test "$CID" --url "https://example.com/page/" \

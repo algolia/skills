@@ -62,6 +62,8 @@ Follow these steps in order. Full commands, config, and code live in the referen
 6. **Reindex, then verify** by searching the index (`algolia search`) for a few realistic RAG questions before trusting it.
 7. **Schedule** a recurring crawl so the index stays fresh as the source pages change.
 
+**Crawling a whole site or section (one URL → all its sub-pages)?** The crawler discovers sub-pages via `startUrls`/`sitemaps`/`discoveryPatterns` — but the config must be shaped from *all* the page types it will hit, not just the start page. A config fitted to the landing page produces junk on the article/reference/blog templates it never saw. Discover the URL set, group it into templates, sample a representative page per template, and validate the extractor against **each**. See [site-crawls.md](references/site-crawls.md).
+
 The complete, copy-adaptable end-to-end run (create → test → settings → reindex → verify) is in [workflow.md](references/workflow.md).
 
 ## Two things that will bite you
@@ -91,6 +93,7 @@ Two CLI realities to plan around (details in [cli.md](references/cli.md#gotchas)
 ## References
 
 - [workflow.md](references/workflow.md) — the full end-to-end CLI run: config, test-before-index loop, settings, reindex, verify, schedule.
+- [site-crawls.md](references/site-crawls.md) — crawling a whole site/section: discover sub-pages, group page templates, sample and validate each, cover them with a branching extractor or multiple actions.
 - [record-extractor.md](references/record-extractor.md) — RAG record patterns, helpers, reading values from attributes, chunking long prose.
 - [rag-index-settings.md](references/rag-index-settings.md) — index settings tuned for retrieval, NeuralSearch/vector, query-time filtering for RAG.
 - [javascript-rendering.md](references/javascript-rendering.md) — detecting and handling JavaScript-rendered pages.
