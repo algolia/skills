@@ -18,6 +18,7 @@
 | `algolia-cli`   | Manage indices, settings, rules, and synonyms via the Algolia CLI                  |
 | `algobot-cli`   | AI agents, Agent Studio, RAG, and conversational experiences built on Algolia      |
 | `instantsearch` | Build search UIs (autocomplete, search results, faceted search) with InstantSearch |
+| `algolia-crawler` | Crawl web pages or whole sites into a RAG-optimized index with the Algolia Crawler |
 
 ---
 
@@ -27,13 +28,13 @@
 
 ```bash
 /plugin marketplace add algolia/skills
-/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
+/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler
 ```
 
 Or install directly:
 
 ```bash
-/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
+/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler
 ```
 
 #### npx
@@ -46,7 +47,7 @@ npx skills add https://github.com/algolia/skills
 
 ```bash
 git clone https://github.com/algolia/skills.git
-cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch
+cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler
 ```
 
 <details>
