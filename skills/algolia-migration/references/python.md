@@ -96,15 +96,15 @@ to automatically close open connections.
 
 Version 4 introduces three major changes to the API surface:
 
-* **No more `init_index`.**
+- **No more `init_index`.**
   Version 3 relied on an index object with methods called on it.
   In version 4, all methods belong to the `client` instance,
   with `index_name` as a parameter.
-* **Synchronous and asynchronous clients.**
+- **Synchronous and asynchronous clients.**
   Version 4 includes `SearchClientSync` for synchronous code
   and `SearchClient` for asynchronous code (with `async/await`).
   Version 3 only had a synchronous client.
-* **Typed model classes.**
+- **Typed model classes.**
   Version 4 includes model classes like `SearchParams` and `IndexSettings`
   for all API parameters (see [Use model classes or dictionaries](#use-model-classes-or-dictionaries)).
 
@@ -402,9 +402,9 @@ client.wait_for_task(index_name="INDEX_NAME", task_id=response.task_id)
 
 Version 4 includes three wait helpers:
 
-* `wait_for_task`: wait until indexing operations are done.
-* `wait_for_app_task`: wait for application-level tasks.
-* `wait_for_api_key`: wait for API key operations.
+- `wait_for_task`: wait until indexing operations are done.
+- `wait_for_app_task`: wait for application-level tasks.
+- `wait_for_api_key`: wait for API key operations.
 
 ## Helper method changes
 
@@ -427,6 +427,7 @@ index.replace_all_objects(
 await client.replace_all_objects(
     index_name="INDEX_NAME",
     objects=my_objects,
+    scopes=["settings", "rules", "synonyms"],
 )
 ```
 
@@ -436,12 +437,15 @@ The `autoGenerateObjectIDIfNotExist` option has been removed. In version 4, ever
 
 Two new optional parameters are available:
 
-* `wait_for_tasks` (waits for all indexing tasks before returning, default `False`)
-* `batch_size` (controls objects per API call, default `1,000`)
+- `wait_for_tasks` (waits for all indexing tasks before returning, default `False`)
+- `batch_size` (controls objects per API call, default `1,000`)
 
 ```python
 # version 3
-index.save_objects(my_objects, {"autoGenerateObjectIDIfNotExist": True})
+index.save_objects(
+    objects=my_objects,
+    {"autoGenerateObjectIDIfNotExist": True},
+)
 
 # version 4
 await client.save_objects(
@@ -456,8 +460,8 @@ await client.save_objects(
 
 Two new optional parameters are available:
 
-* `wait_for_tasks` (default `False`)
-* `batch_size` (default `1,000`)
+- `wait_for_tasks` (default `False`)
+- `batch_size` (default `1,000`)
 
 ```python
 # version 3
@@ -478,7 +482,10 @@ The `create_if_not_exists` parameter moved from `request_options` to an explicit
 
 ```python
 # version 3
-index.partial_update_objects(my_objects, {"createIfNotExists": True})
+index.partial_update_objects(
+    objects=my_objects,
+    {"createIfNotExists": True},
+)
 
 # version 4
 await client.partial_update_objects(
@@ -634,6 +641,8 @@ await dst.replace_all_objects(index_name="DEST_INDEX", objects=objects)
 In version 4 and later: routes records with the Push to Algolia connector. Requires `transformation_options` with a `region` at client initialization. The `transformation_region` parameter is deprecated. Use `transformation_options` instead.
 
 ```python
+from algoliasearch.search.config import SearchConfig, TransformationOptions
+
 client = SearchClient.create_with_config(
     SearchConfig("APP_ID", "API_KEY", transformation_options=TransformationOptions(region="us"))
 )
@@ -679,72 +688,72 @@ The following tables list all method names that changed between version 3 and ve
 
 ### Search API client
 
-| Version 3 (legacy)                              |   | Version 4 (current)                             |
-| ----------------------------------------------- | - | ----------------------------------------------- |
-| `client.add_api_key`                            | → | `client.add_api_key`                            |
-| `client.add_api_key.wait`                       | → | `client.wait_for_api_key`                       |
-| `client.clear_dictionary_entries`               | → | `client.batch_dictionary_entries`               |
-| `client.copy_index`                             | → | `client.operation_index`                        |
-| `client.copy_rules`                             | → | `client.operation_index`                        |
-| `client.copy_synonyms`                          | → | `client.operation_index`                        |
-| `client.delete_api_key`                         | → | `client.delete_api_key`                         |
-| `client.delete_dictionary_entries`              | → | `client.batch_dictionary_entries`               |
-| `client.generate_secured_api_key`               | → | `client.generate_secured_api_key`               |
-| `client.get_api_key`                            | → | `client.get_api_key`                            |
-| `client.get_secured_api_key_remaining_validity` | → | `client.get_secured_api_key_remaining_validity` |
-| `client.list_api_keys`                          | → | `client.list_api_keys`                          |
-| `client.list_indices`                           | → | `client.list_indices`                           |
-| `client.move_index`                             | → | `client.operation_index`                        |
-| `client.multiple_batch`                         | → | `client.multiple_batch`                         |
-| `client.multiple_queries`                       | → | `client.search`                                 |
-| `client.replace_dictionary_entries`             | → | `client.batch_dictionary_entries`               |
-| `client.restore_api_key`                        | → | `client.restore_api_key`                        |
-| `client.save_dictionary_entries`                | → | `client.batch_dictionary_entries`               |
-| `client.update_api_key`                         | → | `client.update_api_key`                         |
-| `index.batch`                                   | → | `client.batch`                                  |
-| `index.browse_objects`                          | → | `client.browse_objects`                         |
-| `index.browse_rules`                            | → | `client.browse_rules`                           |
-| `index.browse_synonyms`                         | → | `client.browse_synonyms`                        |
-| `index.clear_objects`                           | → | `client.clear_objects`                          |
-| `index.clear_rules`                             | → | `client.clear_rules`                            |
-| `index.clear_synonyms`                          | → | `client.clear_synonyms`                         |
-| `index.copy_settings`                           | → | `client.operation_index`                        |
-| `index.delete`                                  | → | `client.delete_index`                           |
-| `index.delete_by`                               | → | `client.delete_by`                              |
-| `index.delete_object`                           | → | `client.delete_object`                          |
-| `index.delete_objects`                          | → | `client.delete_objects`                         |
-| `index.delete_rule`                             | → | `client.delete_rule`                            |
-| `index.delete_synonym`                          | → | `client.delete_synonym`                         |
-| `index.exists`                                  | → | `client.index_exists`                           |
-| `index.find_object`                             | → | `client.search_single_index`                    |
-| `index.get_object`                              | → | `client.get_object`                             |
-| `index.get_objects`                             | → | `client.get_objects`                            |
-| `index.get_rule`                                | → | `client.get_rule`                               |
-| `index.get_settings`                            | → | `client.get_settings`                           |
-| `index.get_synonym`                             | → | `client.get_synonym`                            |
-| `index.get_task`                                | → | `client.get_task`                               |
-| `index.partial_update_object`                   | → | `client.partial_update_object`                  |
-| `index.partial_update_objects`                  | → | `client.partial_update_objects`                 |
-| `index.replace_all_objects`                     | → | `client.replace_all_objects`                    |
-| `index.replace_all_rules`                       | → | `client.save_rules`                             |
-| `index.replace_all_synonyms`                    | → | `client.save_synonyms`                          |
-| `index.save_object`                             | → | `client.save_object`                            |
-| `index.save_objects`                            | → | `client.save_objects`                           |
-| `index.save_rule`                               | → | `client.save_rule`                              |
-| `index.save_rules`                              | → | `client.save_rules`                             |
-| `index.save_synonym`                            | → | `client.save_synonym`                           |
-| `index.save_synonyms`                           | → | `client.save_synonyms`                          |
-| `index.search`                                  | → | `client.search_single_index`                    |
-| `index.search_for_facet_values`                 | → | `client.search_for_facet_values`                |
-| `index.search_rules`                            | → | `client.search_rules`                           |
-| `index.search_synonyms`                         | → | `client.search_synonyms`                        |
-| `index.set_settings`                            | → | `client.set_settings`                           |
-| `index.{operation}.wait`                        | → | `client.wait_for_task`                          |
+| Version 3 (legacy)                              |     | Version 4 (current)                             |
+| ----------------------------------------------- | --- | ----------------------------------------------- |
+| `client.add_api_key`                            | →   | `client.add_api_key`                            |
+| `client.add_api_key.wait`                       | →   | `client.wait_for_api_key`                       |
+| `client.clear_dictionary_entries`               | →   | `client.batch_dictionary_entries`               |
+| `client.copy_index`                             | →   | `client.operation_index`                        |
+| `client.copy_rules`                             | →   | `client.operation_index`                        |
+| `client.copy_synonyms`                          | →   | `client.operation_index`                        |
+| `client.delete_api_key`                         | →   | `client.delete_api_key`                         |
+| `client.delete_dictionary_entries`              | →   | `client.batch_dictionary_entries`               |
+| `client.generate_secured_api_key`               | →   | `client.generate_secured_api_key`               |
+| `client.get_api_key`                            | →   | `client.get_api_key`                            |
+| `client.get_secured_api_key_remaining_validity` | →   | `client.get_secured_api_key_remaining_validity` |
+| `client.list_api_keys`                          | →   | `client.list_api_keys`                          |
+| `client.list_indices`                           | →   | `client.list_indices`                           |
+| `client.move_index`                             | →   | `client.operation_index`                        |
+| `client.multiple_batch`                         | →   | `client.multiple_batch`                         |
+| `client.multiple_queries`                       | →   | `client.search`                                 |
+| `client.replace_dictionary_entries`             | →   | `client.batch_dictionary_entries`               |
+| `client.restore_api_key`                        | →   | `client.restore_api_key`                        |
+| `client.save_dictionary_entries`                | →   | `client.batch_dictionary_entries`               |
+| `client.update_api_key`                         | →   | `client.update_api_key`                         |
+| `index.batch`                                   | →   | `client.batch`                                  |
+| `index.browse_objects`                          | →   | `client.browse_objects`                         |
+| `index.browse_rules`                            | →   | `client.browse_rules`                           |
+| `index.browse_synonyms`                         | →   | `client.browse_synonyms`                        |
+| `index.clear_objects`                           | →   | `client.clear_objects`                          |
+| `index.clear_rules`                             | →   | `client.clear_rules`                            |
+| `index.clear_synonyms`                          | →   | `client.clear_synonyms`                         |
+| `index.copy_settings`                           | →   | `client.operation_index`                        |
+| `index.delete`                                  | →   | `client.delete_index`                           |
+| `index.delete_by`                               | →   | `client.delete_by`                              |
+| `index.delete_object`                           | →   | `client.delete_object`                          |
+| `index.delete_objects`                          | →   | `client.delete_objects`                         |
+| `index.delete_rule`                             | →   | `client.delete_rule`                            |
+| `index.delete_synonym`                          | →   | `client.delete_synonym`                         |
+| `index.exists`                                  | →   | `client.index_exists`                           |
+| `index.find_object`                             | →   | `client.search_single_index`                    |
+| `index.get_object`                              | →   | `client.get_object`                             |
+| `index.get_objects`                             | →   | `client.get_objects`                            |
+| `index.get_rule`                                | →   | `client.get_rule`                               |
+| `index.get_settings`                            | →   | `client.get_settings`                           |
+| `index.get_synonym`                             | →   | `client.get_synonym`                            |
+| `index.get_task`                                | →   | `client.get_task`                               |
+| `index.partial_update_object`                   | →   | `client.partial_update_object`                  |
+| `index.partial_update_objects`                  | →   | `client.partial_update_objects`                 |
+| `index.replace_all_objects`                     | →   | `client.replace_all_objects`                    |
+| `index.replace_all_rules`                       | →   | `client.save_rules`                             |
+| `index.replace_all_synonyms`                    | →   | `client.save_synonyms`                          |
+| `index.save_object`                             | →   | `client.save_object`                            |
+| `index.save_objects`                            | →   | `client.save_objects`                           |
+| `index.save_rule`                               | →   | `client.save_rule`                              |
+| `index.save_rules`                              | →   | `client.save_rules`                             |
+| `index.save_synonym`                            | →   | `client.save_synonym`                           |
+| `index.save_synonyms`                           | →   | `client.save_synonyms`                          |
+| `index.search`                                  | →   | `client.search_single_index`                    |
+| `index.search_for_facet_values`                 | →   | `client.search_for_facet_values`                |
+| `index.search_rules`                            | →   | `client.search_rules`                           |
+| `index.search_synonyms`                         | →   | `client.search_synonyms`                        |
+| `index.set_settings`                            | →   | `client.set_settings`                           |
+| `index.{operation}.wait`                        | →   | `client.wait_for_task`                          |
 
 ### Recommend API client
 
-| Version 3 (legacy)                      |   | Version 4 (current)          |
-| --------------------------------------- | - | ---------------------------- |
-| `client.get_frequently_bought_together` | → | `client.get_recommendations` |
-| `client.get_recommendations`            | → | `client.get_recommendations` |
-| `client.get_related_products`           | → | `client.get_recommendations` |
+| Version 3 (legacy)                      |     | Version 4 (current)          |
+| --------------------------------------- | --- | ---------------------------- |
+| `client.get_frequently_bought_together` | →   | `client.get_recommendations` |
+| `client.get_recommendations`            | →   | `client.get_recommendations` |
+| `client.get_related_products`           | →   | `client.get_recommendations` |

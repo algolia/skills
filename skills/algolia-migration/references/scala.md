@@ -450,7 +450,8 @@ This method wasn't available in version 1.
 
 ```scala
 // version 2
-val exists: Future[Boolean] = client.indexExists(indexName = "INDEX_NAME")
+val exists: Future[Boolean] =
+  client.indexExists(indexName = "INDEX_NAME")
 ```
 
 ## Update task handling
@@ -483,9 +484,9 @@ val waited: Future[GetTaskResponse] =
 
 Version 2 includes three wait helpers:
 
-* `waitForTask`: wait until indexing operations are done.
-* `waitForAppTask`: wait for application-level tasks.
-* `waitForApiKey`: wait for API key operations.
+- `waitForTask`: wait until indexing operations are done.
+- `waitForAppTask`: wait for application-level tasks.
+- `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -725,66 +726,66 @@ The following tables list all method names that changed between version 1 and ve
 
 ### Search API client
 
-| Version 1 (legacy)      |   | Version 2 (current)             |
-| ----------------------- | - | ------------------------------- |
-| `add key`               | → | `client.addApiKey`              |
-| `clear dictionary`      | → | `client.batchDictionaryEntries` |
-| `copy index`            | → | `client.operationIndex`         |
-| `not available`         | → | `client.operationIndex`         |
-| `not available`         | → | `client.operationIndex`         |
-| `delete key`            | → | `client.deleteApiKey`           |
-| `delete dictionary`     | → | `client.batchDictionaryEntries` |
-| `get key`               | → | `client.getApiKey`              |
-| `list keys`             | → | `client.listApiKeys`            |
-| `list indices`          | → | `client.listIndices`            |
-| `move index`            | → | `client.operationIndex`         |
-| `multipleBatch`         | → | `client.multipleBatch`          |
-| `multiQueries`          | → | `client.search`                 |
-| `replace dictionary`    | → | `client.batchDictionaryEntries` |
-| `restore key`           | → | `client.restoreApiKey`          |
-| `save dictionary`       | → | `client.batchDictionaryEntries` |
-| `update key`            | → | `client.updateApiKey`           |
-| `index.batch`           | → | `client.batch`                  |
-| `clear index`           | → | `client.clearObjects`           |
-| `clear rules`           | → | `client.clearRules`             |
-| `clear synonyms`        | → | `client.clearSynonyms`          |
-| `not available`         | → | `client.operationIndex`         |
-| `delete`                | → | `client.deleteIndex`            |
-| `delete by`             | → | `client.deleteBy`               |
-| `deleteObject`          | → | `client.deleteObject`           |
-| `delete objectIds`      | → | `client.deleteObjects`          |
-| `delete rule`           | → | `client.deleteRule`             |
-| `delete synonym`        | → | `client.deleteSynonym`          |
-| `not available`         | → | `client.indexExists`            |
-| `helper.findObject`     | → | `client.searchSingleIndex`      |
-| `getObject`             | → | `client.getObject`              |
-| `get objectIds`         | → | `client.getObjects`             |
-| `get rule`              | → | `client.getRule`                |
-| `settings of`           | → | `client.getSettings`            |
-| `get synonym`           | → | `client.getSynonym`             |
-| `index.getTask`         | → | `client.getTask`                |
-| `partialUpdateObject`   | → | `client.partialUpdateObject`    |
-| `partialUpdate objects` | → | `client.partialUpdateObjects`   |
-| `not available`         | → | `client.replaceAllObjects`      |
-| `not available`         | → | `client.saveRules`              |
-| `not available`         | → | `client.saveSynonyms`           |
-| `saveObject`            | → | `client.saveObject`             |
-| `index objects`         | → | `client.saveObjects`            |
-| `save rule`             | → | `client.saveRule`               |
-| `saveRules`             | → | `client.saveRules`              |
-| `save synonym`          | → | `client.saveSynonym`            |
-| `save synonyms`         | → | `client.saveSynonyms`           |
-| `search`                | → | `client.searchSingleIndex`      |
-| `search facet`          | → | `client.searchForFacetValues`   |
-| `search rules`          | → | `client.searchRules`            |
-| `search synonyms`       | → | `client.searchSynonyms`         |
-| `setSettings of`        | → | `client.setSettings`            |
-| `{operation}.wait`      | → | `client.waitForTask`            |
+| Version 1 (legacy)         |     | Version 2 (current)             |
+| -------------------------- | --- | ------------------------------- |
+| `add key`                  | →   | `client.addApiKey`              |
+| `clear dictionary`         | →   | `client.batchDictionaryEntries` |
+| `copy index`               | →   | `client.operationIndex`         |
+| `not available`            | →   | `client.operationIndex`         |
+| `not available`            | →   | `client.operationIndex`         |
+| `delete key`               | →   | `client.deleteApiKey`           |
+| `delete dictionary`        | →   | `client.batchDictionaryEntries` |
+| `get key`                  | →   | `client.getApiKey`              |
+| `list keys`                | →   | `client.listApiKeys`            |
+| `list indices`             | →   | `client.listIndices`            |
+| `move index`               | →   | `client.operationIndex`         |
+| `multipleBatch`            | →   | `client.multipleBatch`          |
+| `multiQueries`             | →   | `client.search`                 |
+| `replace dictionary`       | →   | `client.batchDictionaryEntries` |
+| `restore key`              | →   | `client.restoreApiKey`          |
+| `save dictionary`          | →   | `client.batchDictionaryEntries` |
+| `update key`               | →   | `client.updateApiKey`           |
+| `index.batch`              | →   | `client.batch`                  |
+| `clear index`              | →   | `client.clearObjects`           |
+| `clear rules`              | →   | `client.clearRules`             |
+| `clear synonyms`           | →   | `client.clearSynonyms`          |
+| `not available`            | →   | `client.operationIndex`         |
+| `delete`                   | →   | `client.deleteIndex`            |
+| `delete by`                | →   | `client.deleteBy`               |
+| `deleteObject`             | →   | `client.deleteObject`           |
+| `delete objectIds`         | →   | `client.deleteObjects`          |
+| `delete rule`              | →   | `client.deleteRule`             |
+| `delete synonym`           | →   | `client.deleteSynonym`          |
+| `not available`            | →   | `client.indexExists`            |
+| `helper.findObject`        | →   | `client.searchSingleIndex`      |
+| `getObject`                | →   | `client.getObject`              |
+| `get objectIds`            | →   | `client.getObjects`             |
+| `get rule`                 | →   | `client.getRule`                |
+| `settings of`              | →   | `client.getSettings`            |
+| `get synonym`              | →   | `client.getSynonym`             |
+| `index.getTask`            | →   | `client.getTask`                |
+| `partialUpdateObject`      | →   | `client.partialUpdateObject`    |
+| `partialUpdate objects`    | →   | `client.partialUpdateObjects`   |
+| `not available`            | →   | `client.replaceAllObjects`      |
+| `not available`            | →   | `client.saveRules`              |
+| `not available`            | →   | `client.saveSynonyms`           |
+| `saveObject`               | →   | `client.saveObject`             |
+| `index objects`            | →   | `client.saveObjects`            |
+| `save rule`                | →   | `client.saveRule`               |
+| `saveRules`                | →   | `client.saveRules`              |
+| `save synonym`             | →   | `client.saveSynonym`            |
+| `save synonyms`            | →   | `client.saveSynonyms`           |
+| `search`                   | →   | `client.searchSingleIndex`      |
+| `search facet`             | →   | `client.searchForFacetValues`   |
+| `search rules`             | →   | `client.searchRules`            |
+| `search synonyms`          | →   | `client.searchSynonyms`         |
+| `setSettings of`           | →   | `client.setSettings`            |
+| `{operation}.wait`         | →   | `client.waitForTask`            |
 
 ### Recommend API client
 
-| Version 1 (legacy)             |   | Version 2 (current)         |
-| ------------------------------ | - | --------------------------- |
-| `get frequentlyBoughtTogether` | → | `client.getRecommendations` |
-| `get recommendations`          | → | `client.getRecommendations` |
-| `get relatedProducts`          | → | `client.getRecommendations` |
+| Version 1 (legacy)                |     | Version 2 (current)         |
+| --------------------------------- | --- | --------------------------- |
+| `get frequentlyBoughtTogether`    | →   | `client.getRecommendations` |
+| `get recommendations`             | →   | `client.getRecommendations` |
+| `get relatedProducts`             | →   | `client.getRecommendations` |

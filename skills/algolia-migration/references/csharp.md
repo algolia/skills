@@ -369,9 +369,9 @@ await client.SaveObjectsAsync("INDEX_NAME", records, waitForTasks: true, request
 
 Version 7 includes three wait helpers:
 
-* `WaitForTask`: wait until indexing operations are done.
-* `WaitForAppTask`: wait for application-level tasks.
-* `WaitForApiKey`: wait for API key operations.
+- `WaitForTask`: wait until indexing operations are done.
+- `WaitForAppTask`: wait for application-level tasks.
+- `WaitForApiKey`: wait for API key operations.
 
 ## Update the serialization library
 
@@ -387,10 +387,10 @@ in Microsoft's documentation.
 
   Common attribute replacements when migrating from `Newtonsoft.Json`:
 
-* `[JsonProperty("name")]` becomes `[JsonPropertyName("name")]`
-* `[JsonIgnore]` keeps the same name but moves to the `System.Text.Json.Serialization` namespace
-* Custom `JsonConverter` implementations need rewriting for `System.Text.Json`
-  
+  - `[JsonProperty("name")]` becomes `[JsonPropertyName("name")]`
+  - `[JsonIgnore]` keeps the same name but moves to the `System.Text.Json.Serialization` namespace
+  - Custom `JsonConverter` implementations need rewriting for `System.Text.Json`
+
 ## Update enumeration serialization
 
 To keep the serialization of enumeration types consistent with previous versions of the .NET API client,
@@ -433,7 +433,8 @@ await index.ReplaceAllObjectsAsync(objects, safe: true);
 // version 7
 await client.ReplaceAllObjectsAsync(
     indexName: "INDEX_NAME",
-    objects: objects
+    objects: objects,
+    scopes: new List<ScopeType> { ScopeType.Settings, ScopeType.Rules, ScopeType.Synonyms }
 );
 ```
 
@@ -504,8 +505,8 @@ var objects = (await client.BrowseObjectsAsync<MyModel>(
 
 Two new optional parameters are available:
 
-* `waitForTasks` (default `false`)
-* `batchSize` (default `1,000`)
+- `waitForTasks` (default `false`)
+- `batchSize` (default `1,000`)
 
 ```csharp
 // version 6
@@ -669,72 +670,72 @@ The following tables list all method names that changed between version 6 and ve
 
 ### Search API client
 
-| Version 6 (legacy)                          |   | Version 7 (current)                        |
-| ------------------------------------------- | - | ------------------------------------------ |
-| `client.AddApiKey`                          | → | `client.AddApiKey`                         |
-| `client.AddApiKey.Wait`                     | → | `client.WaitForApiKey`                     |
-| `DictionaryClient.ClearDictionaryEntries`   | → | `client.BatchDictionaryEntries`            |
-| `client.CopyIndex`                          | → | `client.OperationIndex`                    |
-| `client.CopyRules`                          | → | `client.OperationIndex`                    |
-| `client.CopySynonyms`                       | → | `client.OperationIndex`                    |
-| `client.DeleteApiKey`                       | → | `client.DeleteApiKey`                      |
-| `DictionaryClient.DeleteDictionaryEntries`  | → | `client.BatchDictionaryEntries`            |
-| `client.GenerateSecuredApiKey`              | → | `client.GenerateSecuredApiKey`             |
-| `client.GetApiKey`                          | → | `client.GetApiKey`                         |
-| `client.GetSecuredApiKeyRemainingValidity`  | → | `client.GetSecuredApiKeyRemainingValidity` |
-| `client.ListApiKeys`                        | → | `client.ListApiKeys`                       |
-| `client.ListIndices`                        | → | `client.ListIndices`                       |
-| `client.MoveIndex`                          | → | `client.OperationIndex`                    |
-| `client.MultipleBatch`                      | → | `client.MultipleBatch`                     |
-| `client.MultipleQueries`                    | → | `client.Search`                            |
-| `DictionaryClient.ReplaceDictionaryEntries` | → | `client.BatchDictionaryEntries`            |
-| `client.RestoreApiKey`                      | → | `client.RestoreApiKey`                     |
-| `DictionaryClient.SaveDictionaryEntries`    | → | `client.BatchDictionaryEntries`            |
-| `client.UpdateApiKey`                       | → | `client.UpdateApiKey`                      |
-| `index.Batch`                               | → | `client.Batch`                             |
-| `index.Browse`                              | → | `client.BrowseObjects`                     |
-| `index.BrowseRules`                         | → | `client.BrowseRules`                       |
-| `index.BrowseSynonyms`                      | → | `client.BrowseSynonyms`                    |
-| `index.ClearObjects`                        | → | `client.ClearObjects`                      |
-| `index.ClearRules`                          | → | `client.ClearRules`                        |
-| `index.ClearSynonyms`                       | → | `client.ClearSynonyms`                     |
-| `index.CopySettings`                        | → | `client.OperationIndex`                    |
-| `index.Delete`                              | → | `client.DeleteIndex`                       |
-| `index.DeleteBy`                            | → | `client.DeleteBy`                          |
-| `index.DeleteObject`                        | → | `client.DeleteObject`                      |
-| `index.DeleteObjects`                       | → | `client.DeleteObjects`                     |
-| `index.DeleteRule`                          | → | `client.DeleteRule`                        |
-| `index.DeleteSynonym`                       | → | `client.DeleteSynonym`                     |
-| `index.Exists`                              | → | `client.IndexExists`                       |
-| `index.FindObject`                          | → | `client.SearchSingleIndex`                 |
-| `index.GetObject`                           | → | `client.GetObject`                         |
-| `index.GetObjects`                          | → | `client.GetObjects`                        |
-| `index.GetRule`                             | → | `client.GetRule`                           |
-| `index.GetSettings`                         | → | `client.GetSettings`                       |
-| `index.GetSynonym`                          | → | `client.GetSynonym`                        |
-| `index.GetTask`                             | → | `client.GetTask`                           |
-| `index.PartialUpdateObject`                 | → | `client.PartialUpdateObject`               |
-| `index.PartialUpdateObjects`                | → | `client.PartialUpdateObjects`              |
-| `index.ReplaceAllObjects`                   | → | `client.ReplaceAllObjects`                 |
-| `index.ReplaceAllRules`                     | → | `client.SaveRules`                         |
-| `index.ReplaceAllSynonyms`                  | → | `client.SaveSynonyms`                      |
-| `index.SaveObject`                          | → | `client.SaveObject`                        |
-| `index.SaveObjects`                         | → | `client.SaveObjects`                       |
-| `index.SaveRule`                            | → | `client.SaveRule`                          |
-| `index.SaveRules`                           | → | `client.SaveRules`                         |
-| `index.SaveSynonym`                         | → | `client.SaveSynonym`                       |
-| `index.SaveSynonyms`                        | → | `client.SaveSynonyms`                      |
-| `index.Search`                              | → | `client.SearchSingleIndex`                 |
-| `index.SearchForFacetValues`                | → | `client.SearchForFacetValues`              |
-| `index.SearchRules`                         | → | `client.SearchRules`                       |
-| `index.SearchSynonyms`                      | → | `client.SearchSynonyms`                    |
-| `index.SetSettings`                         | → | `client.SetSettings`                       |
-| `index.{operation}.Wait`                    | → | `client.WaitForTask`                       |
+| Version 6 (legacy)                         |     | Version 7 (current)                        |
+| ------------------------------------------ | --- | ------------------------------------------ |
+| `client.AddApiKey`                         | →   | `client.AddApiKey`                         |
+| `client.AddApiKey.Wait`                    | →   | `client.WaitForApiKey`                     |
+| `DictionaryClient.ClearDictionaryEntries`  | →   | `client.BatchDictionaryEntries`            |
+| `client.CopyIndex`                         | →   | `client.OperationIndex`                    |
+| `client.CopyRules`                         | →   | `client.OperationIndex`                    |
+| `client.CopySynonyms`                      | →   | `client.OperationIndex`                    |
+| `client.DeleteApiKey`                      | →   | `client.DeleteApiKey`                      |
+| `DictionaryClient.DeleteDictionaryEntries` | →   | `client.BatchDictionaryEntries`            |
+| `client.GenerateSecuredApiKey`             | →   | `client.GenerateSecuredApiKey`             |
+| `client.GetApiKey`                         | →   | `client.GetApiKey`                         |
+| `client.GetSecuredApiKeyRemainingValidity` | →   | `client.GetSecuredApiKeyRemainingValidity` |
+| `client.ListApiKeys`                       | →   | `client.ListApiKeys`                       |
+| `client.ListIndices`                       | →   | `client.ListIndices`                       |
+| `client.MoveIndex`                         | →   | `client.OperationIndex`                    |
+| `client.MultipleBatch`                     | →   | `client.MultipleBatch`                     |
+| `client.MultipleQueries`                   | →   | `client.Search`                            |
+| `DictionaryClient.ReplaceDictionaryEntries`| →   | `client.BatchDictionaryEntries`            |
+| `client.RestoreApiKey`                     | →   | `client.RestoreApiKey`                     |
+| `DictionaryClient.SaveDictionaryEntries`   | →   | `client.BatchDictionaryEntries`            |
+| `client.UpdateApiKey`                      | →   | `client.UpdateApiKey`                      |
+| `index.Batch`                              | →   | `client.Batch`                             |
+| `index.Browse`                             | →   | `client.BrowseObjects`                     |
+| `index.BrowseRules`                        | →   | `client.BrowseRules`                       |
+| `index.BrowseSynonyms`                     | →   | `client.BrowseSynonyms`                    |
+| `index.ClearObjects`                       | →   | `client.ClearObjects`                      |
+| `index.ClearRules`                         | →   | `client.ClearRules`                        |
+| `index.ClearSynonyms`                      | →   | `client.ClearSynonyms`                     |
+| `index.CopySettings`                       | →   | `client.OperationIndex`                    |
+| `index.Delete`                             | →   | `client.DeleteIndex`                       |
+| `index.DeleteBy`                           | →   | `client.DeleteBy`                          |
+| `index.DeleteObject`                       | →   | `client.DeleteObject`                      |
+| `index.DeleteObjects`                      | →   | `client.DeleteObjects`                     |
+| `index.DeleteRule`                         | →   | `client.DeleteRule`                        |
+| `index.DeleteSynonym`                      | →   | `client.DeleteSynonym`                     |
+| `index.Exists`                             | →   | `client.IndexExists`                       |
+| `index.FindObject`                         | →   | `client.SearchSingleIndex`                 |
+| `index.GetObject`                          | →   | `client.GetObject`                         |
+| `index.GetObjects`                         | →   | `client.GetObjects`                        |
+| `index.GetRule`                            | →   | `client.GetRule`                           |
+| `index.GetSettings`                        | →   | `client.GetSettings`                       |
+| `index.GetSynonym`                         | →   | `client.GetSynonym`                        |
+| `index.GetTask`                            | →   | `client.GetTask`                           |
+| `index.PartialUpdateObject`               | →   | `client.PartialUpdateObject`               |
+| `index.PartialUpdateObjects`              | →   | `client.PartialUpdateObjects`              |
+| `index.ReplaceAllObjects`                 | →   | `client.ReplaceAllObjects`                 |
+| `index.ReplaceAllRules`                   | →   | `client.SaveRules`                         |
+| `index.ReplaceAllSynonyms`                | →   | `client.SaveSynonyms`                      |
+| `index.SaveObject`                        | →   | `client.SaveObject`                        |
+| `index.SaveObjects`                       | →   | `client.SaveObjects`                       |
+| `index.SaveRule`                          | →   | `client.SaveRule`                          |
+| `index.SaveRules`                         | →   | `client.SaveRules`                         |
+| `index.SaveSynonym`                       | →   | `client.SaveSynonym`                       |
+| `index.SaveSynonyms`                      | →   | `client.SaveSynonyms`                      |
+| `index.Search`                            | →   | `client.SearchSingleIndex`                 |
+| `index.SearchForFacetValues`              | →   | `client.SearchForFacetValues`              |
+| `index.SearchRules`                       | →   | `client.SearchRules`                       |
+| `index.SearchSynonyms`                    | →   | `client.SearchSynonyms`                    |
+| `index.SetSettings`                       | →   | `client.SetSettings`                       |
+| `index.{operation}.Wait`                  | →   | `client.WaitForTask`                       |
 
 ### Recommend API client
 
-| Version 6 (legacy)                   |   | Version 7 (current)         |
-| ------------------------------------ | - | --------------------------- |
-| `client.GetFrequentlyBoughtTogether` | → | `client.GetRecommendations` |
-| `client.GetRecommendations`          | → | `client.GetRecommendations` |
-| `client.GetRelatedProducts`          | → | `client.GetRecommendations` |
+| Version 6 (legacy)                   |     | Version 7 (current)         |
+| ------------------------------------ | --- | --------------------------- |
+| `client.GetFrequentlyBoughtTogether` | →   | `client.GetRecommendations` |
+| `client.GetRecommendations`          | →   | `client.GetRecommendations` |
+| `client.GetRelatedProducts`          | →   | `client.GetRecommendations` |

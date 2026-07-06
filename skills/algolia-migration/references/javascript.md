@@ -352,9 +352,9 @@ await client.saveObjects({
 
 Version 5 includes three wait helpers:
 
-* `waitForTask`: wait until indexing operations are done.
-* `waitForAppTask`: wait for application-level tasks.
-* `waitForApiKey`: wait for API key operations.
+- `waitForTask`: wait until indexing operations are done.
+- `waitForAppTask`: wait for application-level tasks.
+- `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -378,6 +378,7 @@ await client.replaceAllObjects({
 await client.replaceAllObjects({
   indexName: "INDEX_NAME",
   objects: myObjects,
+  scopes: ["settings", "rules", "synonyms"],
 });
 ```
 
@@ -387,8 +388,8 @@ The `autoGenerateObjectIDIfNotExist` option has been removed. In version 5, you 
 
 Two new optional parameters are available:
 
-* `waitForTasks` (waits for all indexing tasks to complete before returning, default `false`)
-* `batchSize` (controls how many objects are sent per API call, default `1,000`)
+- `waitForTasks` (waits for all indexing tasks to complete before returning, default `false`)
+- `batchSize` (controls how many objects are sent per API call, default `1,000`)
 
 ```js
 // version 4
@@ -413,8 +414,8 @@ await client.saveObjects({
 
 Two new optional parameters are available:
 
-* `waitForTasks` (waits for all indexing tasks to complete before returning, default `false`)
-* `batchSize` (controls how many objects are sent per API call, default `1,000`)
+- `waitForTasks` (waits for all indexing tasks to complete before returning, default `false`)
+- `batchSize` (controls how many objects are sent per API call, default `1,000`)
 
 ```js
 // version 4
@@ -616,7 +617,7 @@ await client.accountCopyIndex({
 ### `saveObjectsWithTransformation`
 
 - In version 4, this method was available on indices through the ingestion mixin.
-- In version 5, it's a top-level helper on the `algoliasearch` client. It routes records with the Push to Algolia connector and requires `transformationOptions` with a `region` to be set when you initialize the `algoliasearch` client. The `transformation` option is deprecated. Use `transformationOptions` instead.
+- In version 5, it's a top-level helper on the `algoliasearch` client. It routes records with the Push to Algolia connector and requires `transformationOptions` with a `region` to be set at client initialization. The `transformation` option is deprecated. Use `transformationOptions` instead.
 
 ```js
 // version 4
@@ -637,7 +638,7 @@ await client.saveObjectsWithTransformation({
 
 ### `replaceAllObjectsWithTransformation`
 
-In version 5 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires `transformationOptions` with a `region` when you initialize the `algoliasearch` client.
+In version 5 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires `transformationOptions` with a `region` at client initialization.
 
 ```js
 const client = algoliasearch("APP_ID", "API_KEY", {
@@ -672,75 +673,75 @@ The following tables list all method names that changed between version 4 and ve
 
 ### Search API client
 
-| Version 4 (legacy)                         |   | Version 5 (current)                        |
-| ------------------------------------------ | - | ------------------------------------------ |
-| `client.addApiKey`                         | → | `client.addApiKey`                         |
-| `client.addApiKey.wait`                    | → | `client.waitForApiKey`                     |
-| `client.clearDictionaryEntries`            | → | `client.batchDictionaryEntries`            |
-| `client.copyIndex`                         | → | `client.operationIndex`                    |
-| `client.copyRules`                         | → | `client.operationIndex`                    |
-| `client.copySynonyms`                      | → | `client.operationIndex`                    |
-| `client.deleteApiKey`                      | → | `client.deleteApiKey`                      |
-| `client.deleteDictionaryEntries`           | → | `client.batchDictionaryEntries`            |
-| `client.generateSecuredApiKey`             | → | `client.generateSecuredApiKey`             |
-| `client.getApiKey`                         | → | `client.getApiKey`                         |
-| `client.getSecuredApiKeyRemainingValidity` | → | `client.getSecuredApiKeyRemainingValidity` |
-| `client.listApiKeys`                       | → | `client.listApiKeys`                       |
-| `client.listIndices`                       | → | `client.listIndices`                       |
-| `client.moveIndex`                         | → | `client.operationIndex`                    |
-| `client.multipleBatch`                     | → | `client.multipleBatch`                     |
-| `client.multipleQueries`                   | → | `client.search`                            |
-| `client.replaceDictionaryEntries`          | → | `client.batchDictionaryEntries`            |
-| `client.restoreApiKey`                     | → | `client.restoreApiKey`                     |
-| `client.saveDictionaryEntries`             | → | `client.batchDictionaryEntries`            |
-| `client.updateApiKey`                      | → | `client.updateApiKey`                      |
-| `index.batch`                              | → | `client.batch`                             |
-| `index.browseObjects`                      | → | `client.browseObjects`                     |
-| `index.browseRules`                        | → | `client.browseRules`                       |
-| `index.browseSynonyms`                     | → | `client.browseSynonyms`                    |
-| `index.clearObjects`                       | → | `client.clearObjects`                      |
-| `index.clearRules`                         | → | `client.clearRules`                        |
-| `index.clearSynonyms`                      | → | `client.clearSynonyms`                     |
-| `index.copySettings`                       | → | `client.operationIndex`                    |
-| `index.delete`                             | → | `client.deleteIndex`                       |
-| `index.deleteBy`                           | → | `client.deleteBy`                          |
-| `index.deleteObject`                       | → | `client.deleteObject`                      |
-| `index.deleteObjects`                      | → | `client.deleteObjects`                     |
-| `index.deleteRule`                         | → | `client.deleteRule`                        |
-| `index.deleteSynonym`                      | → | `client.deleteSynonym`                     |
-| `index.exists`                             | → | `client.indexExists`                       |
-| `index.findObject`                         | → | `client.searchSingleIndex`                 |
-| `index.getObject`                          | → | `client.getObject`                         |
-| `index.getObjects`                         | → | `client.getObjects`                        |
-| `index.getRule`                            | → | `client.getRule`                           |
-| `index.getSettings`                        | → | `client.getSettings`                       |
-| `index.getSynonym`                         | → | `client.getSynonym`                        |
-| `index.getTask`                            | → | `client.getTask`                           |
-| `index.partialUpdateObject`                | → | `client.partialUpdateObject`               |
-| `index.partialUpdateObjects`               | → | `client.partialUpdateObjects`              |
-| `index.replaceAllObjects`                  | → | `client.replaceAllObjects`                 |
-| `index.replaceAllRules`                    | → | `client.saveRules`                         |
-| `index.replaceAllSynonyms`                 | → | `client.saveSynonyms`                      |
-| `index.saveObject`                         | → | `client.saveObject`                        |
-| `index.saveObjects`                        | → | `client.saveObjects`                       |
-| `index.saveRule`                           | → | `client.saveRule`                          |
-| `index.saveRules`                          | → | `client.saveRules`                         |
-| `index.saveSynonym`                        | → | `client.saveSynonym`                       |
-| `index.saveSynonyms`                       | → | `client.saveSynonyms`                      |
-| `index.search`                             | → | `client.searchSingleIndex`                 |
-| `index.searchForFacetValues`               | → | `client.searchForFacetValues`              |
-| `index.searchRules`                        | → | `client.searchRules`                       |
-| `index.searchSynonyms`                     | → | `client.searchSynonyms`                    |
-| `index.setSettings`                        | → | `client.setSettings`                       |
-| `index.{operation}.wait`                   | → | `client.waitForTask`                       |
+| Version 4 (legacy)                                |     | Version 5 (current)                               |
+| ------------------------------------------ | --- | ------------------------------------------ |
+| `client.addApiKey`                         | →   | `client.addApiKey`                         |
+| `client.addApiKey.wait`                    | →   | `client.waitForApiKey`                     |
+| `client.clearDictionaryEntries`            | →   | `client.batchDictionaryEntries`            |
+| `client.copyIndex`                         | →   | `client.operationIndex`                    |
+| `client.copyRules`                         | →   | `client.operationIndex`                    |
+| `client.copySynonyms`                      | →   | `client.operationIndex`                    |
+| `client.deleteApiKey`                      | →   | `client.deleteApiKey`                      |
+| `client.deleteDictionaryEntries`           | →   | `client.batchDictionaryEntries`            |
+| `client.generateSecuredApiKey`             | →   | `client.generateSecuredApiKey`             |
+| `client.getApiKey`                         | →   | `client.getApiKey`                         |
+| `client.getSecuredApiKeyRemainingValidity` | →   | `client.getSecuredApiKeyRemainingValidity` |
+| `client.listApiKeys`                       | →   | `client.listApiKeys`                       |
+| `client.listIndices`                       | →   | `client.listIndices`                       |
+| `client.moveIndex`                         | →   | `client.operationIndex`                    |
+| `client.multipleBatch`                     | →   | `client.multipleBatch`                     |
+| `client.multipleQueries`                   | →   | `client.search`                            |
+| `client.replaceDictionaryEntries`          | →   | `client.batchDictionaryEntries`            |
+| `client.restoreApiKey`                     | →   | `client.restoreApiKey`                     |
+| `client.saveDictionaryEntries`             | →   | `client.batchDictionaryEntries`            |
+| `client.updateApiKey`                      | →   | `client.updateApiKey`                      |
+| `index.batch`                              | →   | `client.batch`                             |
+| `index.browseObjects`                      | →   | `client.browseObjects`                     |
+| `index.browseRules`                        | →   | `client.browseRules`                       |
+| `index.browseSynonyms`                     | →   | `client.browseSynonyms`                    |
+| `index.clearObjects`                       | →   | `client.clearObjects`                      |
+| `index.clearRules`                         | →   | `client.clearRules`                        |
+| `index.clearSynonyms`                      | →   | `client.clearSynonyms`                     |
+| `index.copySettings`                       | →   | `client.operationIndex`                    |
+| `index.delete`                             | →   | `client.deleteIndex`                       |
+| `index.deleteBy`                           | →   | `client.deleteBy`                          |
+| `index.deleteObject`                       | →   | `client.deleteObject`                      |
+| `index.deleteObjects`                      | →   | `client.deleteObjects`                     |
+| `index.deleteRule`                         | →   | `client.deleteRule`                        |
+| `index.deleteSynonym`                      | →   | `client.deleteSynonym`                     |
+| `index.exists`                             | →   | `client.indexExists`                       |
+| `index.findObject`                         | →   | `client.searchSingleIndex`                 |
+| `index.getObject`                          | →   | `client.getObject`                         |
+| `index.getObjects`                         | →   | `client.getObjects`                        |
+| `index.getRule`                            | →   | `client.getRule`                           |
+| `index.getSettings`                        | →   | `client.getSettings`                       |
+| `index.getSynonym`                         | →   | `client.getSynonym`                        |
+| `index.getTask`                            | →   | `client.getTask`                           |
+| `index.partialUpdateObject`                | →   | `client.partialUpdateObject`               |
+| `index.partialUpdateObjects`               | →   | `client.partialUpdateObjects`              |
+| `index.replaceAllObjects`                  | →   | `client.replaceAllObjects`                 |
+| `index.replaceAllRules`                    | →   | `client.saveRules`                         |
+| `index.replaceAllSynonyms`                 | →   | `client.saveSynonyms`                      |
+| `index.saveObject`                         | →   | `client.saveObject`                        |
+| `index.saveObjects`                        | →   | `client.saveObjects`                       |
+| `index.saveRule`                           | →   | `client.saveRule`                          |
+| `index.saveRules`                          | →   | `client.saveRules`                         |
+| `index.saveSynonym`                        | →   | `client.saveSynonym`                       |
+| `index.saveSynonyms`                       | →   | `client.saveSynonyms`                      |
+| `index.search`                             | →   | `client.searchSingleIndex`                 |
+| `index.searchForFacetValues`               | →   | `client.searchForFacetValues`              |
+| `index.searchRules`                        | →   | `client.searchRules`                       |
+| `index.searchSynonyms`                     | →   | `client.searchSynonyms`                    |
+| `index.setSettings`                        | →   | `client.setSettings`                       |
+| `index.{operation}.wait`                   | →   | `client.waitForTask`                       |
 
 ### Recommend API client
 
-| Version 4 (legacy)                   |   | Version 5 (current)         |
-| ------------------------------------ | - | --------------------------- |
-| `client.getFrequentlyBoughtTogether` | → | `client.getRecommendations` |
-| `client.getLookingSimilar`           | → | `client.getRecommendations` |
-| `client.getRecommendations`          | → | `client.getRecommendations` |
-| `client.getRelatedProducts`          | → | `client.getRecommendations` |
-| `client.getTrendingFacets`           | → | `client.getRecommendations` |
-| `client.getTrendingItems`            | → | `client.getRecommendations` |
+| Version 4 (legacy)                          |     | Version 5 (current)                |
+| ------------------------------------ | --- | --------------------------- |
+| `client.getFrequentlyBoughtTogether` | →   | `client.getRecommendations` |
+| `client.getLookingSimilar`           | →   | `client.getRecommendations` |
+| `client.getRecommendations`          | →   | `client.getRecommendations` |
+| `client.getRelatedProducts`          | →   | `client.getRecommendations` |
+| `client.getTrendingFacets`           | →   | `client.getRecommendations` |
+| `client.getTrendingItems`            | →   | `client.getRecommendations` |

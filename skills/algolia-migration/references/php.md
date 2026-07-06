@@ -359,9 +359,9 @@ $client->waitForTask('INDEX_NAME', $response['taskID']);
 
 Version 4 includes three wait helpers:
 
-* `waitForTask`: wait until indexing operations are done.
-* `waitForAppTask`: wait for application-level tasks.
-* `waitForApiKey`: wait for API key operations.
+- `waitForTask`: wait until indexing operations are done.
+- `waitForAppTask`: wait for application-level tasks.
+- `waitForApiKey`: wait for API key operations.
 
 ## Helper method changes
 
@@ -576,7 +576,13 @@ $dst->replaceAllObjects('DEST_INDEX', $objects);
 In version 4 and later: routes records with the Push to Algolia connector. Requires `transformationOptions` with a `region` to be set on the client configuration. The `setTransformationRegion` method is deprecated. Use `setTransformationOptions` instead.
 
 ```php
-$client->setTransformationOptions(new TransformationOptions('us'));
+use Algolia\AlgoliaSearch\Api\SearchClient;
+use Algolia\AlgoliaSearch\Configuration\SearchConfig;
+use Algolia\AlgoliaSearch\Configuration\TransformationOptions;
+
+$config = SearchConfig::create('APP_ID', 'API_KEY')
+    ->setTransformationOptions(new TransformationOptions('us'));
+$client = SearchClient::createWithConfig($config);
 
 $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
 ```
@@ -614,75 +620,75 @@ The following tables list all method names that changed between version 3 and ve
 
 ### Search API client
 
-| Version 3 (legacy)                           |   | Version 4 (current)                          |
-| -------------------------------------------- | - | -------------------------------------------- |
-| `$client->addApiKey`                         | → | `$client->addApiKey`                         |
-| `$client->addApiKey->wait`                   | → | `$client->waitForApiKey`                     |
-| `$client->clearDictionaryEntries`            | → | `$client->batchDictionaryEntries`            |
-| `$client->copyIndex`                         | → | `$client->operationIndex`                    |
-| `$client->copyRules`                         | → | `$client->operationIndex`                    |
-| `$client->copySynonyms`                      | → | `$client->operationIndex`                    |
-| `$client->deleteApiKey`                      | → | `$client->deleteApiKey`                      |
-| `$client->deleteDictionaryEntries`           | → | `$client->batchDictionaryEntries`            |
-| `$client->generateSecuredApiKey`             | → | `$client->generateSecuredApiKey`             |
-| `$client->getApiKey`                         | → | `$client->getApiKey`                         |
-| `$client->getSecuredApiKeyRemainingValidity` | → | `$client->getSecuredApiKeyRemainingValidity` |
-| `$client->listApiKeys`                       | → | `$client->listApiKeys`                       |
-| `$client->listIndices`                       | → | `$client->listIndices`                       |
-| `$client->moveIndex`                         | → | `$client->operationIndex`                    |
-| `$client->multipleBatch`                     | → | `$client->multipleBatch`                     |
-| `$client->multipleQueries`                   | → | `$client->search`                            |
-| `$client->replaceDictionaryEntries`          | → | `$client->batchDictionaryEntries`            |
-| `$client->restoreApiKey`                     | → | `$client->restoreApiKey`                     |
-| `$client->saveDictionaryEntries`             | → | `$client->batchDictionaryEntries`            |
-| `$client->updateApiKey`                      | → | `$client->updateApiKey`                      |
-| `$index->batch`                              | → | `$client->batch`                             |
-| `$index->browseObjects`                      | → | `$client->browseObjects`                     |
-| `$index->browseRules`                        | → | `$client->browseRules`                       |
-| `$index->browseSynonyms`                     | → | `$client->browseSynonyms`                    |
-| `$index->clearObjects`                       | → | `$client->clearObjects`                      |
-| `$index->clearRules`                         | → | `$client->clearRules`                        |
-| `$index->clearSynonyms`                      | → | `$client->clearSynonyms`                     |
-| `$index->copySettings`                       | → | `$client->operationIndex`                    |
-| `$index->delete`                             | → | `$client->deleteIndex`                       |
-| `$index->deleteBy`                           | → | `$client->deleteBy`                          |
-| `$index->deleteObject`                       | → | `$client->deleteObject`                      |
-| `$index->deleteObjects`                      | → | `$client->deleteObjects`                     |
-| `$index->deleteRule`                         | → | `$client->deleteRule`                        |
-| `$index->deleteSynonym`                      | → | `$client->deleteSynonym`                     |
-| `$index->exists`                             | → | `$client->indexExists`                       |
-| `$index->findObject`                         | → | `$client->searchSingleIndex`                 |
-| `$index->getObject`                          | → | `$client->getObject`                         |
-| `$index->getObjects`                         | → | `$client->getObjects`                        |
-| `$index->getRule`                            | → | `$client->getRule`                           |
-| `$index->getSettings`                        | → | `$client->getSettings`                       |
-| `$index->getSynonym`                         | → | `$client->getSynonym`                        |
-| `$index->getTask`                            | → | `$client->getTask`                           |
-| `$index->partialUpdateObject`                | → | `$client->partialUpdateObject`               |
-| `$index->partialUpdateObjects`               | → | `$client->partialUpdateObjects`              |
-| `$index->replaceAllObjects`                  | → | `$client->replaceAllObjects`                 |
-| `$index->replaceAllRules`                    | → | `$client->saveRules`                         |
-| `$index->replaceAllSynonyms`                 | → | `$client->saveSynonyms`                      |
-| `$index->saveObject`                         | → | `$client->saveObject`                        |
-| `$index->saveObjects`                        | → | `$client->saveObjects`                       |
-| `$index->saveRule`                           | → | `$client->saveRule`                          |
-| `$index->saveRules`                          | → | `$client->saveRules`                         |
-| `$index->saveSynonym`                        | → | `$client->saveSynonym`                       |
-| `$index->saveSynonyms`                       | → | `$client->saveSynonyms`                      |
-| `$index->search`                             | → | `$client->searchSingleIndex`                 |
-| `$index->searchForFacetValues`               | → | `$client->searchForFacetValues`              |
-| `$index->searchRules`                        | → | `$client->searchRules`                       |
-| `$index->searchSynonyms`                     | → | `$client->searchSynonyms`                    |
-| `$index->setSettings`                        | → | `$client->setSettings`                       |
-| `$index->{operation}->wait`                  | → | `$client->waitForTask`                       |
+| Version 3 (legacy)                                  |     | Version 4 (current)                                 |
+| -------------------------------------------- | --- | -------------------------------------------- |
+| `$client->addApiKey`                         | →   | `$client->addApiKey`                         |
+| `$client->addApiKey->wait`                   | →   | `$client->waitForApiKey`                     |
+| `$client->clearDictionaryEntries`            | →   | `$client->batchDictionaryEntries`            |
+| `$client->copyIndex`                         | →   | `$client->operationIndex`                    |
+| `$client->copyRules`                         | →   | `$client->operationIndex`                    |
+| `$client->copySynonyms`                      | →   | `$client->operationIndex`                    |
+| `$client->deleteApiKey`                      | →   | `$client->deleteApiKey`                      |
+| `$client->deleteDictionaryEntries`           | →   | `$client->batchDictionaryEntries`            |
+| `$client->generateSecuredApiKey`             | →   | `$client->generateSecuredApiKey`             |
+| `$client->getApiKey`                         | →   | `$client->getApiKey`                         |
+| `$client->getSecuredApiKeyRemainingValidity` | →   | `$client->getSecuredApiKeyRemainingValidity` |
+| `$client->listApiKeys`                       | →   | `$client->listApiKeys`                       |
+| `$client->listIndices`                       | →   | `$client->listIndices`                       |
+| `$client->moveIndex`                         | →   | `$client->operationIndex`                    |
+| `$client->multipleBatch`                     | →   | `$client->multipleBatch`                     |
+| `$client->multipleQueries`                   | →   | `$client->search`                            |
+| `$client->replaceDictionaryEntries`          | →   | `$client->batchDictionaryEntries`            |
+| `$client->restoreApiKey`                     | →   | `$client->restoreApiKey`                     |
+| `$client->saveDictionaryEntries`             | →   | `$client->batchDictionaryEntries`            |
+| `$client->updateApiKey`                      | →   | `$client->updateApiKey`                      |
+| `$index->batch`                              | →   | `$client->batch`                             |
+| `$index->browseObjects`                      | →   | `$client->browseObjects`                     |
+| `$index->browseRules`                        | →   | `$client->browseRules`                       |
+| `$index->browseSynonyms`                     | →   | `$client->browseSynonyms`                    |
+| `$index->clearObjects`                       | →   | `$client->clearObjects`                      |
+| `$index->clearRules`                         | →   | `$client->clearRules`                        |
+| `$index->clearSynonyms`                      | →   | `$client->clearSynonyms`                     |
+| `$index->copySettings`                       | →   | `$client->operationIndex`                    |
+| `$index->delete`                             | →   | `$client->deleteIndex`                       |
+| `$index->deleteBy`                           | →   | `$client->deleteBy`                          |
+| `$index->deleteObject`                       | →   | `$client->deleteObject`                      |
+| `$index->deleteObjects`                      | →   | `$client->deleteObjects`                     |
+| `$index->deleteRule`                         | →   | `$client->deleteRule`                        |
+| `$index->deleteSynonym`                      | →   | `$client->deleteSynonym`                     |
+| `$index->exists`                             | →   | `$client->indexExists`                       |
+| `$index->findObject`                         | →   | `$client->searchSingleIndex`                 |
+| `$index->getObject`                          | →   | `$client->getObject`                         |
+| `$index->getObjects`                         | →   | `$client->getObjects`                        |
+| `$index->getRule`                            | →   | `$client->getRule`                           |
+| `$index->getSettings`                        | →   | `$client->getSettings`                       |
+| `$index->getSynonym`                         | →   | `$client->getSynonym`                        |
+| `$index->getTask`                            | →   | `$client->getTask`                           |
+| `$index->partialUpdateObject`                | →   | `$client->partialUpdateObject`               |
+| `$index->partialUpdateObjects`               | →   | `$client->partialUpdateObjects`              |
+| `$index->replaceAllObjects`                  | →   | `$client->replaceAllObjects`                 |
+| `$index->replaceAllRules`                    | →   | `$client->saveRules`                         |
+| `$index->replaceAllSynonyms`                 | →   | `$client->saveSynonyms`                      |
+| `$index->saveObject`                         | →   | `$client->saveObject`                        |
+| `$index->saveObjects`                        | →   | `$client->saveObjects`                       |
+| `$index->saveRule`                           | →   | `$client->saveRule`                          |
+| `$index->saveRules`                          | →   | `$client->saveRules`                         |
+| `$index->saveSynonym`                        | →   | `$client->saveSynonym`                       |
+| `$index->saveSynonyms`                       | →   | `$client->saveSynonyms`                      |
+| `$index->search`                             | →   | `$client->searchSingleIndex`                 |
+| `$index->searchForFacetValues`               | →   | `$client->searchForFacetValues`              |
+| `$index->searchRules`                        | →   | `$client->searchRules`                       |
+| `$index->searchSynonyms`                     | →   | `$client->searchSynonyms`                    |
+| `$index->setSettings`                        | →   | `$client->setSettings`                       |
+| `$index->{operation}->wait`                  | →   | `$client->waitForTask`                       |
 
 ### Recommend API client
 
-| Version 3 (legacy)                     |   | Version 4 (current)           |
-| -------------------------------------- | - | ----------------------------- |
-| `$client->getFrequentlyBoughtTogether` | → | `$client->getRecommendations` |
-| `$client->getLookingSimilar`           | → | `$client->getRecommendations` |
-| `$client->getRecommendations`          | → | `$client->getRecommendations` |
-| `$client->getRelatedProducts`          | → | `$client->getRecommendations` |
-| `$client->getTrendingFacets`           | → | `$client->getRecommendations` |
-| `$client->getTrendingItems`            | → | `$client->getRecommendations` |
+| Version 3 (legacy)                            |     | Version 4 (current)                  |
+| -------------------------------------- | --- | ----------------------------- |
+| `$client->getFrequentlyBoughtTogether` | →   | `$client->getRecommendations` |
+| `$client->getLookingSimilar`           | →   | `$client->getRecommendations` |
+| `$client->getRecommendations`          | →   | `$client->getRecommendations` |
+| `$client->getRelatedProducts`          | →   | `$client->getRecommendations` |
+| `$client->getTrendingFacets`           | →   | `$client->getRecommendations` |
+| `$client->getTrendingItems`            | →   | `$client->getRecommendations` |
