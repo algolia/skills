@@ -532,7 +532,8 @@ try await client.partialUpdateObjects(
 
 ### `browseObjects`, `browseRules`, `browseSynonyms`
 
-In version 8, these helpers eagerly fetched all pages and returned the full result array via a completion handler or throwing call. In version 9, they accept an `aggregator` closure invoked with each page, use Swift concurrency, and accept an optional `validate` closure to stop early.
+- In version 8, these helpers fetched all pages and returned the full result array through a completion handler or a throwing call.
+- In version 9, they use Swift concurrency and accept an `aggregator` closure, which is invoked for each page. They also accept an optional `validate` closure to stop pagination early.
 
 ```swift
 // version 8
@@ -579,7 +580,7 @@ let remaining = client.getSecuredApiKeyRemainingValidity(securedApiKey: key)
 
 ### `waitForTask`
 
-The helper was renamed from `waitTask` to `waitForTask`, moved to the client, and now uses Swift concurrency. The `timeout` parameter changed from `TimeInterval?` (a maximum wall-clock limit) to a retry-count-to-delay closure (exponential backoff). An explicit `maxRetries` parameter (default `50`) was added.
+The helper was renamed from `waitTask` to `waitForTask`, moved to the client, and now uses Swift concurrency. The `timeout` parameter changed from `TimeInterval?` (a maximum wall-clock limit) to a retry-count-to-delay closure (with delays that increase exponentially). An explicit `maxRetries` parameter (default `100`) was added.
 
 ```swift
 // version 8
@@ -589,7 +590,7 @@ try index.waitTask(withID: taskID, timeout: 30)
 try await client.waitForTask(
     indexName: "INDEX_NAME",
     taskID: taskID,
-    maxRetries: 50
+    maxRetries: 100
 )
 ```
 
@@ -685,6 +686,37 @@ try await src.browseObjects(
     browseParams: BrowseParamsObject()
 ) { objects.append(contentsOf: $0.hits) }
 try await dst.replaceAllObjects(indexName: "DEST_INDEX", objects: objects)
+```
+
+### `saveObjectsWithTransformation`
+
+In version 9 and later: routes records with the Push to Algolia connector. Requires `transformationOptions` to be set on the client configuration. `region` is required; every other field keeps the Ingestion API defaults.
+
+```swift
+let config = try SearchClientConfiguration(
+    appID: "ALGOLIA_APPLICATION_ID",
+    apiKey: "ALGOLIA_API_KEY",
+    transformationOptions: TransformationOptions(region: .us)
+)
+let client = SearchClient(configuration: config)
+
+try await client.saveObjectsWithTransformation(indexName: "INDEX_NAME", objects: objects)
+```
+
+### `replaceAllObjectsWithTransformation`
+
+In version 9 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. `scopes` defaults to `.settings`, `.rules`, and `.synonyms`.
+
+```swift
+try await client.replaceAllObjectsWithTransformation(indexName: "INDEX_NAME", objects: objects)
+```
+
+### `partialUpdateObjectsWithTransformation`
+
+In version 9 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` parameter defaults to `true`.
+
+```swift
+try await client.partialUpdateObjectsWithTransformation(indexName: "INDEX_NAME", objects: objects)
 ```
 
 ## Method changes reference

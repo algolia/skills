@@ -479,7 +479,7 @@ $index->waitTask($taskID);
 $client->waitForTask('INDEX_NAME', $taskID);
 
 // With explicit retry controls:
-$client->waitForTask('INDEX_NAME', $taskID, maxRetries: 50, timeout: 100000);
+$client->waitForTask('INDEX_NAME', $taskID, maxRetries: 100, timeout: 100000);
 ```
 
 ### `waitForAppTask`
@@ -573,7 +573,7 @@ $dst->replaceAllObjects('DEST_INDEX', $objects);
 
 ### `saveObjectsWithTransformation`
 
-New in version 4. Routes objects through the Algolia Push connector. Requires `setTransformationOptions` to be called at client initialization.
+In version 4 and later: routes records with the Push to Algolia connector. Requires `transformationOptions` with a `region` to be set on the client configuration. The `setTransformationRegion` method is deprecated. Use `setTransformationOptions` instead.
 
 ```php
 $client->setTransformationOptions(new TransformationOptions('us'));
@@ -583,7 +583,7 @@ $client->saveObjectsWithTransformation('INDEX_NAME', $objects, false, 1000);
 
 ### `replaceAllObjectsWithTransformation`
 
-New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `setTransformationOptions` at client initialization.
+In version 4 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires `transformationOptions` with a `region` on the client configuration.
 
 ```php
 $client->replaceAllObjectsWithTransformation(
@@ -596,7 +596,7 @@ $client->replaceAllObjectsWithTransformation(
 
 ### `partialUpdateObjectsWithTransformation`
 
-New in version 4. Routes partial updates through the Push connector. The `$createIfNotExists` parameter is required with no default value.
+In version 4 and later: routes partial updates with the Push to Algolia connector. The `$createIfNotExists` parameter is required with no default value.
 
 ```php
 $client->partialUpdateObjectsWithTransformation(

@@ -326,7 +326,7 @@ await client.OperationIndexAsync(
 );
 ```
 
-Note: the `Operation` and `Destination` parameters can also be passed via the constructor:
+You can also pass the `Operation` and `Destination` parameters through the constructor:
 
 ```cs
 // version 7 (constructor form)
@@ -521,7 +521,7 @@ await client.DeleteObjectsAsync(
 
 ### `WaitForTask`
 
-The method was renamed from `WaitTask` to `WaitForTask`. It now returns `GetTaskResponse` instead of `void`, adds explicit `maxRetries` (default `50`) and a `timeout` function (default: exponential backoff capped at 5 seconds) instead of the `timeToWait` integer.
+The method was renamed from `WaitTask` to `WaitForTask`. It now returns `GetTaskResponse` instead of `void`, adds explicit `maxRetries` (default `100`) and a `timeout` function (default: retry delay that increases exponentially, up to 5 seconds) instead of the `timeToWait` integer.
 
 ```csharp
 // version 6
@@ -529,11 +529,11 @@ The method was renamed from `WaitTask` to `WaitForTask`. It now returns `GetTask
 await index.WaitTaskAsync(taskID, timeToWait: 100);
 
 // version 7
-// Returns GetTaskResponse; exponential backoff by default
+// Returns GetTaskResponse; retry delay increases exponentially by default
 var taskResponse = await client.WaitForTaskAsync(
     indexName: "INDEX_NAME",
     taskId: taskID,
-    maxRetries: 50
+    maxRetries: 100
 );
 ```
 
@@ -625,7 +625,7 @@ await dst.ReplaceAllObjectsAsync("DEST_INDEX", objects);
 
 ### `SaveObjectsWithTransformation`
 
-New in version 7. Routes objects through the Algolia Push connector. Requires the transformation region to be set at client initialization.
+In version 7 and later: routes records with the Push to Algolia connector. Requires a client created with `SearchClient.WithTransformation`, passing `TransformationOptions` with a `region`. The `SetTransformationRegion` method is deprecated. Use `WithTransformation` or `SetTransformationOptions` instead.
 
 ```csharp
 var responses = await client.SaveObjectsWithTransformationAsync(
@@ -638,7 +638,7 @@ var responses = await client.SaveObjectsWithTransformationAsync(
 
 ### `ReplaceAllObjectsWithTransformation`
 
-New in version 7. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the transformation region to be set at client initialization.
+In version 7 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires a client created with `SearchClient.WithTransformation`, passing `TransformationOptions` with a `region`. The `SetTransformationRegion` method is deprecated. Use `WithTransformation` or `SetTransformationOptions` instead.
 
 ```csharp
 var response = await client.ReplaceAllObjectsWithTransformationAsync(
@@ -651,7 +651,7 @@ var response = await client.ReplaceAllObjectsWithTransformationAsync(
 
 ### `PartialUpdateObjectsWithTransformation`
 
-New in version 7. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `true`.
+In version 7 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` parameter defaults to `true`.
 
 ```csharp
 var responses = await client.PartialUpdateObjectsWithTransformationAsync(

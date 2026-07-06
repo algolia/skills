@@ -505,6 +505,36 @@ src.browse_objects("SOURCE_INDEX") { |object| objects << object }
 dst.replace_all_objects("DEST_INDEX", objects)
 ```
 
+### `save_objects_with_transformation`
+
+In version 3 and later: routes records with the Push to Algolia connector. Requires `set_transformation_options` to be called, or the client created via `Algolia::SearchClient.with_transformation`.
+
+```ruby
+client = Algolia::SearchClient.with_transformation(
+  "ALGOLIA_APPLICATION_ID",
+  "ALGOLIA_API_KEY",
+  Algolia::TransformationOptions.new("us")
+)
+
+client.save_objects_with_transformation("INDEX_NAME", objects, false, 1000)
+```
+
+### `replace_all_objects_with_transformation`
+
+In version 3 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. `scopes` defaults to `settings`, `rules`, and `synonyms`.
+
+```ruby
+client.replace_all_objects_with_transformation("INDEX_NAME", objects, 1000)
+```
+
+### `partial_update_objects_with_transformation`
+
+In version 3 and later: routes partial updates with the Push to Algolia connector. The `create_if_not_exists` parameter defaults to `false`.
+
+```ruby
+client.partial_update_objects_with_transformation("INDEX_NAME", objects, false, false, 1000)
+```
+
 ## Method changes reference
 
 The following tables list all method names that changed between version 2 and version 3.

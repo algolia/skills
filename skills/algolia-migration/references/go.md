@@ -419,7 +419,7 @@ res, err := client.DeleteObjects("INDEX_NAME", []string{"id1", "id2"},
 
 ### `WaitForTask`
 
-The helper was renamed from `WaitTask` to `WaitForTask`, moved to the client, and now returns `*GetTaskResponse` instead of `error`. The `timeToWait` config option is replaced by explicit `WithMaxRetries` and `WithTimeout` options—the default timeout uses exponential backoff capped at 5 seconds.
+The helper was renamed from `WaitTask` to `WaitForTask`, moved to the client, and now returns `*GetTaskResponse` instead of `error`. The `timeToWait` config option is replaced by explicit `WithMaxRetries` and `WithTimeout` options—the default timeout increases the retry delay exponentially, up to 5 seconds.
 
 ```go
 // version 3
@@ -430,7 +430,7 @@ resp, err := client.WaitForTask("INDEX_NAME", taskID)
 
 // With explicit retry controls:
 resp, err := client.WaitForTask("INDEX_NAME", taskID,
-    search.WithMaxRetries(50),
+    search.WithMaxRetries(100),
     search.WithTimeout(func(count int) time.Duration {
         return min(time.Duration(count)*200*time.Millisecond, 5*time.Second)
     }),
@@ -575,7 +575,7 @@ dst.ReplaceAllObjects("DEST_INDEX", objects)
 
 ### `SaveObjectsWithTransformation`
 
-New in version 4. Routes objects through the Algolia Push connector. Requires the `IngestionTransporter` to be configured at client initialization via a region.
+In version 4 and later: routes records with the Push to Algolia connector. Requires `TransformationOptions` to be passed to the client constructor or set via `SetTransformationOptions`.
 
 ```go
 res, err := client.SaveObjectsWithTransformation("INDEX_NAME", objects,
@@ -586,7 +586,7 @@ res, err := client.SaveObjectsWithTransformation("INDEX_NAME", objects,
 
 ### `ReplaceAllObjectsWithTransformation`
 
-New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the `IngestionTransporter` to be configured at client initialization.
+In version 4 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires `TransformationOptions` to be passed to the client constructor or set via `SetTransformationOptions`.
 
 ```go
 res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
@@ -601,7 +601,7 @@ res, err := client.ReplaceAllObjectsWithTransformation("INDEX_NAME", objects,
 
 ### `PartialUpdateObjectsWithTransformation`
 
-New in version 4. Routes partial updates through the Push connector. The `createIfNotExists` option defaults to `true`.
+In version 4 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` option defaults to `true`.
 
 ```go
 res, err := client.PartialUpdateObjectsWithTransformation("INDEX_NAME", objects,

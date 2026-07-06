@@ -527,7 +527,7 @@ remaining = client.get_secured_api_key_remaining_validity(secured_api_key=key)
 
 ### `wait_for_task`
 
-The helper was renamed from `wait_task` to `wait_for_task`, moved to the client, and now accepts explicit `max_retries` (default `50`) and `timeout` parameters. In version 3 it retried indefinitely with no cap.
+The helper was renamed from `wait_task` to `wait_for_task`, moved to the client, and now accepts explicit `max_retries` (default `100`) and `timeout` parameters. In version 3 it retried indefinitely with no cap.
 
 ```python
 # version 3
@@ -537,7 +537,7 @@ index.wait_task(task_id)
 await client.wait_for_task(
     index_name="INDEX_NAME",
     task_id=task_id,
-    max_retries=50,
+    max_retries=100,
 )
 ```
 
@@ -631,7 +631,7 @@ await dst.replace_all_objects(index_name="DEST_INDEX", objects=objects)
 
 ### `save_objects_with_transformation`
 
-New in version 4. Routes objects through the Algolia Push connector. Requires `transformation_region` at client initialization.
+In version 4 and later: routes records with the Push to Algolia connector. Requires `transformation_options` with a `region` at client initialization. The `transformation_region` parameter is deprecated. Use `transformation_options` instead.
 
 ```python
 client = SearchClient.create_with_config(
@@ -648,7 +648,7 @@ await client.save_objects_with_transformation(
 
 ### `replace_all_objects_with_transformation`
 
-New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `transformation_region` at client initialization.
+In version 4 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires `transformation_options` with a `region` at client initialization.
 
 ```python
 await client.replace_all_objects_with_transformation(
@@ -661,7 +661,7 @@ await client.replace_all_objects_with_transformation(
 
 ### `partial_update_objects_with_transformation`
 
-New in version 4. Routes partial updates through the Push connector. The `create_if_not_exists` parameter defaults to `False`.
+In version 4 and later: routes partial updates with the Push to Algolia connector. The `create_if_not_exists` parameter defaults to `False`.
 
 ```python
 await client.partial_update_objects_with_transformation(

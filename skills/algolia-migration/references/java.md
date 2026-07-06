@@ -456,7 +456,7 @@ client.browseObjects("INDEX_NAME", new BrowseParamsObject(), MyObject.class)
 
 ### `waitForTask`
 
-The helper was renamed from `waitTask` to `waitForTask`. It now returns `GetTaskResponse` instead of `void`, and the `timeToWait` millisecond parameter is replaced by `maxRetries` (default `50`) and a `timeout` function (default: exponential backoff capped at 5 seconds).
+The helper was renamed from `waitTask` to `waitForTask`. It now returns `GetTaskResponse` instead of `void`, and the `timeToWait` millisecond parameter is replaced by `maxRetries` (default `100`) and a `timeout` function (default: retry delay that increases exponentially, up to 5 seconds).
 
 ```java
 // version 3
@@ -464,7 +464,7 @@ The helper was renamed from `waitTask` to `waitForTask`. It now returns `GetTask
 index.waitTask(taskId, 100L);
 
 // version 4
-// Returns GetTaskResponse; exponential backoff by default
+// Returns GetTaskResponse; retry delay increases exponentially by default
 GetTaskResponse response = client.waitForTask("INDEX_NAME", taskId);
 
 // With explicit retry controls:
@@ -573,7 +573,7 @@ dst.replaceAllObjects("DEST_INDEX", objects);
 
 ### `saveObjectsWithTransformation`
 
-New in version 4. Routes objects through the Algolia Push connector. Requires the transformation region to be set at client initialization.
+In version 4 and later: routes records with the Push to Algolia connector. Requires a client created with `SearchClient.withTransformation`, passing `TransformationOptions` with a `region`. The `setTransformationRegion` method is deprecated. Use `withTransformation` or `setTransformationOptions` instead.
 
 ```java
 List<WatchResponse> responses = client.saveObjectsWithTransformation(
@@ -582,7 +582,7 @@ List<WatchResponse> responses = client.saveObjectsWithTransformation(
 
 ### `replaceAllObjectsWithTransformation`
 
-New in version 4. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires the transformation region to be set at client initialization.
+In version 4 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires a client created with `SearchClient.withTransformation`, passing `TransformationOptions` with a `region`. The `setTransformationRegion` method is deprecated. Use `withTransformation` or `setTransformationOptions` instead.
 
 ```java
 ReplaceAllObjectsWithTransformationResponse response =
@@ -592,7 +592,7 @@ ReplaceAllObjectsWithTransformationResponse response =
 
 ### `partialUpdateObjectsWithTransformation`
 
-New in version 4. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
+In version 4 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` parameter defaults to `false`.
 
 ```java
 List<WatchResponse> responses =

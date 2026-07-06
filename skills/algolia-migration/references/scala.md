@@ -511,7 +511,7 @@ val key = client.generateSecuredApiKey(
 
 ### `replaceAllObjects`
 
-New in version 2. Atomically replaces all objects in an index by copying it, batch-saving new objects, then moving the copy back. `batchSize` defaults to `1,000` and `scopes` defaults to `["settings", "rules", "synonyms"]`.
+In version 2 and later: atomically replaces all objects in an index by copying it, batch-saving new objects, then moving the copy back. `batchSize` defaults to `1,000` and `scopes` defaults to `["settings", "rules", "synonyms"]`.
 
 ```scala
 val response = client.replaceAllObjects(
@@ -524,7 +524,7 @@ val response = client.replaceAllObjects(
 
 ### `saveObjects`
 
-New in version 2. Sends objects in chunks. `waitForTasks` defaults to `false` and `batchSize` defaults to `1,000`.
+In version 2 and later: sends objects in chunks. `waitForTasks` defaults to `false` and `batchSize` defaults to `1,000`.
 
 ```scala
 val responses = client.saveObjects(
@@ -537,7 +537,7 @@ val responses = client.saveObjects(
 
 ### `deleteObjects`
 
-New in version 2. Deletes objects by ID in chunks. `waitForTasks` defaults to `false` and `batchSize` defaults to `1,000`.
+In version 2 and later: deletes objects by ID in chunks. `waitForTasks` defaults to `false` and `batchSize` defaults to `1,000`.
 
 ```scala
 val responses = client.deleteObjects(
@@ -549,7 +549,7 @@ val responses = client.deleteObjects(
 
 ### `partialUpdateObjects`
 
-New in version 2. `createIfNotExists` defaults to `false`.
+In version 2 and later: `createIfNotExists` defaults to `false`.
 
 ```scala
 val responses = client.partialUpdateObjects(
@@ -561,7 +561,7 @@ val responses = client.partialUpdateObjects(
 
 ### `browseObjects`, `browseRules`, `browseSynonyms`
 
-New in version 2. Each helper accepts an `aggregator` callback invoked with every page, and an optional `validate` callback to stop early.
+In version 2 and later: each helper accepts an `aggregator` callback invoked with every page, and an optional `validate` callback to stop early.
 
 ```scala
 val hits = scala.collection.mutable.ListBuffer.empty[JsonObject]
@@ -575,7 +575,7 @@ client.browseObjects(
 
 ### `waitForTask`
 
-New in version 2. Polls until an indexing task reaches the `published` state. `maxRetries` defaults to `50`.
+In version 2 and later: polls until an indexing task reaches the `published` state. `maxRetries` defaults to `100`.
 
 ```scala
 val response = client.waitForTask(
@@ -586,7 +586,7 @@ val response = client.waitForTask(
 
 ### `waitForAppTask`
 
-New in version 2. Polls until an application-level task completes.
+In version 2 and later: polls until an application-level task completes.
 
 ```scala
 val response = client.waitForAppTask(taskID = taskId)
@@ -594,7 +594,7 @@ val response = client.waitForAppTask(taskID = taskId)
 
 ### `waitForApiKey`
 
-New in version 2. Polls until an API key operation (`add`, `update`, or `delete`) has propagated.
+In version 2 and later: polls until an API key operation (`add`, `update`, or `delete`) has propagated.
 
 ```scala
 // Wait for a key to be created:
@@ -610,7 +610,7 @@ client.waitForApiKey(
 
 ### `indexExists`
 
-New in version 2. Returns `true` if the index exists.
+In version 2 and later: returns `true` if the index exists.
 
 ```scala
 val exists: Future[Boolean] = client.indexExists(indexName = "INDEX_NAME")
@@ -618,7 +618,7 @@ val exists: Future[Boolean] = client.indexExists(indexName = "INDEX_NAME")
 
 ### `chunkedBatch`
 
-New in version 2. Sends objects in chunks with a specified action. `waitForTasks` is required with no default.
+In version 2 and later: sends objects in chunks with a specified action. `waitForTasks` is required with no default.
 
 ```scala
 val responses = client.chunkedBatch(
@@ -632,7 +632,7 @@ val responses = client.chunkedBatch(
 
 ### `getSecuredApiKeyRemainingValidity`
 
-New in version 2. Returns the time remaining until a secured API key expires, based on its embedded `validUntil` parameter.
+In version 2 and later: returns the time remaining until a secured API key expires, based on its embedded `validUntil` parameter.
 
 ```scala
 val remaining: Duration = client.getSecuredApiKeyRemainingValidity(
@@ -642,7 +642,7 @@ val remaining: Duration = client.getSecuredApiKeyRemainingValidity(
 
 ### `accountCopyIndex`
 
-There is no built-in cross-application copy helper in the Scala client, but you can compose existing helpers across two clients to achieve the same result.
+The Scala API client doesn't include a built-in helper for copying indices across applications. To achieve the same result, use the existing helpers with two clients.
 
 ```scala
 val src = SearchClient(appId = "SRC_APP_ID", apiKey = "SRC_API_KEY")
@@ -669,6 +669,54 @@ for {
   _ <- src.browseObjects("SOURCE_INDEX", BrowseParamsObject(), aggregator = r => objects ++= r.hits)
   _ <- dst.replaceAllObjects("DEST_INDEX", objects.toList)
 } yield ()
+```
+
+### `saveObjectsWithTransformation`
+
+In version 2 and later: routes records with the Push to Algolia connector. Requires `TransformationOptions` to be passed to the client via `SearchClient.withTransformation`.
+
+```scala
+val client = SearchClient.withTransformation(
+  appId = "ALGOLIA_APPLICATION_ID",
+  apiKey = "ALGOLIA_API_KEY",
+  transformationOptions = TransformationOptions(region = "us")
+)
+
+val response: Future[Seq[IngestionWatchResponse]] =
+  client.saveObjectsWithTransformation(
+    indexName = "INDEX_NAME",
+    objects = objects,
+    waitForTasks = false,
+    batchSize = 1000
+  )
+```
+
+### `replaceAllObjectsWithTransformation`
+
+In version 2 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. `scopes` defaults to `["settings", "rules", "synonyms"]`.
+
+```scala
+val response: Future[ReplaceAllObjectsWithTransformationResponse] =
+  client.replaceAllObjectsWithTransformation(
+    indexName = "INDEX_NAME",
+    objects = objects,
+    batchSize = 1000
+  )
+```
+
+### `partialUpdateObjectsWithTransformation`
+
+In version 2 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` parameter defaults to `false`.
+
+```scala
+val response: Future[Seq[IngestionWatchResponse]] =
+  client.partialUpdateObjectsWithTransformation(
+    indexName = "INDEX_NAME",
+    objects = objects,
+    createIfNotExists = false,
+    waitForTasks = false,
+    batchSize = 1000
+  )
 ```
 
 ## Method changes reference

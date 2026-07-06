@@ -615,7 +615,8 @@ await client.accountCopyIndex({
 
 ### `saveObjectsWithTransformation`
 
-In version 4, this method was available on index objects via the ingestion mixin. In version 5, it's a top-level helper on the `algoliasearch` client. It routes objects through the Algolia Push connector and requires `transformation.region` to be set at client initialization.
+- In version 4, this method was available on indices through the ingestion mixin.
+- In version 5, it's a top-level helper on the `algoliasearch` client. It routes records with the Push to Algolia connector and requires `transformationOptions` with a `region` to be set when you initialize the `algoliasearch` client. The `transformation` option is deprecated. Use `transformationOptions` instead.
 
 ```js
 // version 4
@@ -623,7 +624,7 @@ await index.saveObjectsWithTransformation(objects, ingestionTransporter);
 
 // version 5
 const client = algoliasearch("APP_ID", "API_KEY", {
-  transformation: { region: "us" },
+  transformationOptions: { region: "us" },
 });
 
 await client.saveObjectsWithTransformation({
@@ -636,11 +637,11 @@ await client.saveObjectsWithTransformation({
 
 ### `replaceAllObjectsWithTransformation`
 
-New in version 5. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `transformation.region` at client initialization.
+In version 5 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. Requires `transformationOptions` with a `region` when you initialize the `algoliasearch` client.
 
 ```js
 const client = algoliasearch("APP_ID", "API_KEY", {
-  transformation: { region: "us" },
+  transformationOptions: { region: "us" },
 });
 
 await client.replaceAllObjectsWithTransformation({
@@ -653,7 +654,7 @@ await client.replaceAllObjectsWithTransformation({
 
 ### `partialUpdateObjectsWithTransformation`
 
-New in version 5. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
+In version 5 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` parameter defaults to `false`.
 
 ```js
 await client.partialUpdateObjectsWithTransformation({

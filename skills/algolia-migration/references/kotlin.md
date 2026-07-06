@@ -585,7 +585,7 @@ client.browseObjects(
 
 ### `waitForTask`
 
-The helper was renamed from `waitTask` to `waitForTask`. The `timeout` parameter type changed from `Long?` (milliseconds cap) to `Duration` (default `Duration.INFINITE`). Explicit `maxRetries` (default `50`), `initialDelay` (default `200ms`), and `maxDelay` (default `5s`) parameters were added. The return type changed from `TaskStatus` to `GetTaskResponse`.
+The helper was renamed from `waitTask` to `waitForTask`. The `timeout` parameter type changed from `Long?` (milliseconds cap) to `Duration` (default `Duration.INFINITE`). Explicit `maxRetries` (default `100`), `initialDelay` (default `200ms`), and `maxDelay` (default `5s`) parameters were added. The return type changed from `TaskStatus` to `GetTaskResponse`.
 
 ```kotlin
 // version 2
@@ -686,42 +686,32 @@ dst.replaceAllObjects(indexName = "DEST_INDEX", objects = objects)
 
 ### `saveObjectsWithTransformation`
 
-New in version 3. Routes objects through the Algolia Push connector. Requires `TransformationOptions` to be installed on the client via `setTransformationOptions(...)` or `withTransformation(...)`.
+In version 3 and later: routes records with the Push to Algolia connector. Requires `transformationOptions` to be installed on the client via `SearchClient.withTransformation` (or `setTransformationOptions`). `region` is required; every other field keeps the Ingestion API defaults.
 
 ```kotlin
-client.saveObjectsWithTransformation(
-    indexName = "INDEX_NAME",
-    objects = myObjects.map { Json.encodeToJsonElement(it).jsonObject },
-    waitForTasks = false,
-    batchSize = 1000
+val client = SearchClient.withTransformation(
+    appId = "ALGOLIA_APPLICATION_ID",
+    apiKey = "ALGOLIA_API_KEY",
+    transformationOptions = TransformationOptions(region = "us"),
 )
+
+client.saveObjectsWithTransformation(indexName = "INDEX_NAME", objects = objects)
 ```
 
 ### `replaceAllObjectsWithTransformation`
 
-New in version 3. Atomically replaces all objects via the Push connector (copy settings/rules/synonyms to a temp index → push objects → move back). Requires `TransformationOptions` to be installed on the client.
+In version 3 and later: atomically replaces all records with the Push to Algolia connector. It copies settings, rules, and synonyms to a temporary index, pushes records to the temporary index, and moves the temporary index back. `scopes` defaults to `Settings`, `Rules`, and `Synonyms`.
 
 ```kotlin
-client.replaceAllObjectsWithTransformation(
-    indexName = "INDEX_NAME",
-    objects = myObjects.map { Json.encodeToJsonElement(it).jsonObject },
-    batchSize = 1000,
-    scopes = listOf(ScopeType.Settings, ScopeType.Rules, ScopeType.Synonyms)
-)
+client.replaceAllObjectsWithTransformation(indexName = "INDEX_NAME", objects = objects)
 ```
 
 ### `partialUpdateObjectsWithTransformation`
 
-New in version 3. Routes partial updates through the Push connector. The `createIfNotExists` parameter defaults to `false`.
+In version 3 and later: routes partial updates with the Push to Algolia connector. The `createIfNotExists` parameter defaults to `false`.
 
 ```kotlin
-client.partialUpdateObjectsWithTransformation(
-    indexName = "INDEX_NAME",
-    objects = myObjects.map { Json.encodeToJsonElement(it).jsonObject },
-    createIfNotExists = false,
-    waitForTasks = false,
-    batchSize = 1000
-)
+client.partialUpdateObjectsWithTransformation(indexName = "INDEX_NAME", objects = objects)
 ```
 
 ## Method changes reference
