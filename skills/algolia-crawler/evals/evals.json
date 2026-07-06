@@ -1,0 +1,59 @@
+{
+  "skill_name": "algolia-crawler",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We have a pricing/comparison page at https://acme.example.com/plans that shows a table of plans and their features — but the table data loads after the page renders (I see 'Loading…' in the raw HTML). I want to get this into Algolia so our support AI agent can answer questions like 'which plan includes SSO'. How do I set up the crawler so it's actually good for that?",
+      "expected_output": "A plan to crawl the JS-rendered page with renderJavaScript enabled, a recordExtractor producing one RAG record per plan with a natural-language content field plus structured attributes, validation via the test endpoint before indexing, and explicit index settings.",
+      "files": [],
+      "expectations": [
+        "Identifies the page as JavaScript-rendered and enables renderJavaScript (boolean true or object form)",
+        "Proposes one record per plan (retrieval unit) rather than one record per page",
+        "Includes a natural-language 'content' field synthesized from the plan's fields, plus structured attributes for filtering",
+        "Uses `algolia crawler test` to validate extraction BEFORE running a full reindex (algolia crawler reindex)",
+        "Applies index settings explicitly with `algolia settings import` rather than relying only on initialIndexSettings",
+        "Uses the Algolia CLI (algolia crawler ...) rather than the Crawler REST API / curl",
+        "Does NOT build the chatbot/agent itself, or defers that to Agent Studio / algobot-cli"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My crawler runs but the records are junk — the 'price' field comes back empty and the product name is a mashed-together string. The page is at https://shop.example.com/catalog and the prices seem to render as little bars, not text. Help me fix the recordExtractor.",
+      "expected_output": "Guidance to inspect the real rendered DOM via the test endpoint, read the value from an attribute rather than visible text, and iterate selectors.",
+      "files": [],
+      "expectations": [
+        "Suggests using the crawler test endpoint to dump/inspect the real rendered markup (e.g. returning element .html() or attributes) to debug selectors",
+        "Recognizes the value is likely stored in an attribute (e.g. data-*) and extracts from the attribute rather than the visible cell text",
+        "Recommends targeting specific child selectors / using .eq(i) instead of grabbing a whole cell's concatenated text",
+        "Frames it as an iterate-against-test-output loop rather than guessing selectors blindly"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to index our documentation site (https://docs.example.com, a few hundred pages) into Algolia to power a RAG assistant. What's the best way to structure the index and crawl so retrieval is high quality?",
+      "expected_output": "A crawl scoped to the docs, records chunked per section/heading (small, self-contained), natural-language content, RAG-tuned index settings including a recommendation to enable NeuralSearch/semantic search, and explicit settings application.",
+      "files": [],
+      "expectations": [
+        "Chunks content into small, self-contained records (per section/heading or via splitContentIntoRecords / docsearch helper) rather than one record per page",
+        "Emphasizes self-contained records that carry section/page context so they make sense in isolation",
+        "Recommends RAG-tuned index settings (content as a primary searchable attribute; facets/filters) applied explicitly",
+        "Recommends enabling semantic retrieval / NeuralSearch (or vectors) for natural-language questions",
+        "Scopes the crawl (discoveryPatterns / pathsToMatch / maxUrls) to the docs section"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We just launched our help center at https://help.acme.com and I want our AI assistant to answer from all of it. I'll only give you the root URL — the crawler should index every page under it on its own, and the setup needs to work across all the different page types (getting-started guides, API reference, release notes), not just the homepage. How do I set this up?",
+      "expected_output": "Configure autonomous sub-page discovery, identify the distinct page templates, validate the extractor against a representative page per template, cover them with a branching extractor or multiple actions, apply unified settings, and verify retrieval across page types — all via the CLI.",
+      "files": [],
+      "expectations": [
+        "Configures autonomous sub-page discovery from the single root URL (startUrls + discoveryPatterns, sitemaps if available, raised maxDepth/maxUrls) rather than a single-page crawl",
+        "Recognizes the site has multiple page templates/types and that the config must work across ALL of them, not just the start/home page",
+        "Validates against a representative page from EACH template with `algolia crawler test` (tests more than one URL), not just the homepage",
+        "Covers heterogeneous templates via a branching recordExtractor (by URL/DOM) or multiple actions with per-template pathsToMatch",
+        "Applies unified index settings across templates with `algolia settings import` and verifies retrieval with queries spanning different page types",
+        "Uses the Algolia CLI (algolia crawler ...) throughout"
+      ]
+    }
+  ]
+}

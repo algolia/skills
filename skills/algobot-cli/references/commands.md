@@ -7,7 +7,7 @@ algobot agents list [--jq '<expr>']
 algobot agents get <agent-id>
 algobot agents create --name <name> --model <model> [--config <file>] [--var k=v]
 algobot agents update <agent-id> [--name <name>] [--model <model>] [--config <file>] [--var k=v] [--publish]
-algobot agents patch <agent-id> --file <json-file>
+algobot agents patch <agent-id> --json <file>
 algobot agents delete <agent-id>
 algobot agents publish <agent-id>
 algobot agents unpublish <agent-id>
@@ -42,7 +42,7 @@ algobot profiles remove <name>
 algobot providers list
 algobot providers get <provider-id>
 algobot providers create --name <name>
-algobot providers patch <provider-id> --file <json-file>
+algobot providers patch <provider-id> --json <file>
 algobot providers delete <provider-id>
 ```
 
