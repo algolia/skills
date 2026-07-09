@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "I'm upgrading our Node.js backend from algoliasearch v4 to v5. We have this code throughout the codebase:\n\n```js\nconst index = client.initIndex('products');\nconst { hits } = await index.search(query, { facetFilters: ['category:shoes'] });\nawait index.saveObjects(records).wait();\n```\n\nUpdate it for v5.",
-      "expected_output": "Updated JavaScript code removing initIndex, using searchSingleIndex and saveObjects with explicit waitForTask",
+      "expected_output": "Updated JavaScript code removing initIndex, using searchSingleIndex and saveObjects with waitForTasks: true",
       "files": [],
       "expectations": [
         "Removes client.initIndex() and the index variable",
@@ -37,7 +37,7 @@
         "Updates import path from v3 to v4: github.com/algolia/algoliasearch-client-go/v4/algolia/search",
         "Updates client, err := search.NewClient(...) and handles the error",
         "Removes index := client.InitIndex() and the index variable",
-        "Calls client.SaveObjects with the indexName as part of the request struct",
+        "Calls client.SaveObjects(\"orders\", orders) with the index name as the first argument",
         "Replaces index.WaitTask() with client.WaitForTask('orders', taskID)",
         "Notes that WaitForTask returns (*GetTaskResponse, error) not just error"
       ]

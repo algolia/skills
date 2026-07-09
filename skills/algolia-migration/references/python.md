@@ -443,7 +443,7 @@ Two new optional parameters are available:
 ```python
 # version 3
 index.save_objects(
-    objects=my_objects,
+    my_objects,
     {"autoGenerateObjectIDIfNotExist": True},
 )
 

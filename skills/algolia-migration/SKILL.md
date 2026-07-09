@@ -59,10 +59,10 @@ Chained `.wait()` / `!` bang methods on task responses are replaced by dedicated
 
 | Old | New |
 |-----|-----|
-| `index.saveObjects(records).wait()` | `client.waitForTask(indexName, taskID)` |
+| `index.saveObjects(records).wait()` | `client.waitForTask(...)` with the index name and task ID |
 | `index.save_objects!(objects)` (Ruby) | `client.save_objects(index_name, objects, true)` |
 
-Three helpers available in every language: `waitForTask`, `waitForAppTask`, `waitForApiKey`.
+Three helpers available in every language: `waitForTask`, `waitForAppTask`, `waitForApiKey`. The exact calling convention varies by language (e.g. JS v5 takes an options object, Python uses keyword arguments) — see the language reference for the precise signature.
 
 ### 3. `copyIndex` / `moveIndex` → `operationIndex`
 
