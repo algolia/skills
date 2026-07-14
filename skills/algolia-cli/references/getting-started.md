@@ -88,13 +88,15 @@ algolia auth logout
 
 This revokes the stored OAuth tokens and removes them from the local keychain.
 
-### Configuration file location
+### Where your credentials are stored
 
-Credentials are stored in:
+Non-secret settings (current application, application aliases, hosts) are stored in:
 
 ```
-~/.config/algolia/config.toml
+~/.config/algolia/state.toml
 ```
+
+Your API keys are never written to this file — they're stored securely in your operating system's keychain.
 
 ### Multiple applications
 
