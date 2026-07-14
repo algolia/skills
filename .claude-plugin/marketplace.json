@@ -53,6 +53,15 @@
       "skills": [
         "./skills/algolia-crawler"
       ]
+    },
+    {
+      "name": "algolia-quickstart",
+      "description": "Use when a user is getting started with Algolia from scratch and has no account, application, or credentials yet. Triggers: \"create an Algolia account\", \"sign up for Algolia\", \"set up Algolia\", \"log in / authenticate the Algolia CLI\", \"provision an Algolia application\", \"I need an App ID\", \"I need an API key\". Official, ready-to-run CLI quickstart for account and application provisioning. Do NOT use for index or data operations on an existing, already-authenticated application (records, synonyms, rules, settings) — use algolia-cli. Do NOT use for frontend search UIs — use instantsearch. Do NOT use for read-only search and analytics — use algolia-mcp.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-quickstart"
+      ]
     }
   ]
 }
