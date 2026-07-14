@@ -2,9 +2,8 @@
 
 ## Prerequisites
 
-- **Algolia account** — [Sign up free](https://www.algolia.com/users/sign_up)
-- **Application ID** — Found in [Dashboard → Settings → API Keys](https://dashboard.algolia.com/account/api-keys/all)
-- **Admin API key** — Same location. Required for write operations (import, delete, settings).
+- **Algolia account** — Optional upfront: `algolia auth signup` creates one from the CLI. You can also [sign up free](https://www.algolia.com/users/sign_up) on the web.
+- **Application ID and API keys** — Nothing to copy by hand: `algolia auth login` fetches your applications and provisions credentials automatically (stored in your OS keychain).
 
 ## Installation
 
