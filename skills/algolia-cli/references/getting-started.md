@@ -42,19 +42,37 @@ choco install algolia-cli
 algolia --version
 ```
 
-## Profile Setup
+## Authentication
 
-A profile stores your Algolia credentials locally so you don't need to pass them with every command.
+Signing in stores your Algolia credentials locally so you don't need to pass them with every command. `algolia auth login` handles OAuth sign-in and profile creation in one step — no need to copy an API key by hand.
 
-### Create a profile (non-interactive)
+### Sign in
 
 ```bash
-algolia profile add --name "default" --app-id "YOUR_APP_ID" --api-key "YOUR_ADMIN_API_KEY" --default
+algolia auth login
 ```
 
-> **Important:** Always provide all three flags (`--name`, `--app-id`, `--api-key`) to avoid interactive prompts that require terminal input.
+This opens your browser for OAuth sign-in, then fetches your applications, lets you pick one, and creates a CLI profile with the Admin API key.
 
-### Verify the profile
+> **Tip:** On SSH sessions or containers where a browser can't open, use `algolia auth login --no-browser` to print the URL instead.
+
+### Create a new account
+
+If you don't have an Algolia account yet, sign up from the CLI:
+
+```bash
+algolia auth signup
+```
+
+This opens the sign-up page, then completes the same OAuth flow as `login`.
+
+### Verify you're signed in
+
+```bash
+algolia auth status
+```
+
+This shows whether you're signed in, which application is current, and whether API credentials are available. You can also confirm your setup by listing indices:
 
 ```bash
 algolia indices list
@@ -62,33 +80,34 @@ algolia indices list
 
 This should list the indices in your application.
 
-### List existing profiles
+### Sign out
 
 ```bash
-algolia profile list
+algolia auth logout
 ```
+
+This revokes the stored OAuth tokens and removes them from the local keychain.
 
 ### Configuration file location
 
-Profiles are stored in:
+Credentials are stored in:
 
 ```
 ~/.config/algolia/config.toml
 ```
 
-### Multiple profiles
+### Multiple applications
 
-You can add multiple profiles for different applications:
+Select a specific application by name when you sign in:
 
 ```bash
-algolia profile add --name "staging" --app-id "STAGING_ID" --api-key "STAGING_KEY"
-algolia profile add --name "production" --app-id "PROD_ID" --api-key "PROD_KEY" --default
+algolia auth login --app-name "production" --default
 ```
 
-Use `-p <profile>` to target a specific profile:
+Switch the current application at any time:
 
 ```bash
-algolia indices list -p staging
+algolia application select --app-name "staging"
 ```
 
 ## Next Steps
