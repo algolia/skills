@@ -33,7 +33,7 @@ Complete all of the following steps yourself by running the commands directly.
 
 Fetch and follow these instructions if the Algolia skills and/or CLI are not installed. You can skip any MCP instructions for this quickstart.
 
-- https://www.algolia.com/doc/agent-setup/prompt.md
+- https://www.algolia.com/doc/guides/get-started/build-with-ai.md
 
 ## Step 2: Account provisioning
 
