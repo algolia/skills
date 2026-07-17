@@ -1,0 +1,42 @@
+{
+  "skill_name": "algolia-quickstart",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm brand new to Algolia and don't have an account yet. Get me set up from scratch so I have an App ID and API key I can use.",
+      "expected_output": "A quickstart flow: ensure the CLI is installed, create a new account via OAuth signup, then provision an application.",
+      "files": [],
+      "expectations": [
+        "Ensures the Algolia CLI is installed before authenticating",
+        "Uses 'algolia auth signup' because the user has no account yet (not 'algolia auth login')",
+        "Explains the OAuth flow opens the browser, and mentions the --no-browser fallback for headless/SSH environments",
+        "Provisions an application (either relies on the OAuth flow auto-creating one, or asks the user for a name, region, and plan before running 'algolia application create')",
+        "Does NOT pass --accept-terms without explicit user confirmation of the plan's terms"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I already have an Algolia account and a couple of applications. Authenticate me and switch to the right application, but I don't remember the exact app names.",
+      "expected_output": "Log in via OAuth, list applications, prompt the user to choose, then select it.",
+      "files": [],
+      "expectations": [
+        "Uses 'algolia auth login' (not signup) because the user already has an account",
+        "Uses 'algolia application list --output json' to enumerate the available applications",
+        "Prompts the user to pick an application rather than choosing one automatically",
+        "Uses 'algolia application select --app-name <chosen_name>' to switch to it"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm setting up Algolia on a remote server over SSH, so I can't open a browser. I have an account already. Create a new free application called 'My Search' in the EU region.",
+      "expected_output": "Login with --no-browser, then create an application with an explicit name, region, and plan after confirming terms.",
+      "files": [],
+      "expectations": [
+        "Uses 'algolia auth login --no-browser' since no browser is available over SSH, and shows the printed URL to the user",
+        "Uses 'algolia application create' with --name \"My Search\", --region EU, and --plan free",
+        "Confirms the plan's terms of service with the user before passing --accept-terms",
+        "Does NOT use 'algolia auth signup' since the user already has an account"
+      ]
+    }
+  ]
+}

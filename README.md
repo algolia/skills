@@ -20,6 +20,7 @@
 | `instantsearch` | Build search UIs (autocomplete, search results, faceted search) with InstantSearch |
 | `algolia-crawler` | Crawl web pages or whole sites into a RAG-optimized index with the Algolia Crawler |
 | `algolia-migration` | Migrate API client code to the latest major version (JS, Python, Go, PHP, Java, C#, Ruby, Kotlin, Scala, Swift) |
+| `algolia-quickstart` | Create an Algolia account and provision an application (App ID / API key) via the CLI |
 
 ---
 
@@ -29,13 +30,13 @@
 
 ```bash
 /plugin marketplace add algolia/skills
-/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration
+/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart
 ```
 
 Or install directly:
 
 ```bash
-/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration
+/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart
 ```
 
 #### npx
@@ -48,7 +49,7 @@ npx skills add https://github.com/algolia/skills
 
 ```bash
 git clone https://github.com/algolia/skills.git
-cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration
+cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart
 ```
 
 <details>
