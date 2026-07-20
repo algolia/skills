@@ -62,6 +62,15 @@
       "skills": [
         "./skills/algolia-quickstart"
       ]
+    },
+    {
+      "name": "agent-studio",
+      "description": "Build agentic chat experiences on your own website with Algolia Agent Studio and the react-instantsearch Chat widget. Use for integrating Agent Studio into a React app, adding a chat widget, creating client-side tools for the chat agent, customizing the chat UI/CSS, sending Algolia Insights (business) events, implementing user authentication with secure tokens, setting up memory/personalization, injecting context into conversations, or creating prompt starters. Do NOT use for building or configuring the agent itself via CLI (use algobot-cli), for raw index operations (use algolia-cli), or for a pure search UI with no chat/agent layer (use instantsearch).",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/agent-studio"
+      ]
     }
   ]
 }
