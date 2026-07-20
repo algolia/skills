@@ -39,6 +39,19 @@
         "Passes the token to the Chat transport as the X-Algolia-Secure-User-Token header",
         "Notes that memory requires user authentication and a non-zero data-retention setting in the dashboard"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Make sure clicks and add-to-cart from my Agent Studio chat are attributed to the agent's searches in Algolia analytics.",
+      "expected_output": "Read the queryID from the agent's algolia_search tool result and include it in click-after-search and conversion-after-search Insights events.",
+      "files": [],
+      "expectations": [
+        "Explains that the chat agent searches server-side and the queryID is returned in the algolia_search tool result streamed to the client, not from a client-side search",
+        "Builds a mapping from objectID to { queryID, position } from the streamed search tool results",
+        "Sends click events with the queryID and 1-based positions (click-after-search) for products the agent surfaced",
+        "Sends addToCart or purchase conversion events with the same queryID (conversion-after-search) rather than plain conversions",
+        "Notes that without the queryID the events are not attributed to the agent's searches, losing click-through, conversion, and revenue analytics"
+      ]
     }
   ]
 }

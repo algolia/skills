@@ -294,9 +294,17 @@ events with the lite client's `pushEvents` method.
 - Search-context attribution: on a search-result click, store `queryID` +
   `position` in sessionStorage keyed by `objectID`; consume it on the product
   page to attribute later clicks/conversions to the originating query.
+- Attribute chat events to the agent's search: the `algolia_search` tool result
+  streamed to the client includes the `queryID` of the agent's server-side
+  search (run with click analytics and tagged `alg#agent-studio`). Build an
+  `objectID → { queryID, position }` map from the streamed search results and
+  include that `queryID` (and `positions` for clicks) in click and conversion
+  events for products the agent surfaced. Otherwise those clicks and conversions
+  are not attributed to the agent's searches, and its click-through, conversion,
+  and revenue analytics are lost.
 
-Full event payloads, the user-token helpers, and the attribution
-store/consume helpers are in [references/insights-events.md](references/insights-events.md).
+Full event payloads, the user-token helpers, the chat-attribution helpers, and
+the search-context store/consume helpers are in [references/insights-events.md](references/insights-events.md).
 
 ## 9. Prompt Starters
 
