@@ -48,6 +48,33 @@ Produces `agent-config.json` with the agent's current config, and `PROMPT.md` if
 
 > Top-level `indexName` is silently stripped — index names belong in `tools[].indices[].index`.
 
+### Search tool: static vs dynamic indices
+
+The `algolia_search_index` tool has a `mode` field for dynamic-index support. `static` is the default, so existing agents are unaffected.
+
+```json
+{
+  "type": "algolia_search_index",
+  "name": "search_products",
+  "mode": "dynamic",
+  "allowUnlistedIndices": false,
+  "indices": [
+    {
+      "index": "{{index_name}}",
+      "description": "Product catalog. Search by title, brand, or category.",
+      "enhancedDescription": "Extra attribute and facet hints for the model.",
+      "searchParameters": { "optionalFilters": ["brand:Acme"] }
+    }
+  ]
+}
+```
+
+- `mode` (default `"static"`):
+  - `static` — `indices` is the only set the tool searches. A per-request `algolia.indices` override returns HTTP 422.
+  - `dynamic` — a completion request can pass `algolia.indices` (up to 10) to replace the list for that request; without it, `indices` is used. Per-request names must be a subset of `indices` by default; net-new names return 422 (`index_not_listed_on_tool`).
+- `allowUnlistedIndices` (default `false`, dynamic only) — set `true` to accept any index the agent's API key can reach, not only those listed. It errors at save time under `mode: "static"`.
+- Per index, besides `index` and `description`: `enhancedDescription`, `searchParameters` (default Algolia search parameters), and `searchControls` (used when Algolia MCP is enabled).
+
 ## Template Variables
 
 ```bash
