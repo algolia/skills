@@ -38,10 +38,13 @@ npm install -g algobot-ai
 algobot init                    # Interactive wizard (creates first agent + profile)
 ```
 
-Or add a profile manually (CI-safe, non-interactive):
+Or add a profile manually (CI-safe, non-interactive). Pass your app ID and Admin API key so the profile is authenticated:
 ```bash
-algobot profiles add --name prod --env prod
+algobot profiles add --name prod --env prod \
+  --app-id <APP_ID> --api-key "$ALGOBOT_ADMIN_KEY" \
+  --default-agent-id pending --default
 ```
+Without `--app-id` and `--api-key`, the profile is created but not authenticated, so commands fail. Read the key from an environment variable rather than hardcoding it, and use `--default-agent-id pending` when no agent exists yet (set it after you create one).
 
 ## Non-Interactive Mode (Critical for Agents)
 
@@ -82,7 +85,7 @@ algobot --verbose ask "debug this"           # Show full HTTP traces
 
 ```bash
 algobot profiles list
-algobot profiles add --name dev --env dev
+algobot profiles add --name dev --env dev --app-id <APP_ID> --api-key "$ALGOBOT_ADMIN_KEY"  # include creds to authenticate
 algobot profiles setdefault prod
 algobot --profile prod agents list
 algobot --env dev agents list
