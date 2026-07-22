@@ -65,7 +65,7 @@ algobot agents list --jq '.[] | .name'                       # JSON filtering
 ```bash
 algobot agents list
 algobot agents get <agent-id>
-algobot agents create --name "Support Bot" --model gpt-5.6-luna
+algobot agents create --name "Support Bot" --model gpt-5.6-terra
 algobot agents update <agent-id> --name "New Name"
 algobot agents publish <agent-id>
 algobot agents unpublish <agent-id>
@@ -73,7 +73,7 @@ algobot agents delete <agent-id>
 algobot agents copy <id> --from-env dev --to-env prod
 ```
 
-Default new agents on an OpenAI provider to `gpt-5.6-luna` (the cost-efficient GPT-5.6 tier). Pass a different `--model` when you need another model.
+Default new agents on an OpenAI provider to `gpt-5.6-terra` (the balanced cost/quality GPT-5.6 tier). Pass a different `--model` when you need another model.
 
 ### Chatting with an Agent
 

@@ -25,7 +25,7 @@ Produces `agent-config.json` with the agent's current config, and `PROMPT.md` if
 ```json
 {
   "name": "{{event_name}} Support Bot",
-  "model": "gpt-5.6-luna",
+  "model": "gpt-5.6-terra",
   "instructions": "PROMPT.md",
   "tools": [
     {
