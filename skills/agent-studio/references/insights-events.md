@@ -87,57 +87,67 @@ client.pushEvents({ events: [{
 ## Attribute chat events to the agent's search
 
 In the chat flow the agent runs its searches server-side, so there is no
-client-side search to read a `queryID` from. Instead, the search tool result
-streamed to the client includes the `queryID` of the search the agent ran,
-alongside the `hits` it returned. Do not filter by a hardcoded tool name: the
-search tool's type and default name is `algolia_search_index`, but it is
-configurable per tool (custom names, or MCP-suffixed like
-`algolia_search_index_products`). The robust approach is to iterate every
-streamed tool result part and key off any part that carries both a `queryID`
-and `hits` — which is exactly what `indexChatSearchResults` below does. Agent
-Studio runs these searches with click analytics enabled and tags them with
-`alg#agent-studio`, so click and conversion events that carry this `queryID`
-roll up as the agent's search-driven analytics: click-through rate, conversion
-rate, and revenue.
+client-side search to read a `queryID` from. Instead, `react-instantsearch`
+stamps a per-query token onto every hit it renders in the chat carousel: the
+`queryID` lives on the hit itself as `item.__queryID`. The chat's
+`itemComponent` receives the real InstantSearch props — the hit (`item`) and a
+built-in `sendEvent` helper — so both clicks and conversions attribute
+themselves from the hit. Do not read the assistant message's streamed `parts`
+and do not match on a tool name: the search tool is renameable per agent
+(`algolia_search_index`, a custom name, or an MCP-suffixed variant), and the
+chat's message-footer component in this version of `react-instantsearch`
+receives no message, so it cannot read the results at all. The hit is the
+reliable, library-idiomatic source.
 
-Build a lookup by iterating the streamed tool result parts, then include the
-`queryID` (and the 1-based `position` for clicks) in the events you send for
-products the agent surfaced.
+Agent Studio runs the agent's searches with click analytics enabled and tags
+them with `alg#agent-studio`, so click and conversion events that carry this
+`queryID` roll up as the agent's search-driven analytics: click-through rate,
+conversion rate, and revenue.
 
-```typescript
-type ChatSearchContext = { queryID: string; position: number };
+### Clicks: fire the built-in `sendEvent`
 
-// Index { queryID, position } per objectID by iterating the assistant
-// message's tool result parts. Do not match on tool name (it is configurable,
-// default `algolia_search_index`) — key off parts whose output has both a
-// queryID and hits. AI SDK v5 tool parts carry the tool output.
-function indexChatSearchResults(parts: any[], map: Map<string, ChatSearchContext>) {
-  for (const part of parts) {
-    const output = part?.output ?? part?.result;
-    if (!output?.queryID || !Array.isArray(output?.hits)) continue;
-    output.hits.forEach((hit: { objectID: string }, i: number) => {
-      map.set(hit.objectID, { queryID: output.queryID, position: i + 1 });
-    });
-  }
+For a click on a product card, call the `sendEvent` helper the `itemComponent`
+receives. InstantSearch derives the `queryID` and 1-based position from the hit,
+so there is no manual `pushEvents` call for clicks.
+
+```tsx
+// components/ChatWidget.tsx — product card rendered in the chat carousel.
+function ChatProductCard({ item, sendEvent }) {
+  // Record this hit's queryID + price so a later add-to-cart can attribute
+  // itself to the agent's search (see recordSearchHit below).
+  recordSearchHit(item.objectID, item.__queryID, item.price);
+
+  return (
+    <div onClick={() => sendEvent("click", item, "Product Clicked in Chat")}>
+      {item.name} — ${item.price}
+    </div>
+  );
 }
 ```
 
+### Conversions: look up the recorded `queryID`
+
+Add-to-cart and purchase are triggered by a client-side tool, not by a hit
+click, so they cannot use `sendEvent`. Record `objectID -> { queryID, price }`
+as each card renders, then look it up on the conversion and send a
+conversion-after-search event carrying that `queryID`. A conversion event needs
+no `positions`.
+
 ```typescript
-// Click on a product the agent surfaced (click-after-search)
-function trackChatClick(objectID: string, ctx: ChatSearchContext) {
-  client.pushEvents({ events: [{
-    eventType: "click",
-    eventName: "Product Clicked in Chat",
-    index: indexName,
-    userToken: getUserToken(),
-    objectIDs: [objectID],
-    positions: [ctx.position],
-    queryID: ctx.queryID,
-  }]});
+// lib/insights.ts — remember each hit, then attribute the conversion.
+const queryIdByObjectID = new Map<string, { queryID?: string; price?: string }>();
+
+export function recordSearchHit(objectID: string, queryID?: string, price?: number | string) {
+  queryIdByObjectID.set(objectID, {
+    queryID,
+    price: price != null ? String(price) : undefined,
+  });
 }
 
-// Add to cart attributed to the agent's search (conversion-after-search)
-function trackChatAddToCart(objectID: string, price: string, ctx?: ChatSearchContext) {
+export function trackChatAddToCart(objectID: string, quantity = 1) {
+  const ctx = queryIdByObjectID.get(objectID);
+  const price = ctx?.price ?? "0.00";
+
   client.pushEvents({ events: [{
     eventType: "conversion",
     eventSubtype: "addToCart",
@@ -145,18 +155,21 @@ function trackChatAddToCart(objectID: string, price: string, ctx?: ChatSearchCon
     index: indexName,
     userToken: getUserToken(),
     objectIDs: [objectID],
-    ...(ctx ? { queryID: ctx.queryID } : {}),
-    objectData: [{ price, quantity: 1, ...(ctx ? { queryID: ctx.queryID } : {}) }],
+    // Attach the queryID only when the product came from an agent search.
+    ...(ctx?.queryID ? { queryID: ctx.queryID } : {}),
+    objectData: [{ price, quantity, ...(ctx?.queryID ? { queryID: ctx.queryID } : {}) }],
     currency: "USD",
   }]});
 }
 ```
 
-Wire `trackChatClick` into the chat's `itemComponent` (the product card) and
-`trackChatAddToCart` into your add-to-cart handler or client-side tool. Without
-the `queryID`, the events are still recorded, but they do not count as
-click-after-search or conversion-after-search, so the agent's contribution to
-click-through, conversion, and revenue is lost.
+Wire `recordSearchHit` and the `sendEvent` click into the chat's `itemComponent`
+(the product card), and `trackChatAddToCart` into your add-to-cart handler or
+client-side tool. Without the `queryID`, the events are still recorded, but they
+do not count as click-after-search or conversion-after-search, so the agent's
+contribution to click-through, conversion, and revenue is lost.
+
+For a complete working example, see `examples/coding-with-ai-nextjs`.
 
 ## Search-context attribution
 

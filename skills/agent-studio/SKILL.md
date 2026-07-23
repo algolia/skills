@@ -308,18 +308,25 @@ events with the lite client's `pushEvents` method.
 - Search-context attribution: on a search-result click, store `queryID` +
   `position` in sessionStorage keyed by `objectID`; consume it on the product
   page to attribute later clicks/conversions to the originating query.
-- Attribute chat events to the agent's search: the agent's server-side search
-  tool result (run with click analytics and tagged `alg#agent-studio`) is
-  streamed to the client and carries the `queryID` alongside its `hits`. Do not
-  filter by a hardcoded tool name — the search tool's type and default name is
-  `algolia_search_index`, but it is configurable per tool (custom names, or
-  MCP-suffixed like `algolia_search_index_products`). Instead iterate all
-  streamed tool result parts and key off any part that has both a `queryID` and
-  `hits`. Build an `objectID → { queryID, position }` map from those results and
-  include that `queryID` (and `positions` for clicks) in click and conversion
-  events for products the agent surfaced. Otherwise those clicks and conversions
-  are not attributed to the agent's searches, and its click-through, conversion,
-  and revenue analytics are lost.
+- Attribute chat events to the agent's search: the agent searches server-side,
+  but `react-instantsearch` stamps the `queryID` onto each hit as
+  `item.__queryID`. The chat's `itemComponent` receives the hit (`item`) and a
+  built-in `sendEvent` helper, so the queryID comes from the hit — do NOT read
+  the assistant message's streamed `parts` and do NOT match on a tool name (the
+  search tool is renameable per agent, and the chat's message-footer component
+  receives no message in this library version, so it cannot read the results).
+  - Clicks: fire `sendEvent("click", item, "…")` in the `itemComponent`;
+    InstantSearch derives the `queryID` and position from the hit (no manual
+    `pushEvents`).
+  - Conversions (add-to-cart/purchase): triggered by a client-side tool, not a
+    hit click, so they cannot use `sendEvent`. Record
+    `objectID → { queryID, price }` as cards render, then look it up on the
+    conversion and send a conversion-after-search event carrying that `queryID`
+    (in `objectData` with `price`/`quantity`; no `positions` needed).
+  - Agent Studio runs these searches with click analytics and tags them
+    `alg#agent-studio`. Without the `queryID`, events are still recorded but do
+    not count as click- or conversion-after-search, so the agent's
+    click-through, conversion, and revenue analytics are lost.
 
 Full event payloads, the user-token helpers, the chat-attribution helpers, and
 the search-context store/consume helpers are in [references/insights-events.md](references/insights-events.md).
