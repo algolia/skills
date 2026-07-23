@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia UI Libraries"
+  short_description: "Select current Algolia UI libraries"
+  default_prompt: "Use $algolia-ui-libraries to choose and validate the right current Algolia UI library for my search experience."

@@ -1,0 +1,32 @@
+{
+  "skill_name": "algolia-ui-libraries",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Team debate: we're adding search to our Nuxt 3 storefront (Vue 3). One dev wants to use InstantSearch.js because he used it at his last job, another says just use plain algoliasearch and build the UI ourselves. We need a full results page with facets, URL routing, and SSR for SEO. Which library should we actually use?",
+      "expected_output": "The response chooses the library from the framework and journey rather than familiarity: for a Vue 3/Nuxt full results page with facets, routing, and SSR, it points to Vue InstantSearch (flagging the familiarity-driven InstantSearch.js pick as an anti-pattern in a Vue app, and hand-rolled UI as losing routing/facet/state work). It verifies or explicitly marks for verification the current docs before giving install commands or SSR patterns, avoids pinning package versions from memory, and routes the actual build to algolia-instantsearch-ui and the official instantsearch skill.",
+      "files": [],
+      "expectations": [
+        "Recommends the Vue InstantSearch path based on the Vue 3/Nuxt framework and full-results-page journey, not developer familiarity",
+        "Flags choosing InstantSearch.js in a Vue app because it is familiar as a mismatch, per the skill's anti-patterns",
+        "Addresses the SSR and URL routing requirements as part of the library decision",
+        "Does not hard-code package versions or install commands from memory; verifies current docs or explicitly marks commands as needing live verification",
+        "Routes implementation depth to algolia-instantsearch-ui and/or the official instantsearch skill after the library choice",
+        "Explains why building a custom UI on bare algoliasearch sacrifices routing, facet, and state management work"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We have an old Angular 12 app using angular-instantsearch and we're also kicking off a new native iOS app that needs product search. What do we do about the Angular thing (upgrade? migrate?) and what should the iOS team use - can they just wrap our web search page in a webview?",
+      "expected_output": "The response knows Angular InstantSearch is deprecated and lays out an audit/migration decision path (e.g. toward InstantSearch.js within Angular or another supported route), marking exact steps as needing verification against current docs. For iOS, it steers to the native InstantSearch iOS library rather than a webview port, per the anti-pattern about treating mobile apps as web InstantSearch ports. It returns the output contract: selected libraries, why they fit, official docs to consult, and what must be verified live before touching code.",
+      "files": [],
+      "expectations": [
+        "Identifies Angular InstantSearch as deprecated/legacy and frames the work as an audit or migration rather than a routine upgrade",
+        "Recommends the native InstantSearch iOS library for the iOS app instead of wrapping the web search page in a webview",
+        "Verifies current public docs or explicitly marks migration steps and install commands as needing live verification before use",
+        "Asks about or accounts for requirements like events, routing, and secured keys in the recommendation",
+        "Returns the decision with rationale, the official docs paths to use, and routing to the implementation skills for the build phase"
+      ]
+    }
+  ]
+}

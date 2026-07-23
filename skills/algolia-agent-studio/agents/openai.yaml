@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Agent Studio"
+  short_description: "Implement and validate Agent Studio"
+  default_prompt: "Use $algolia-agent-studio to plan, implement, and validate an Algolia Agent Studio experience."

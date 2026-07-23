@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-instantsearch-ui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Building a search results page for our pet supplies store. React 18 app, we already have react-instantsearch installed and an index called pets_products with facets on brand, animal_type, and price_range. I got a SearchBox and Hits rendering - what else do I actually need before this is 'done'? Marketing also wants shareable URLs for filtered searches.",
+      "expected_output": "The response treats a working search box plus hits as incomplete: it walks through filters/refinement lists for the declared facets, active refinement display and clear-all, sort if needed, pagination or infinite hits with rationale, empty/no-results recovery, loading and error states, URL routing for the shareable-links requirement (with reload/back-forward validation), and mobile filter behavior. It confirms the data contract and event taxonomy exist (or marks them provisional), defers exact framework API details to the official instantsearch skill and installed types, and ends with a browser-verifiable QA checklist.",
+      "files": [],
+      "expectations": [
+        "States that a search box plus hits is not a complete experience and enumerates the missing surfaces: filters, active refinements with a clear path, pagination or infinite loading, empty states, loading/error states",
+        "Addresses the shareable-URL requirement with InstantSearch routing and calls out validating reload, sharing, and back/forward behavior",
+        "Confirms or asks whether a data contract and event taxonomy exist, or creates minimal provisional versions rather than ignoring data and events",
+        "Defers framework-specific API/prop details to the official instantsearch skill, current docs, or installed types instead of asserting APIs from memory",
+        "Covers mobile filter behavior as a first-class interaction, not an afterthought",
+        "Ends with a QA checklist covering query, filters, refinements, pagination, empty states, routing, mobile, and event readiness"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Code review request: our Vue 3 storefront category pages use vue-instantsearch, but a dev sorted the hits array client-side by price before rendering, hardcoded the index name 'shop_live' inside the HitCard component, and strips hits down to just {title, image, url} before passing them to the card. Ship it?",
+      "expected_output": "The review flags all three issues per the skill's anti-patterns and standards: client-side sorting desynchronizes facets, positions, pagination, and analytics (recommend a replica/sort widget instead); hardcoding index names inside reusable leaf components violates configuration standards; and stripping hits destroys objectID/queryID/position needed for event attribution — hit mutation must not break attribution fields. It does not approve shipping as-is, references the official instantsearch skill for the framework-correct fix, and requests browser QA before ready.",
+      "files": [],
+      "expectations": [
+        "Flags client-side sorting of Algolia hits as an anti-pattern that desynchronizes facets, positions, pagination, or analytics, and points to sort-by replicas or proper widgets instead",
+        "Flags the hardcoded index name inside the HitCard leaf component and recommends moving it to configuration",
+        "Flags that stripping hits to {title, image, url} breaks objectID/queryID/position preservation needed for event attribution",
+        "Does not approve shipping as-is; states what must change before the UI is ready",
+        "References the official instantsearch skill or current docs for the framework-specific corrections rather than inventing Vue InstantSearch APIs",
+        "Mentions browser verification or a QA checklist as part of completion"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need SSR for our Next.js 14 app router search page (index: articles_prod) for SEO. Never done InstantSearch SSR before. Also PM asked: do we even need the events/insights stuff for v1, can we skip it?",
+      "expected_output": "The response does not write SSR code from memory: it follows the source-of-truth rules, invoking the official instantsearch skill and verifying current docs for SSR/hydration/routing patterns in Next.js app router before choosing APIs, and includes hydration, URL state restoration, and back/forward behavior in QA. On skipping events, it does not silently drop them: it explains the cost (analytics, personalization, AI readiness), and if deferred, records an explicit user-approved deferral with follow-up rather than just saying yes.",
+      "files": [],
+      "expectations": [
+        "Defers SSR implementation details to the official instantsearch skill and current docs instead of writing Next.js SSR/hydration code purely from memory",
+        "Includes hydration, URL state restoration, and back/forward behavior in the QA or validation plan",
+        "Does not simply agree to skip events; explains what event deferral costs (attribution, analytics, personalization/AI readiness)",
+        "If events are deferred, records it as an explicit user-approved deferral with a follow-up, per the completion checkpoints",
+        "Checks or asks about the data contract (display attributes, facets) for articles_prod before treating the UI as specifiable"
+      ]
+    }
+  ]
+}
