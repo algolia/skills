@@ -48,6 +48,20 @@ Server
 └── Business logic endpoints (orders, cart, etc.)
 ```
 
+## Framework notes
+
+The examples target a **client-rendered React app** (Vite/CRA): they use
+`import.meta.env`/`VITE_*`, `sessionStorage`, browser-only DOM APIs
+(`MutationObserver`, `document.querySelector`), and `<BrowserRouter>`. They do
+not run as-is on the Next.js App Router. For Next.js:
+
+- Mark chat components with `"use client"`.
+- Use `NEXT_PUBLIC_*` env vars instead of `import.meta.env`.
+- Use `<InstantSearchNext>` from `react-instantsearch-nextjs` (per Algolia's
+  InstantSearch SSR guidance) instead of `<InstantSearch>`.
+- SSR support for the streaming `<Chat>` widget is limited — render it
+  client-side.
+
 ## 1. Basic Setup
 
 ### Dependencies
@@ -294,10 +308,14 @@ events with the lite client's `pushEvents` method.
 - Search-context attribution: on a search-result click, store `queryID` +
   `position` in sessionStorage keyed by `objectID`; consume it on the product
   page to attribute later clicks/conversions to the originating query.
-- Attribute chat events to the agent's search: the `algolia_search` tool result
-  streamed to the client includes the `queryID` of the agent's server-side
-  search (run with click analytics and tagged `alg#agent-studio`). Build an
-  `objectID → { queryID, position }` map from the streamed search results and
+- Attribute chat events to the agent's search: the agent's server-side search
+  tool result (run with click analytics and tagged `alg#agent-studio`) is
+  streamed to the client and carries the `queryID` alongside its `hits`. Do not
+  filter by a hardcoded tool name — the search tool's type and default name is
+  `algolia_search_index`, but it is configurable per tool (custom names, or
+  MCP-suffixed like `algolia_search_index_products`). Instead iterate all
+  streamed tool result parts and key off any part that has both a `queryID` and
+  `hits`. Build an `objectID → { queryID, position }` map from those results and
   include that `queryID` (and `positions` for clicks) in click and conversion
   events for products the agent surfaced. Otherwise those clicks and conversions
   are not attributed to the agent's searches, and its click-through, conversion,

@@ -87,23 +87,30 @@ client.pushEvents({ events: [{
 ## Attribute chat events to the agent's search
 
 In the chat flow the agent runs its searches server-side, so there is no
-client-side search to read a `queryID` from. Instead, every `algolia_search`
-tool result streamed to the client includes the `queryID` of the search the
-agent ran, alongside the `hits` it returned. Agent Studio runs these searches
-with click analytics enabled and tags them with `alg#agent-studio`, so click
-and conversion events that carry this `queryID` roll up as the agent's
-search-driven analytics: click-through rate, conversion rate, and revenue.
+client-side search to read a `queryID` from. Instead, the search tool result
+streamed to the client includes the `queryID` of the search the agent ran,
+alongside the `hits` it returned. Do not filter by a hardcoded tool name: the
+search tool's type and default name is `algolia_search_index`, but it is
+configurable per tool (custom names, or MCP-suffixed like
+`algolia_search_index_products`). The robust approach is to iterate every
+streamed tool result part and key off any part that carries both a `queryID`
+and `hits` — which is exactly what `indexChatSearchResults` below does. Agent
+Studio runs these searches with click analytics enabled and tags them with
+`alg#agent-studio`, so click and conversion events that carry this `queryID`
+roll up as the agent's search-driven analytics: click-through rate, conversion
+rate, and revenue.
 
-Build a lookup from the streamed search tool results, then include the
+Build a lookup by iterating the streamed tool result parts, then include the
 `queryID` (and the 1-based `position` for clicks) in the events you send for
 products the agent surfaced.
 
 ```typescript
 type ChatSearchContext = { queryID: string; position: number };
 
-// Index { queryID, position } per objectID from the agent's algolia_search
-// tool results in an assistant message's parts. AI SDK v5 tool parts carry the
-// tool output; the search tool returns { hits, queryID }.
+// Index { queryID, position } per objectID by iterating the assistant
+// message's tool result parts. Do not match on tool name (it is configurable,
+// default `algolia_search_index`) — key off parts whose output has both a
+// queryID and hits. AI SDK v5 tool parts carry the tool output.
 function indexChatSearchResults(parts: any[], map: Map<string, ChatSearchContext>) {
   for (const part of parts) {
     const output = part?.output ?? part?.result;

@@ -43,10 +43,10 @@
     {
       "id": 4,
       "prompt": "Make sure clicks and add-to-cart from my Agent Studio chat are attributed to the agent's searches in Algolia analytics.",
-      "expected_output": "Read the queryID from the agent's algolia_search tool result and include it in click-after-search and conversion-after-search Insights events.",
+      "expected_output": "Read the queryID from the streamed search tool result (iterate the tool result parts, keying off parts that carry both queryID and hits rather than a hardcoded tool name) and include it in click-after-search and conversion-after-search Insights events.",
       "files": [],
       "expectations": [
-        "Explains that the chat agent searches server-side and the queryID is returned in the algolia_search tool result streamed to the client, not from a client-side search",
+        "Explains that the chat agent searches server-side and the queryID is returned in the streamed search tool result (iterate the tool result parts, keying off queryID + hits rather than a hardcoded tool name), not from a client-side search",
         "Builds a mapping from objectID to { queryID, position } from the streamed search tool results",
         "Sends click events with the queryID and 1-based positions (click-after-search) for products the agent surfaced",
         "Sends addToCart or purchase conversion events with the same queryID (conversion-after-search) rather than plain conversions",
