@@ -4,11 +4,11 @@
     {
       "id": 1,
       "prompt": "We want an AI shopping assistant for our wine store using Agent Studio. Ideas so far: it should recommend wines, answer region/pairing questions, manage the user's cart, apply discount codes, update account details, and escalate to support. We have a solid wines_prod index and decent events. Where do we start - can you write the system prompt?",
-      "expected_output": "The response does not start with the prompt: it defines the agent contract first (purpose, audience, tools, allowed actions, guardrails, escalation, measurement) and pushes back on the broad scope, recommending one narrow, high-intent, read-only pilot job (e.g. wine discovery/pairing advice from the wines_prod Search tool) with cart/discount/account write actions deliberately out of scope until the read-only pilot is validated. It defines each enabled tool as a contract (trigger, allowed parameters, access scope, user-visible result, failure response, measurement event), covers guardrails, approved domains, auth, API-key boundaries, and feedback/analytics loops, and routes actual config-as-code, dry runs, and publish operations to the official algobot-cli.",
+      "expected_output": "The response does not start with the prompt: it defines the agent contract first (purpose, audience, tools, allowed actions, guardrails, escalation, measurement) and pushes back on the broad scope, recommending one narrow, high-intent, read-only rollout job (e.g. wine discovery/pairing advice from the wines_prod Search tool) with cart/discount/account write actions deliberately out of scope until the read-only rollout is validated. It defines each enabled tool as a contract (trigger, allowed parameters, access scope, user-visible result, failure response, measurement event), covers guardrails, approved domains, auth, API-key boundaries, and feedback/analytics loops, and routes actual config-as-code, dry runs, and publish operations to the official algobot-cli.",
       "files": [],
       "expectations": [
         "Refuses to start with prompt writing alone; defines an agent contract (purpose, audience, tools, allowed actions, guardrails, escalation, measurement) first",
-        "Narrows the pilot to one high-intent, read-only job and explicitly defers write-capable actions (cart management, discount codes, account updates) until the read-only pilot is validated",
+        "Narrows the rollout to one high-intent, read-only job and explicitly defers write-capable actions (cart management, discount codes, account updates) until the read-only rollout is validated",
         "Defines tool contracts for the Search tool: trigger, allowed parameters/filters, data scope, user-visible result, and failure/timeout behavior",
         "Covers security prerequisites: approved domains, authentication, API-key boundaries, and never exposing admin keys or unreviewed tools to a client-facing agent",
         "Plans feedback, analytics, or conversion measurement from the start rather than as post-launch polish",
@@ -39,7 +39,7 @@
         "Flags memory-by-default as a blocker: memory must be intentional with identity, retention, and consent decisions documented",
         "Flags missing approved domains and authentication review as launch prerequisites",
         "Calls out publishing after one good preview answer as insufficient and requires failure-mode QA (no results, ambiguous intent, tool errors, refusals)",
-        "Issues an explicit recommendation from the skill's set (launch, limited pilot, fix first, do not start) — here fix-first or equivalent"
+        "Issues an explicit recommendation from the skill's set (launch, limited rollout, fix first, do not start) — here fix-first or equivalent"
       ]
     }
   ]

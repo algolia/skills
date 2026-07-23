@@ -15,11 +15,11 @@ Help shoppers compare products, narrow choices, and answer product-availability 
 
 ## Agent Room Map
 
-| Component | Pilot decision |
+| Component | Rollout decision |
 | --- | --- |
 | Scope | Compare products and narrow choices; exclude account, order, delivery, warranty, and regulated advice. |
 | Retrieval | Use the product index with region and availability filters. |
-| Memory | Do not enable for the first single-session pilot. |
+| Memory | Do not enable for the first single-session rollout. |
 | Safety | Refuse unsupported claims and hand off account-specific questions. |
 | Entry point | Product-discovery chat surface for multi-turn comparison. |
 
@@ -33,7 +33,7 @@ Help shoppers compare products, narrow choices, and answer product-availability 
 
 ## Tool Contract
 
-| Field | Product search pilot |
+| Field | Product search rollout |
 | --- | --- |
 | Trigger | A user asks to find, compare, or narrow products. |
 | Constraints | Apply approved availability and region filters; return only safe display fields. |
@@ -64,7 +64,7 @@ Help shoppers compare products, narrow choices, and answer product-availability 
 
 ## Launch Recommendation
 
-Status: limited pilot.
+Status: limited rollout.
 
 Launch to a controlled audience after validating product filters, event payloads, fallback states, and approved-domain/security configuration. Do not broaden rollout until feedback and conversion events are visible.
 

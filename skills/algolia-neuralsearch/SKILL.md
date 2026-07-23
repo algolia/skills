@@ -20,7 +20,7 @@ Use this skill when adding or optimizing NeuralSearch. Neural relevance depends 
 - When an Academy metadata reference pack is available, use only its `title`, `url`, `course`, `module`, `learning_objectives`, and `updated_at` fields for structure. If it is stale or no match exists, fall back to live Academy/docs lookup. Do not treat cached metadata as course content or implementation authority.
 - Do not require custom Academy/docs access; use customer-provided sources only as optional context.
 - When live Algolia data, analytics, index inspection, settings changes, or account actions are needed, use Algolia MCP, the Algolia CLI, or official Algolia skills for the live operation, then apply this skill to interpret results and validate the customer-ready implementation path.
-- Produce a clear go, limited pilot, fix-first, or do-not-start recommendation.
+- Produce a clear go, limited rollout, fix-first, or do-not-start recommendation.
 
 ## Official Companion Skills
 

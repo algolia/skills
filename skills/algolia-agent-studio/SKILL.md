@@ -20,7 +20,7 @@ Use this skill for Agent Studio work after confirming the product goal and the q
 - When an Academy metadata reference pack is available, use only its `title`, `url`, `course`, `module`, `learning_objectives`, and `updated_at` fields for structure. If it is stale or no match exists, fall back to live Academy/docs lookup. Do not treat cached metadata as course content or implementation authority.
 - Do not require custom Academy/docs access; use customer-provided sources only as optional context.
 - When live Algolia data, analytics, index inspection, settings changes, or account actions are needed, use Algolia MCP, the Algolia CLI, or official Algolia skills for the live operation, then apply this skill to interpret results and validate the customer-ready implementation path.
-- Produce a launch recommendation: launch, limited pilot, fix first, or do not start.
+- Produce a launch recommendation: launch, limited rollout, fix first, or do not start.
 - Start the first agent with one narrow, high-intent job and the smallest tool/data surface that can solve it; breadth comes after evidence.
 
 ## Official Companion Skills
@@ -60,7 +60,7 @@ Ask the smallest useful subset before building:
 - What LLM provider, model, region, latency, and cost constraints apply?
 - What analytics, feedback, event, or conversion signals define success?
 - What domains, auth model, and API-key boundaries are required?
-- Which one high-intent user task should the pilot solve, and what requests are deliberately out of scope?
+- Which one high-intent user task should the first rollout solve, and what requests are deliberately out of scope?
 - Which entry point best matches that task: search AI mode, chat widget, side panel, embedded assistant, or prompt suggestion?
 - For each enabled tool, what triggers it, what data/arguments may it use, what result does the user see, and what happens on timeout or refusal?
 
@@ -82,7 +82,7 @@ Ask the smallest useful subset before building:
 ## Anti-Patterns
 
 - Starting with prompts before defining tools, permissions, data boundaries, and success measures.
-- Giving a client-facing agent write-capable tools before a read-only pilot has been validated.
+- Giving a client-facing agent write-capable tools before a read-only rollout has been validated.
 - Relying on prompt instructions as the only guardrail for sensitive data or consequential actions.
 - Shipping without approved domains, authentication review, fallback/handoff behavior, and feedback measurement.
 - Treating Agent Studio as separate from search relevance, event quality, or index permissions.

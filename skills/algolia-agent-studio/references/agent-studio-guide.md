@@ -76,7 +76,7 @@ The model generates language. It does not grant access to data, tools, memory, o
 
 Start the first release with one high-intent job, a read-only tool surface, and a short list of representative user tasks. Good candidates include guided product discovery, policy/support retrieval, or documentation navigation.
 
-State what the pilot does not handle. Expand only after Conversations show reliable retrieval and behavior, Analytics shows the experience is used as intended, and the team can attribute outcomes.
+State what the rollout does not handle. Expand only after Conversations show reliable retrieval and behavior, Analytics shows the experience is used as intended, and the team can attribute outcomes.
 
 ## Data And Search Readiness
 
@@ -195,7 +195,7 @@ Use stable event names and preserve userToken/session identity when the same exp
 - Prompt suggestions route users into supported tasks instead of broad, unanswerable requests.
 - Entry points match user intent: search bar AI mode, autocomplete, side panel, embedded assistant, or chat widget.
 - Existing agents using older Search tooling are reviewed before relying on newer agent-specific search settings.
-- One high-intent pilot job, its deliberately out-of-scope requests, and the selected entry point are documented.
+- One high-intent rollout job, its deliberately out-of-scope requests, and the selected entry point are documented.
 - Each enabled tool has a trigger, constrained inputs, authority, user outcome, failure path, and measurement event.
 - Memory is enabled only with a documented identity, retention, consent, and safe-use plan.
 
