@@ -20,7 +20,7 @@
     },
     {
       "name": "algolia-cli",
-      "description": "Use for any hands-on Algolia admin operation: importing/exporting records, backing up indices, managing API keys, editing synonyms, configuring rules, changing settings (facets, searchable attributes), deleting records, copying/migrating indices, or automating Algolia in CI/CD. Contains exact CLI syntax, ndjson format requirements, and flag combinations that are easy to get wrong from memory. Do NOT use for frontend SDK (InstantSearch, React) or Algolia dashboard UI questions — see algolia-mcp for read-only search and analytics.",
+      "description": "Use for any hands-on Algolia admin operation: provisioning accounts (sign up, log in/out via OAuth), managing applications (create, select, list), importing/exporting records, backing up indices, managing API keys, editing synonyms, configuring rules, changing settings (facets, searchable attributes), deleting records, copying/migrating indices, or automating Algolia in CI/CD. Contains exact CLI syntax, ndjson format requirements, and flag combinations that are easy to get wrong from memory. Do NOT use for frontend SDK (InstantSearch, React) or Algolia dashboard UI questions — see algolia-mcp for read-only search and analytics.",
       "source": "./",
       "strict": false,
       "skills": [
@@ -52,6 +52,15 @@
       "strict": false,
       "skills": [
         "./skills/algolia-crawler"
+      ]
+    },
+    {
+      "name": "algolia-quickstart",
+      "description": "Use when a user is getting started with Algolia from scratch and has no account, application, or credentials yet. Triggers: \"create an Algolia account\", \"sign up for Algolia\", \"set up Algolia\", \"log in / authenticate the Algolia CLI\", \"provision an Algolia application\", \"I need an App ID\", \"I need an API key\". Official, ready-to-run CLI quickstart for account and application provisioning. Do NOT use for index or data operations on an existing, already-authenticated application (records, synonyms, rules, settings) — use algolia-cli. Do NOT use for frontend search UIs — use instantsearch. Do NOT use for read-only search and analytics — use algolia-mcp.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-quickstart"
       ]
     }
   ]
