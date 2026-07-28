@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-data-modeling",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "we're moving our shopify catalog (~40k SKUs, apparel, sizes/colors as variants) into algolia and I don't know if each variant should be its own record or if I should index one record per product. Shoppers filter by size and color a lot, and availability differs per size. What's the right call?",
+      "expected_output": "The response asks for sample records / edge cases (or states assumptions plainly), then makes the variant strategy an explicit decision: it walks through variant-level vs variation-group-level vs product-level records, recommends a model fit for size/color filtering with per-size availability (typically variant or color-group records with a shared parent field and distinct/grouping so the UI shows one product family), and states the tradeoffs for faceting accuracy, record count, update cost, analytics aggregation, and UI complexity. It also covers objectID stability, event attribution fields, and proposes an index contract with validation queries.",
+      "files": [],
+      "expectations": [
+        "Asks for sample records and edge cases, or explicitly states assumptions when proceeding without them",
+        "Explicitly compares variant-level, variation-group-level, and product-level record models rather than asserting one option without alternatives",
+        "Recommends a grouping/distinct strategy on a shared parent field when suggesting variant-level or group-level records, and explains the tradeoff (faceting/availability accuracy vs record count, update cost, dedup behavior)",
+        "Notes that per-size availability and size/color filtering argue against collapsing everything into one product record",
+        "Treats objectID as a stable identifier not derived from mutable display fields",
+        "Proposes an index contract (or minimal provisional contract) with items such as searchable/facet/display attributes, event attribution fields, and validation queries"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our merchandiser wants 'new arrivals' and 'best sellers' boosted in search results. Our product records in the products_prod index are basically a dump of our ERP table - no timestamps, no sales data on the records. She keeps asking me to just add a Rule in the dashboard. What do I tell her?",
+      "expected_output": "The response reframes this as a data readiness problem first: rules and boosts cannot reliably promote 'new' or 'best-selling' products if those concepts are not represented as explicit fields. It runs a merchandising data-gap check, asks how the business defines 'new' and 'best seller' (time window, category scope, refresh owner), recommends computing those flags/buckets upstream before indexing (e.g. freshness bucket, best-seller bucket rather than raw counts), explains buckets vs precise values for custom ranking tie-breaking, and defers any live rule/settings writes to algolia-cli or algolia-mcp.",
+      "files": [],
+      "expectations": [
+        "States that merchandising rules cannot substitute for missing merchandising data, and that newness/best-seller status must be explicit indexed fields or documented upstream computations",
+        "Asks how the business defines 'new' and 'best selling' (time window, category scope) and who owns the refresh/update cadence",
+        "Recommends bucketed or boolean fields (e.g. freshness bucket, best-seller bucket) computed upstream rather than raw high-precision values or exact counts",
+        "Explains custom ranking as ordered tie-breaking after textual relevance, including why an overly precise first metric prevents later metrics from mattering",
+        "Routes any live rule or settings change to algolia-cli or algolia-mcp instead of writing it directly from this skill",
+        "Identifies the data-gap findings as work to complete before (or alongside) any dashboard rule"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We index our store locations for a store finder (index: stores_us). Right now objectID is the store name slugified, and we shove the full weekly schedule, all 200+ inventory counts, and internal manager notes into each record. Search feels bloated and we keep having reindex problems whenever a store renames. Thoughts?",
+      "expected_output": "The response flags the objectID derived from a mutable display field (store name) as the root of the rename/reindex problem and recommends a stable identifier. It applies intentional record-size guidance: keep fields needed for retrieval, ranking, faceting, display, and event attribution; move or drop internal manager notes (also a data-exposure concern); replace exact volatile inventory counts with stable buckets or booleans to avoid constant reindexing. It includes a migration/reindex plan since changing objectIDs affects the index, and defers live record operations to algolia-cli or algolia-mcp.",
+      "files": [],
+      "expectations": [
+        "Identifies the slugified-store-name objectID as an unstable contract and recommends a stable ID not derived from mutable display fields",
+        "Recommends trimming record contents to fields needed for retrieval, ranking, faceting, display, and event attribution, and flags internal manager notes for removal or securing",
+        "Recommends buckets or booleans instead of exact volatile inventory counts to reduce unnecessary reindexing",
+        "Includes a migration/reindexing plan (or explicitly calls one out as required) because objectIDs are changing",
+        "Routes any live record mutations, imports, or exports to algolia-cli or algolia-mcp rather than performing them via this skill"
+      ]
+    }
+  ]
+}

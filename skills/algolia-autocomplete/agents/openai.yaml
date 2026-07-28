@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Autocomplete"
+  short_description: "Build autocomplete and query suggestion UIs"
+  default_prompt: "Use $algolia-autocomplete to build or review an Algolia Autocomplete experience."

@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-events-insights",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We want to turn on Personalization and eventually Dynamic Re-Ranking for our beauty products search (React + react-instantsearch, index: beauty_catalog). Zero events implemented today. My PM drafted a list of 23 events including every filter click, scroll depth, and hover. Where do we start?",
+      "expected_output": "The response rejects starting with a 23-event taxonomy: the first milestone is one validated result-click event and one validated primary conversion with a consistent userToken, correct objectID/index, and queryID where search-attributed. It prioritizes with P0/P1/P2, classifying filter clicks/hovers as weak P2 signals that should not precede healthy P0 events, asks about or defines the userToken strategy (anonymous token durability and post-login mapping) before calling anything ready, recommends the InstantSearch/search-insights path for this stack, and produces an event plan with validation steps beyond a 200 response.",
+      "files": [],
+      "expectations": [
+        "Recommends starting with one validated result-click event and one validated primary conversion event rather than the 23-event taxonomy",
+        "Prioritizes events as P0/P1/P2 and classifies filter clicks, hovers, and scroll depth as weak P2 signals not to over-invest in before P0 is healthy",
+        "Asks about or states an assumption for the userToken strategy (durable anonymous token, login mapping) before marking events ready",
+        "Requires queryID, objectID, index, and position attribution for search-attributed click events",
+        "Recommends the InstantSearch/search-insights implementation path given the react-instantsearch stack",
+        "Defines validation beyond ingestion (payload completeness, attribution, feature eligibility), not just a 200 response or Debugger visibility"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Audit request: our purchase conversions look doubled in Algolia. We send purchasedObjectIDsAfterSearch from the checkout thank-you page via GTM, AND our order service sends a backend purchase event. Also GTM sends the SKU from the dataLayer as objectID but our index uses productId_variantId as objectID. userToken is hardcoded to 'website-user' in the GTM tag. Index: shop_main.",
+      "expected_output": "The audit leads with the blockers: duplicate purchase events with no deduplication ownership rule between GTM and backend; SKU sent where Algolia expects the exact objectID returned in the hit (productId_variantId), making events unusable; and the hardcoded shared userToken making all users look like one user, which breaks personalization and downstream models. It also questions whether the GTM tag can access a valid queryID for the AfterSearch method. It recommends validating both the GTM source payload and the transformed Algolia payload, and produces a dedup rule assigning single ownership per event.",
+      "files": [],
+      "expectations": [
+        "Identifies the frontend GTM + backend double-send as a duplicate-event problem and assigns a single deduplication owner per event",
+        "Flags sending the SKU instead of the exact objectID (productId_variantId) returned in the hit as breaking attribution/usability",
+        "Flags the hardcoded shared userToken 'website-user' as making many users look like one user and breaking personalization and downstream features",
+        "Questions queryID validity/availability for the AfterSearch purchase method on the thank-you page, or proposes the non-AfterSearch method with the stated limitation",
+        "Recommends validating both the GTM/source payload and the transformed Algolia payload (connector mapping risk), not just one system",
+        "Distinguishes events that are ingestible from events that are usable by downstream features"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Dev says events are 'done' - he sees click events landing in the Algolia Events Debugger with 200s. But our Click-Through Rate analytics still show nothing and positions look wrong (we see position 0 a lot). Clicks are wired from a custom results grid, positions computed from the array index. What's going on?",
+      "expected_output": "The response explains that Debugger visibility and 200 responses prove ingestion only, not usability: analytics need complete, attributed payloads. It diagnoses position 0 as the one-based position bug — positions computed from a zero-based array index must add 1 and be validated against rendered order — and checks the rest of the attribution chain (clickAnalytics/queryID retrieval enabled, consistent userToken between search and event, exact objectID and index). It prescribes a validation plan covering the full journey and does not call the setup ready until attribution is intact.",
+      "files": [],
+      "expectations": [
+        "States that a 200 response or Debugger visibility proves ingestion only, not that events are usable by analytics",
+        "Diagnoses position 0 as a one-based position error: add 1 to zero-based array indexes and validate against the rendered result order",
+        "Checks queryID retrieval (clickAnalytics) and that the click event carries the same queryID/userToken as the originating search",
+        "Verifies objectID and index correctness against the actual hit rather than assuming the custom grid preserved them",
+        "Proposes validating the full journey (search, click, conversion) rather than isolated events, before calling the setup ready"
+      ]
+    }
+  ]
+}

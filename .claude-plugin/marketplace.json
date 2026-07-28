@@ -71,6 +71,25 @@
       "skills": [
         "./skills/algolia-quickstart"
       ]
+    },
+    {
+      "name": "algolia-implementation",
+      "description": "Implementation-planning suite that spans the full Algolia lifecycle: discovery and phase planning, data modeling, index configuration, UI library selection, InstantSearch and Autocomplete readiness, events/Insights instrumentation, NeuralSearch and Agent Studio rollout, and release QA. Use when planning, building, migrating, auditing, or validating an Algolia implementation end to end — it sequences the work, makes data/event contracts explicit, and routes live operations to algolia-cli, algolia-mcp, algobot-cli, and code-level work to instantsearch. Install as a bundle: algolia-discovery-planning is the entry point and loads the companion skills per phase. Do NOT use for direct account operations or as the source of truth for current framework APIs — the official skills above own those.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-discovery-planning",
+        "./skills/algolia-search-implementation",
+        "./skills/algolia-data-modeling",
+        "./skills/algolia-index-configuration",
+        "./skills/algolia-ui-libraries",
+        "./skills/algolia-instantsearch-ui",
+        "./skills/algolia-autocomplete",
+        "./skills/algolia-events-insights",
+        "./skills/algolia-neuralsearch",
+        "./skills/algolia-agent-studio",
+        "./skills/algolia-release-qa"
+      ]
     }
   ]
 }

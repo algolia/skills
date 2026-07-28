@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Discovery Planning"
+  short_description: "Ask the right Algolia setup questions"
+  default_prompt: "Use $algolia-discovery-planning to clarify business context before designing my Algolia implementation."

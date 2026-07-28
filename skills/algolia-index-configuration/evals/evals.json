@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-index-configuration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our furniture store index (furniture_prod, ~15k records) has terrible relevance. Searching 'oak table' returns oak chairs first because 'oak table runner' matches in the description. Attributes we have: name, description, category, material, brand, price, rating, stock_status. Can you set up searchableAttributes and ranking properly?",
+      "expected_output": "The response first captures current settings (or explicitly marks the plan as provisional), then proposes ordered searchableAttributes reflecting the user's mental model (e.g. name and category/material before description), puts business signals like rating in customRanking rather than frontend hacks, ties the change to representative queries ('oak table' plus others, not one anecdote), and returns settings as code/JSON with expected tradeoffs, validation queries, and rollback notes. Any live settings write is routed to algolia-cli or algolia-mcp.",
+      "files": [],
+      "expectations": [
+        "Captures or asks for the current index settings before recommending changes, or explicitly labels the plan provisional",
+        "Proposes ordered searchableAttributes with higher-priority attributes (e.g. name, category, material) above description, and explains the ordering rationale",
+        "Places numeric/boolean business signals (e.g. rating, stock_status) in customRanking rather than suggesting frontend sort hacks",
+        "Warns against tuning from the single 'oak table' anecdote and proposes a representative query set for validation",
+        "Returns concrete settings as code or JSON plus expected tradeoffs, test queries, and rollback notes",
+        "Routes the live settings write to algolia-cli or algolia-mcp instead of claiming to apply it directly"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Merchandising wants: when someone searches 'clearance' show only discounted items, and they also want us to add a synonym so 'couch' = 'sofa' = 'sectional'. Also legal says out-of-region products must NEVER appear for EU users. We currently handle the EU thing with an optionalFilter someone added last year. Index is home_goods_prod.",
+      "expected_output": "The response classifies each lever correctly: the EU restriction is a deterministic constraint that must be a hard filter or secured filter — flagging the existing optionalFilters usage as a compliance bug, since optional filters can still return non-matching results; 'clearance' intent is a scoped, governed Rule (with condition, owner, review/expiry), not a synonym; couch=sofa is genuine language equivalence suitable for a synonym, while sectional is questionable equivalence worth challenging. Live rule/synonym/settings changes are routed to algolia-cli, and validation queries plus rollback notes are provided.",
+      "files": [],
+      "expectations": [
+        "Flags the optionalFilter used for the EU region restriction as incorrect for a never-violate constraint and recommends a hard filter or secured filter instead",
+        "Handles the 'clearance' behavior with a scoped query Rule (with condition and governance such as owner/review or expiry) rather than a synonym",
+        "Accepts couch/sofa as genuine language equivalence but questions or qualifies sectional as not a true synonym",
+        "Distinguishes deterministic constraints, ranking preferences, and query-specific merchandising as separate lever classes",
+        "Routes live rule/synonym/settings writes to algolia-cli or algolia-mcp rather than applying them via this skill",
+        "Provides validation queries and/or rollback expectations for the changes"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We want to add 'Price: low to high' and 'Newest first' sort options to our electronics search (index: electronics_main). A teammate says we should just sort the hits client-side in React since we already have the data. We also plan to A/B test a big ranking overhaul at the same time. Good plan?",
+      "expected_output": "The response rejects client-side sorting and recommends standard replicas for explicit sort-by (or virtual replicas where relevant sorting fits), documenting for each sort the displayed label, expected loss of relevance, and facet/filter consistency. It flags running the sort change and the ranking overhaul in the same A/B window as breaking causal attribution — change one meaningful relevance variable per experiment — and asks for/defines hypothesis, baseline, success metric, and rollback trigger before launch. Live replica creation is routed to algolia-cli.",
+      "files": [],
+      "expectations": [
+        "Rejects client-side sorting of Algolia hits and recommends replicas (standard and/or virtual) for the sort-by experiences",
+        "Treats each sort as a relevance decision: documents replica type, sort label, expected relevance tradeoff, or filter/facet consistency",
+        "Flags that A/B testing a ranking overhaul simultaneously with the sort change prevents causal attribution, and recommends one variable per experiment",
+        "Requires or drafts an experiment plan: hypothesis, baseline, success metric, decision rule, and rollback trigger",
+        "Routes live replica/settings creation to algolia-cli or algolia-mcp rather than performing it directly"
+      ]
+    }
+  ]
+}

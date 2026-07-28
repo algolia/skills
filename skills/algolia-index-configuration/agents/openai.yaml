@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Index Configuration"
+  short_description: "Configure relevance, ranking, and settings"
+  default_prompt: "Use $algolia-index-configuration to configure Algolia index settings, ranking, facets, synonyms, rules, and replicas."

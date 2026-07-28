@@ -1,0 +1,45 @@
+{
+  "skill_name": "algolia-search-implementation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're building search for our B2B electrical parts store from scratch. React storefront, catalog export is a CSV with ~60k part numbers, customers search by SKU or description. I want a search page with filters (brand, voltage, category), autocomplete, and eventually personalization. Walk me through the build.",
+      "expected_output": "The response works through the net-new build as explicit checkpoints in order: data contract (algolia-data-modeling), event instrumentation (algolia-events-insights), index configuration (algolia-index-configuration), UI (algolia-ui-libraries / algolia-autocomplete / algolia-instantsearch-ui, with the official instantsearch skill for code details), and release QA (algolia-release-qa). It treats data and events as foundations rather than side quests — noting personalization depends on the event foundation — pauses on the data contract and event taxonomy before UI, and returns a checkpoint-by-checkpoint status with deferrals and next validation step.",
+      "files": [],
+      "expectations": [
+        "Presents the build as ordered checkpoints: data contract, events, index configuration, UI, release QA — not as a single UI coding task",
+        "Names the sibling skill that owns each checkpoint (algolia-data-modeling, algolia-events-insights, algolia-index-configuration, algolia-autocomplete/algolia-instantsearch-ui/algolia-ui-libraries, algolia-release-qa) rather than stopping at the first match",
+        "Addresses the data contract (record shape, objectID, searchable/facet fields like brand, voltage, category, SKU exactness) before or alongside UI decisions",
+        "Connects the personalization goal to event readiness (userToken strategy, click/conversion taxonomy) instead of deferring events silently",
+        "References completion signposts or suggested artifacts (index contract, event taxonomy, release QA note) for calling the work ready",
+        "Ends with a checkpoint-by-checkpoint summary including explicit deferrals, risks, or next validation step"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need a quick demo of Algolia search over our recipe blog content for a stakeholder meeting Thursday. ~800 posts, I have a JSON dump. Don't overthink it, I just need something that looks real.",
+      "expected_output": "The response respects the prototype timeline but does not silently skip foundations: it proceeds with a minimal provisional contract — a one-paragraph data contract, a small table of planned events, roughly three validation queries — names its assumptions explicitly, and records the deferred production concerns (events, secured keys, full QA) that must be revisited before launch. It does not fabricate live index state.",
+      "files": [],
+      "expectations": [
+        "Proceeds with a minimal provisional data contract instead of either skipping the contract entirely or demanding full production rigor for a demo",
+        "States assumptions explicitly (e.g. objectID strategy, display fields) rather than deciding silently",
+        "Produces or proposes the minimal prototype artifacts: a short data contract, an event table or explicit event deferral, and a few validation queries",
+        "Records deferred production concerns (e.g. event validation, environments, security, QA) with a note that they must be revisited before launch",
+        "Distinguishes prototype-ready from launch-ready when describing completion"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We already have Algolia live on our marketplace (indices: mp_listings_prod, mp_sellers_prod) but conversion attribution seems broken and nobody trusts the analytics. Can you audit what we have and fix it?",
+      "expected_output": "Because this is an audit of an existing implementation rather than a net-new build, the response starts with algolia-release-qa and routes findings back to the focused skills (algolia-events-insights for the attribution problem, plus data/index/UI skills as needed). Any live inspection of the prod indices or events health is routed through algolia-mcp or algolia-cli. The response frames the attribution issue in terms of queryID/objectID/position/userToken preservation.",
+      "files": [],
+      "expectations": [
+        "Recognizes the task as an audit and starts with algolia-release-qa rather than the greenfield checkpoint sequence",
+        "Routes the attribution findings to algolia-events-insights (and other focused skills as needed) rather than handling everything inside this skill",
+        "Routes live index/analytics inspection through algolia-mcp or algolia-cli instead of guessing account state",
+        "Mentions the concrete attribution fields likely at fault: queryID, objectID, position, and/or userToken consistency",
+        "Does not claim the analytics are fixed or trustworthy without a validation step"
+      ]
+    }
+  ]
+}
