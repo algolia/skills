@@ -33,14 +33,41 @@ Official docs:
 - Vue InstantSearch install: https://www.algolia.com/doc/guides/building-search-ui/installation/vue
 - Angular getting started (InstantSearch.js in Angular): https://www.algolia.com/doc/guides/building-search-ui/getting-started/angular
 
-Angular note: the legacy Angular InstantSearch package is not compatible with the latest Angular versions. For Angular apps, use InstantSearch.js with connectors inside Angular services and components, per the Angular getting-started guide above. Treat existing Angular InstantSearch code as a migration candidate, not a target for new work.
+Angular note: `angular-instantsearch` is formally **deprecated** by Algolia — the npm
+package carries a deprecation notice, its docs moved under `/doc/deprecated/`, and Algolia
+has said it will not ship an Angular replacement. There is no successor package. For
+Angular apps, use InstantSearch.js with connectors inside Angular services and components,
+per the Angular getting-started guide above. Treat existing Angular InstantSearch code as a
+migration candidate, not a target for new work. Migration guide:
+https://www.algolia.com/blog/algolia/migrating-from-angular-instantsearch/
+
+Caution when checking status: Algolia's marketing pages under `/developers` and `/products`
+still present Angular as an available, maintained flavor. Confirm library status from npm
+and `algolia.com/doc`, not from marketing pages.
+
+Never recommend `react-instantsearch-dom` or `react-instantsearch-hooks-web`. Both are
+deprecated in favour of `react-instantsearch`; npm redirects them and they stopped
+receiving releases.
 - InstantSearch events: https://www.algolia.com/doc/guides/building-search-ui/events/js
 - React InstantSearch events: https://www.algolia.com/doc/guides/building-search-ui/events/react
 - Vue InstantSearch events: https://www.algolia.com/doc/guides/building-search-ui/events/vue
 
 ### React And Next.js
 
-Use React InstantSearch for React apps. For Next.js or SSR, verify current Next.js/SSR docs before coding.
+Use React InstantSearch (`react-instantsearch`) for React apps. For Next.js or SSR, verify
+current Next.js/SSR docs before coding.
+
+Next.js App Router needs the dedicated `react-instantsearch-nextjs` package: swap
+`<InstantSearch>` for `<InstantSearchNext>` (same props), keep the search component in its
+own file rather than `page.tsx`, and mark it `"use client"`. Plain `react-instantsearch` is
+not App-Router-SSR-ready on its own, and there is no React-Server-Component-native
+InstantSearch — the widgets are client components by design. On the Pages Router the older
+`getServerState` flow still applies.
+
+Algolia documents a backend-search pattern (a custom `searchClient` proxying through your
+own server) for security, SEO, or data-enrichment needs, but explicitly recommends
+frontend search for latency and availability. There is no official guidance to drop
+InstantSearch in favour of calling the API client directly.
 
 Official docs:
 
@@ -88,6 +115,32 @@ Official docs:
 - Android events: https://www.algolia.com/doc/guides/building-search-ui/events/android
 - iOS events: https://www.algolia.com/doc/guides/building-search-ui/events/ios
 - Flutter events: https://www.algolia.com/doc/guides/building-search-ui/events/flutter
+
+Flutter is not an InstantSearch flavor. `algolia_helper_flutter` supplies business-logic
+helpers only, with no UI widgets — plan to build the UI yourself.
+
+### Lower-Code And Newer Options
+
+Check these before assuming a hand-built InstantSearch UI is the only path. Confirm current
+status in official docs before recommending either, and do not make them the default.
+
+- **Algolia SiteSearch** — a registry of copy-in components built on top of React
+  InstantSearch, plus an Ask AI surface. Useful when the team wants a fast, good-looking
+  starting point in React and is willing to own the copied code. Algolia labels it **beta**,
+  and it has pinned older React InstantSearch versions in the past, so verify what it
+  installs before committing. Docs: https://sitesearch.algolia.com/docs
+- **Algolia Experiences** (`algolia-experiences`) — build the experience in the dashboard and
+  embed it with a script tag and an experience ID. This is the genuine no-developer tier;
+  reach for it when nobody will own frontend code.
+
+Also relevant when scoping: **Compositions** change how queries are issued and carry hard
+constraints — the `index` widget is unsupported and Composition calls cannot be mixed with
+Search/Recommend calls on the same page. Verify current Composition docs before designing a
+UI around it. DocSearch has moved well past v3, so confirm the current major before quoting
+setup steps for documentation search.
+
+There is no official Algolia web-components, Svelte, Astro, or Angular library. If a team
+asks for one, the answer is InstantSearch.js with connectors.
 
 ## Selection Heuristics
 
