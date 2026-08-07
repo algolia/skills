@@ -4,9 +4,44 @@ The `recordExtractor` is a JavaScript function the Crawler runs on each page. It
 
 In the crawler config the function is stored as a string (`{"__type":"function","source":"…"}`) — that's what `algolia crawler create -F config.json` reads. **The source runs as plain JavaScript — no TypeScript.** Strip any type annotations (`: string[]`, `as any`); they are syntax errors at runtime.
 
-## Emit one record per retrieval unit
+## Markdown for RAG — the default for docs and prose
 
-Don't return one record per page. Return one per *idea* — a section, a Q&A, a table row/entity. Use a `record_type` discriminator so you can filter by kind later, and give every record a natural-language `content` field plus clean structured attributes.
+For prose content — documentation, articles, guides, marketing pages — the best records are usually **Markdown**, not flattened text. Markdown keeps the structure an LLM benefits from (headings, lists, tables, code blocks, links) in a compact form, and it's the pattern Algolia recommends for AskAI/RAG ([Markdown indexing guide](https://www.algolia.com/doc/guides/algolia-ai/askai/guides/markdown-indexing)). Two built-in helpers do the work:
+
+- `helpers.markdown("<css selector>")` — converts the matched HTML subtree to a Markdown string. Target the article body and exclude chrome (nav, header, breadcrumb, the "on this page" TOC).
+- `helpers.splitTextIntoRecords({ text, baseRecord, maxRecordBytes, orderingAttributeName })` — splits that Markdown into one or more records under the byte cap. Each record carries the `baseRecord` fields, the chunk in a **`text`** attribute, and a numeric part (via `orderingAttributeName`). ObjectIDs are auto-suffixed per chunk (`<objectID>#0`, `#1`, …).
+
+```js
+({ url, $, helpers }) => {
+  const text = helpers.markdown("main [class*=content]"); // ← TUNE this selector to the site
+  if (!text) return [];
+  const title = $("h1").first().text().trim() || $("title").text().trim();
+  return helpers.splitTextIntoRecords({
+    text,
+    baseRecord: {
+      record_type: "doc",
+      url: url.href,
+      objectID: url.href,
+      page_title: title,
+      lang: $("html").attr("lang") || "en",
+    },
+    maxRecordBytes: 4000,          // smaller = tighter chunks (better recall); larger = more context per hit, more tokens
+    orderingAttributeName: "part",
+  });
+}
+```
+
+**The selector still needs the sample-and-test step.** Don't trust a generic selector — the docs' own example `main > *:not(nav)…` can grab only the "On this page" TOC on a given site. Use `crawler test` to check which selector captures the real article body (try `main`, `article`, `main [class*=content]`, …) before trusting it. Same discover → sample → test loop as everywhere else.
+
+**Tuning `maxRecordBytes`.** Smaller chunks (a few thousand bytes) retrieve more precisely and keep the LLM context lean; larger chunks give more context per hit but cost more tokens per answer. Start around 3000–5000 for RAG and adjust.
+
+When you use this pattern the Markdown lives in the **`text`** attribute — make `text` your primary `searchableAttribute` (see [rag-index-settings.md](rag-index-settings.md)).
+
+## Emit one record per retrieval unit (for structured data)
+
+When the page is **structured data** — a table, leaderboard, pricing grid, catalog — hand-roll an extractor instead, so you get one record per entity with clean, typed attributes rather than a wall of prose. (For docs/prose, prefer the Markdown helper above.)
+
+Return one record per *idea* — an entity/row, a Q&A. Use a `record_type` discriminator so you can filter by kind later, and give every record a natural-language `content` field plus clean structured attributes.
 
 ```js
 ({ url, $ }) => {
