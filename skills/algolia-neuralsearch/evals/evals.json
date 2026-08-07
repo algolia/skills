@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-neuralsearch",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our search results are pretty bad - lots of zero-result queries and users complain they can't find things. Records in our home_decor_live index are thin (title + SKU + price, descriptions mostly empty). Boss saw a NeuralSearch demo and wants it switched on this sprint to fix everything. Can we?",
+      "expected_output": "The response does not treat NeuralSearch as a switch that fixes poor data: with thin records (empty descriptions, little semantic content) it issues a fix-first recommendation, explaining neural relevance depends on records that carry semantic meaning. It requires evidence for readiness (data audit, representative query set including the zero-result queries, baseline metrics, rollback plan), correctly notes per current docs that click/conversion events are not required for activation but guide semantic attribute selection and gate Adaptive Intent/retraining, marks doc-dependent behavior for live verification, and routes any live settings/analytics work to algolia-cli or algolia-mcp.",
+      "files": [],
+      "expectations": [
+        "Does not recommend enabling NeuralSearch as-is; treats it as a rollout decision and issues a fix-first (or do-not-start) recommendation given the thin records",
+        "States that NeuralSearch cannot compensate for records lacking semantic content, and recommends enriching titles/descriptions/categories first",
+        "Correctly states that events are not required to activate NeuralSearch but do gate Adaptive Intent, retraining, and trustworthy measurement — without claiming events are an activation prerequisite",
+        "Requires a representative query evaluation set (including the zero-result and vague queries) and a baseline before any rollout",
+        "Recommends verifying current NeuralSearch docs (eligibility, limitations, activation behavior) rather than asserting product behavior from memory",
+        "Routes live analytics inspection or settings changes to algolia-mcp or algolia-cli"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're ready to actually roll out NeuralSearch on our outdoor equipment index (records are rich, events healthy for 6+ months). How do we test it safely? Also after an internal preview, one weird thing: searching 'bear canister' now surfaces a teddy bear product #4. Marketing wants us to just pin the right products and ship.",
+      "expected_output": "The response teaches the rollout path: confirm eligibility/readiness, preview with a representative query set spanning query classes (head, tail, exact, vague, natural-language, branded, typo, no-result), test via replica or A/B against baseline, tune one semantic variable per round, then monitor. For the teddy bear result, it diagnoses before patching: use explainability/result-origin inspection to distinguish a data problem, semantic-setting choice, keyword behavior, or merchandising override, rather than pinning results to mask it — and warns against changing multiple settings at once. It includes a rollback/staged rollout plan and measurement plan, routing live replica/A-B operations to algolia-cli/algolia-mcp.",
+      "files": [],
+      "expectations": [
+        "Lays out the staged rollout path: readiness confirmation, preview with a representative query set, replica or A/B comparison against a baseline, then monitored rollout",
+        "Builds or requests a query evaluation set covering multiple query classes (exact, vague, natural-language, branded, typo, no-result), not just favorable queries",
+        "Diagnoses the 'bear canister' anomaly with explainability or result-origin inspection (keyword vs semantic match) before recommending fixes, instead of immediately pinning results",
+        "Warns against changing multiple semantic/ranking/merchandising variables at once; one meaningful variable per evaluation round with a before/after record",
+        "Includes a rollback trigger or staged rollout plan and does not recommend launch without one",
+        "Routes live replica creation, A/B setup, or analytics retrieval to algolia-cli or algolia-mcp"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Picking semantic attributes for NeuralSearch on our industrial parts index (mfg_parts_prod). Attributes include: part_name, long_description, internal_notes, supplier_boilerplate (same 2 paragraphs on 8k records), part_number, compliance_class, warehouse_location. Which should carry semantic meaning? Also some parts are restricted by customer contract - sales says semantic search 'might loosen that up', which sounds concerning.",
+      "expected_output": "The response selects a small, meaningful semantic attribute set with justified priority (part_name, long_description; possibly compliance_class as a facet not semantic), and excludes noise: internal_notes, duplicated supplier_boilerplate, part_number (exact/deterministic), warehouse_location. It firmly corrects the sales expectation: filters, secured data, and permissions must remain explicit and deterministic — semantic matching must never leak restricted records — and contract restrictions stay as secured filters. It flags exact-match query classes (part numbers) as needing to remain deterministic and verifies limitations against current docs.",
+      "files": [],
+      "expectations": [
+        "Selects a small prioritized semantic attribute set and justifies each field's priority rather than including everything",
+        "Excludes IDs, internal notes, duplicated supplier boilerplate, and operational fields (warehouse_location) from semantic meaning as noise",
+        "States that contract/permission restrictions must remain deterministic (secured filters or equivalent) and that semantic matching must not loosen or leak restricted records",
+        "Identifies part-number/exact queries as a class that must remain exact and deterministic under neural/hybrid behavior",
+        "Recommends verifying current docs for limitations and semantic configuration behavior before promising results"
+      ]
+    }
+  ]
+}

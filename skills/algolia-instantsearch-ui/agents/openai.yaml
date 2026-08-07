@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia InstantSearch UI"
+  short_description: "Build InstantSearch search experiences"
+  default_prompt: "Use $algolia-instantsearch-ui to build or review an Algolia InstantSearch search results UI."

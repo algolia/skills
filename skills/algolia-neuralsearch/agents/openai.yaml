@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia NeuralSearch"
+  short_description: "Implement and optimize NeuralSearch"
+  default_prompt: "Use $algolia-neuralsearch to plan, implement, validate, and optimize Algolia NeuralSearch."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Data Modeling"
+  short_description: "Model records and indices for Algolia"
+  default_prompt: "Use $algolia-data-modeling to design Algolia records, indices, replicas, and indexing workflows."

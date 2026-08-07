@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Search Implementation"
+  short_description: "Guide Algolia search builds from discovery through launch"
+  default_prompt: "Use $algolia-search-implementation to sequence the data, events, index configuration, UI, and release QA decision points for my Algolia search implementation."

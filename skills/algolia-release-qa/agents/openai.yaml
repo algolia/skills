@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Release QA"
+  short_description: "Validate Algolia implementations before launch"
+  default_prompt: "Use $algolia-release-qa to audit my Algolia implementation before launch."

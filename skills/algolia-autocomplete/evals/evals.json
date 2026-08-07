@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-autocomplete",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Adding autocomplete to our cookware shop header. Stack is vanilla JS with @algolia/autocomplete-js. I want query suggestions plus a few product hits with images. Main index is cookware_products - I assume the suggestions just come from there too? Selecting a product should go to its PDP, selecting a suggestion should run the search.",
+      "expected_output": "The response corrects the assumption that suggestions come from the main index: it verifies whether a Query Suggestions index exists (they are separate, generated indices) or designs a fallback source strategy, and warns against putting the source index name where the plugin expects the Query Suggestions index name. It writes a source contract per group (trigger, source/index, input value, selection destination, carried scope, event treatment), keeps source limits tight and Query Suggestions visually/behaviorally distinct from product hits, defines the two selection behaviors (navigate to PDP vs submit query), distinguishes direct-result click events from query suggestion submissions, and defers exact package APIs to the official instantsearch skill or current docs. It ends with a QA checklist covering keyboard, touch, mobile detached mode, and empty/loading states.",
+      "files": [],
+      "expectations": [
+        "Does not assume a Query Suggestions index exists; verifies it or designs a fallback, and distinguishes it from the cookware_products source index",
+        "Produces a source contract for each group covering trigger, source/index, input value, selection destination, and event treatment",
+        "Defines distinct selection behavior for products (navigate to PDP) versus suggestions (submit query), and keeps the two source types visually/behaviorally distinct",
+        "Distinguishes direct-result click events from query suggestion submissions in the event plan, and does not send search-attributed events without a valid queryID",
+        "Defers Autocomplete package API details to the official instantsearch skill or current docs rather than asserting them from memory",
+        "Includes a QA checklist covering keyboard navigation, touch/mobile detached mode, empty/loading states, and selection routing"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our mobile autocomplete panel is a mess. When the keyboard opens you see 2 giant product cards and nothing else - no suggestions visible, and users keep hitting the X thinking it clears the text but it closes the whole overlay. PM wants to ALSO add popular searches, categories, and a blog articles section to the panel. Help.",
+      "expected_output": "The response treats mobile as a first-class constraint: with the keyboard open, primary query guidance must remain visible above the keyboard, so product cards must not crowd out suggestions; the clear-input and close-overlay actions must be separate controls (it flags the combined X as a named anti-pattern). It pushes back on adding popular searches, categories, and articles just because the panel has space — each new source must pass the helpful/clear/focused test and solve a named user need — and recommends a tight device-specific content budget with a clear path to all results. It ends with a mobile QA checklist and a quality-standard verdict.",
+      "files": [],
+      "expectations": [
+        "Recommends keeping primary query guidance (suggestions) visible above the open mobile keyboard rather than letting product cards crowd it out",
+        "Identifies combining the clear-input action and close-overlay action as an anti-pattern and recommends distinct controls",
+        "Pushes back on adding popular searches, categories, and blog articles simultaneously; requires each source to solve a named user need rather than filling panel space",
+        "Recommends tight source limits or a device-specific content budget, with a visible path to see all results",
+        "Assesses or plans to assess the experience against the quality standard: helpful, clear, focused, device-usable, accessible",
+        "Provides a mobile-focused QA checklist (keyboard, touch targets, detached mode, clear vs close behavior)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Weird bug report: on our travel site autocomplete (React, integrated with InstantSearch results page below), clicking a suggestion with the mouse gives different results than highlighting it with arrow keys and pressing Enter - the keyboard path seems to drop the 'destination' category scope. Also sometimes the panel shows an empty 'Hotels' section header with nothing under it.",
+      "expected_output": "The response treats mouse, touch, and keyboard selection as equivalent routes that must reach the same URL/state with the same query and scope, diagnosing the dropped category scope as a selection-contract bug — the input value/selection destination must be defined per source and tested with a category-bearing suggestion for both pointer and keyboard paths. For the empty Hotels group, it applies the deliberate empty-state standard: hide a failed/empty group, show an approved fallback, or show a clear no-suggestions state, never a blank labeled panel. It also checks the InstantSearch integration for competing query states and defers code-level API fixes to the official instantsearch skill.",
+      "files": [],
+      "expectations": [
+        "States that pointer and keyboard selection must produce the same query parameters, filters/scope, and destination, and identifies the dropped category scope as a selection-contract defect",
+        "Recommends testing the selection contract with a category-bearing suggestion across mouse, touch, and keyboard paths",
+        "Addresses the empty 'Hotels' header with a deliberate empty-state rule: hide the empty group, show a fallback, or show a clear no-suggestions state — not a blank labeled section",
+        "Checks for or warns about competing query states between Autocomplete and InstantSearch integration",
+        "Defers exact package/API-level fixes to the official instantsearch skill or current docs"
+      ]
+    }
+  ]
+}
