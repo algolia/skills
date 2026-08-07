@@ -38,10 +38,13 @@ npm install -g algobot-ai
 algobot init                    # Interactive wizard (creates first agent + profile)
 ```
 
-Or add a profile manually (CI-safe, non-interactive):
+Or add a profile manually (CI-safe, non-interactive). Pass your app ID and Admin API key so the profile is authenticated:
 ```bash
-algobot profiles add --name prod --env prod
+algobot profiles add --name prod --env prod \
+  --app-id <APP_ID> --api-key "$ALGOBOT_ADMIN_KEY" \
+  --default-agent-id pending --default
 ```
+Without `--app-id` and `--api-key`, the profile is created but not authenticated, so commands fail. Read the key from an environment variable rather than hardcoding it, and use `--default-agent-id pending` when no agent exists yet (set it after you create one).
 
 ## Non-Interactive Mode (Critical for Agents)
 
@@ -62,13 +65,15 @@ algobot agents list --jq '.[] | .name'                       # JSON filtering
 ```bash
 algobot agents list
 algobot agents get <agent-id>
-algobot agents create --name "Support Bot" --model gpt-4o
+algobot agents create --name "Support Bot" --model gpt-5.6-terra
 algobot agents update <agent-id> --name "New Name"
 algobot agents publish <agent-id>
 algobot agents unpublish <agent-id>
 algobot agents delete <agent-id>
 algobot agents copy <id> --from-env dev --to-env prod
 ```
+
+Default new agents on an OpenAI provider to `gpt-5.6-terra` (the balanced cost/quality GPT-5.6 tier). Pass a different `--model` when you need another model.
 
 ### Chatting with an Agent
 
@@ -82,7 +87,7 @@ algobot --verbose ask "debug this"           # Show full HTTP traces
 
 ```bash
 algobot profiles list
-algobot profiles add --name dev --env dev
+algobot profiles add --name dev --env dev --app-id <APP_ID> --api-key "$ALGOBOT_ADMIN_KEY"  # include creds to authenticate
 algobot profiles setdefault prod
 algobot --profile prod agents list
 algobot --env dev agents list

@@ -21,6 +21,7 @@
 | `algolia-crawler` | Crawl web pages or whole sites into a RAG-optimized index with the Algolia Crawler |
 | `algolia-migration` | Migrate API client code to the latest major version (JS, Python, Go, PHP, Java, C#, Ruby, Kotlin, Scala, Swift) |
 | `algolia-quickstart` | Create an Algolia account and provision an application (App ID / API key) via the CLI |
+| `agent-studio`  | Add an Agent Studio chat agent, InstantSearch Chat widget, and business events to your website |
 
 ### Implementation planning suite (`algolia-implementation`)
 

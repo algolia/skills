@@ -1,0 +1,15 @@
+/node_modules
+/.next
+/out
+/build
+
+# local env files (keep .env.example checked in)
+.env
+.env*.local
+
+# logs & misc
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts.timestamp

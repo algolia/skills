@@ -1,0 +1,57 @@
+{
+  "skill_name": "agent-studio",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a React storefront and an Agent Studio agent. Add a chat widget to my site so shoppers can talk to the agent.",
+      "expected_output": "Install react-instantsearch, wrap the app in InstantSearch, and render the Chat widget wired to the agent.",
+      "files": [],
+      "expectations": [
+        "Installs react-instantsearch, algoliasearch, and instantsearch.css",
+        "Wraps the app in an <InstantSearch> provider with a search client and index name",
+        "Renders the <Chat> component, connecting it with the agentId prop for the simple case",
+        "For authenticated headers, uses the transport prop and includes compatibilityMode=ai-sdk-5 in the completions URL",
+        "Imports the chat CSS (instantsearch.css/components/chat.css)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My Agent Studio chat agent needs to fetch the logged-in user's order history from my backend when it asks for it. Wire up that client-side tool.",
+      "expected_output": "Define the tool in Agent Studio, then handle it on the client with the layoutComponent pattern.",
+      "files": [],
+      "expectations": [
+        "Registers the tool on the <Chat> component under the tools prop, keyed by the tool name configured in Agent Studio",
+        "Uses the layoutComponent pattern rather than onToolCall for async work, and explains it avoids the SerialJobExecutor deadlock",
+        "Guards execution on message.state === 'input-available' and uses a useRef to prevent duplicate calls",
+        "Always calls addToolResult (including on error) so the agent can continue",
+        "Defines the matching function tool schema in the Agent Studio dashboard (with strict mode for production)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add analytics to my Algolia chat experience: track add-to-cart as a conversion with revenue, and make memory work for signed-in users.",
+      "expected_output": "Send Algolia Insights conversion events and pass a secure user token for user-scoped memory.",
+      "files": [],
+      "expectations": [
+        "Sends an Algolia Insights conversion event with eventSubtype 'addToCart', objectData (price/quantity), and a currency",
+        "Manages a stable userToken (anonymous token in localStorage, authenticated user id after login)",
+        "Generates a server-side JWT signed with the Agent Studio secret key, including the kid header",
+        "Passes the token to the Chat transport as the X-Algolia-Secure-User-Token header",
+        "Notes that memory requires user authentication and a non-zero data-retention setting in the dashboard"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Make sure clicks and add-to-cart from my Agent Studio chat are attributed to the agent's searches in Algolia analytics.",
+      "expected_output": "Read the queryID from the streamed search tool result (iterate the tool result parts, keying off parts that carry both queryID and hits rather than a hardcoded tool name) and include it in click-after-search and conversion-after-search Insights events.",
+      "files": [],
+      "expectations": [
+        "Explains that the chat agent searches server-side and the queryID is returned in the streamed search tool result (iterate the tool result parts, keying off queryID + hits rather than a hardcoded tool name), not from a client-side search",
+        "Builds a mapping from objectID to { queryID, position } from the streamed search tool results",
+        "Sends click events with the queryID and 1-based positions (click-after-search) for products the agent surfaced",
+        "Sends addToCart or purchase conversion events with the same queryID (conversion-after-search) rather than plain conversions",
+        "Notes that without the queryID the events are not attributed to the agent's searches, losing click-through, conversion, and revenue analytics"
+      ]
+    }
+  ]
+}

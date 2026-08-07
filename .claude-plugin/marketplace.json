@@ -73,6 +73,15 @@
       ]
     },
     {
+      "name": "agent-studio",
+      "description": "Build agentic chat experiences on your own website with Algolia Agent Studio and the react-instantsearch Chat widget. Use for integrating Agent Studio into a React app, adding a chat widget, creating client-side tools for the chat agent, customizing the chat UI/CSS, sending Algolia Insights (business) events, implementing user authentication with secure tokens, setting up memory/personalization, injecting context into conversations, or creating prompt starters. Do NOT use for building or configuring the agent itself via CLI (use algobot-cli), for raw index operations (use algolia-cli), or for a pure search UI with no chat/agent layer (use instantsearch).",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/agent-studio"
+      ]
+    },
+    {
       "name": "algolia-implementation",
       "description": "Implementation-planning suite that spans the full Algolia lifecycle: discovery and phase planning, data modeling, index configuration, UI library selection, InstantSearch and Autocomplete readiness, events/Insights instrumentation, NeuralSearch and Agent Studio rollout, and release QA. Use when planning, building, migrating, auditing, or validating an Algolia implementation end to end — it sequences the work, makes data/event contracts explicit, and routes live operations to algolia-cli, algolia-mcp, algobot-cli, and code-level work to instantsearch. Install as a bundle: algolia-discovery-planning is the entry point and loads the companion skills per phase. Do NOT use for direct account operations or as the source of truth for current framework APIs — the official skills above own those.",
       "source": "./",

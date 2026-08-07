@@ -1,0 +1,119 @@
+/* Algolia InstantSearch base styles (resolved from node_modules by Next). */
+@import "instantsearch.css/themes/reset.css";
+@import "instantsearch.css/themes/satellite.css";
+/* Chat widget styles. */
+@import "instantsearch.css/components/chat.css";
+
+:root {
+  --fg: #1a1c1d;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--fg);
+  background: var(--bg);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem 6rem;
+}
+
+.page-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+}
+
+.page-header p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+.search .ais-SearchBox {
+  margin-bottom: 1.5rem;
+}
+
+/* Search results grid. */
+.ais-Hits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hit {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.hit-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.hit-name {
+  font-size: 0.95rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.hit-brand {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.hit-price {
+  font-weight: 600;
+  margin: 0.25rem 0 0;
+}
+
+/* Product card inside the chat carousel. */
+.chat-hit {
+  display: block;
+  width: 10rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.chat-hit-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.chat-hit-name {
+  display: block;
+  padding: 0.5rem 0.5rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.chat-hit-price {
+  display: block;
+  padding: 0 0.5rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Rebrand the chat widget with design tokens (see components-and-css.md). */
+.ais-Chat {
+  --ais-primary-color-rgb: 20, 20, 20;
+  --ais-font-family: "Inter", system-ui, sans-serif;
+}
