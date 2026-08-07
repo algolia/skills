@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-agent-studio",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We want an AI shopping assistant for our wine store using Agent Studio. Ideas so far: it should recommend wines, answer region/pairing questions, manage the user's cart, apply discount codes, update account details, and escalate to support. We have a solid wines_prod index and decent events. Where do we start - can you write the system prompt?",
+      "expected_output": "The response does not start with the prompt: it defines the agent contract first (purpose, audience, tools, allowed actions, guardrails, escalation, measurement) and pushes back on the broad scope, recommending one narrow, high-intent, read-only rollout job (e.g. wine discovery/pairing advice from the wines_prod Search tool) with cart/discount/account write actions deliberately out of scope until the read-only rollout is validated. It defines each enabled tool as a contract (trigger, allowed parameters, access scope, user-visible result, failure response, measurement event), covers guardrails, approved domains, auth, API-key boundaries, and feedback/analytics loops, and routes actual config-as-code, dry runs, and publish operations to the official algobot-cli.",
+      "files": [],
+      "expectations": [
+        "Refuses to start with prompt writing alone; defines an agent contract (purpose, audience, tools, allowed actions, guardrails, escalation, measurement) first",
+        "Narrows the rollout to one high-intent, read-only job and explicitly defers write-capable actions (cart management, discount codes, account updates) until the read-only rollout is validated",
+        "Defines tool contracts for the Search tool: trigger, allowed parameters/filters, data scope, user-visible result, and failure/timeout behavior",
+        "Covers security prerequisites: approved domains, authentication, API-key boundaries, and never exposing admin keys or unreviewed tools to a client-facing agent",
+        "Plans feedback, analytics, or conversion measurement from the start rather than as post-launch polish",
+        "Routes live Agent Studio configuration, dry runs, and publish/deploy steps to the official algobot-cli rather than performing them via this skill"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our Agent Studio support agent (published 3 weeks ago on our docs site) keeps giving vague answers and sometimes says it 'can't find anything' even for topics we definitely have articles on. The team's conclusion is the LLM we picked is just bad and we should switch providers. Agree?",
+      "expected_output": "The response does not accept the blame-the-model conclusion: it maps the agent's room (instructions, tools, retrieval, data access, memory/context, safety, provider, entry point) and diagnoses against that map first, since 'can't find anything' for existing content usually indicates weak retrieval — Search tool configuration, index readiness, filters, searchable attributes, or returned fields. It recommends qualitative review of Conversations before aggregate analytics to spot unclear instructions, weak retrieval, and bad fallback behavior, uses live inspection via algolia-mcp/algobot-cli for evidence, and only considers a provider switch after the room is ruled out.",
+      "files": [],
+      "expectations": [
+        "Declines to blame the LLM provider first; walks the agent-room map (instructions, tools, retrieval, data access, memory/context, safety, entry point) before considering a model switch",
+        "Identifies the 'can't find anything' symptom as likely a retrieval/Search-tool problem (index readiness, filters, searchable attributes, returned fields) to verify",
+        "Recommends reviewing Conversations qualitatively to find unclear instructions, weak retrieval, or fallback failures before relying on aggregate analytics",
+        "Routes live inspection (agent config, index/search behavior) to algobot-cli, algolia-mcp, or algolia-cli for evidence",
+        "Produces a diagnosis or validation plan rather than an immediate configuration rewrite, and labels unconfirmed behavior as assumptions to verify with a dry run or dashboard check"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Pre-launch review: our internal ops agent is configured with our admin API key so it can 'do everything', memory is on because the toggle was there, there's no approved-domains list yet, and we tested it once in preview where it answered great. Dev wants to publish today. Green light?",
+      "expected_output": "The response does not green-light: it leads with launch blockers — an admin API key exposed to an agent (never expose admin keys or unrestricted actions), memory enabled without intent/identity/retention/consent decisions, missing approved domains and auth review, and publishing after a single good preview answer (a named anti-pattern). It requires failure-mode validation (no results, ambiguous intent, tool errors, refusal behavior), an event/feedback plan, and returns a clear fix-first recommendation with the security items as prerequisites, routing config changes through algobot-cli.",
+      "files": [],
+      "expectations": [
+        "Refuses to approve launch and leads with the launch blockers rather than a positive summary",
+        "Flags the admin API key as a blocker: agents must not get admin keys or unrestricted action scope",
+        "Flags memory-by-default as a blocker: memory must be intentional with identity, retention, and consent decisions documented",
+        "Flags missing approved domains and authentication review as launch prerequisites",
+        "Calls out publishing after one good preview answer as insufficient and requires failure-mode QA (no results, ambiguous intent, tool errors, refusals)",
+        "Issues an explicit recommendation from the skill's set (launch, limited rollout, fix first, do not start) — here fix-first or equivalent"
+      ]
+    }
+  ]
+}

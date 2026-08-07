@@ -1,0 +1,45 @@
+{
+  "skill_name": "algolia-release-qa",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We launch our new Algolia-powered search Monday (index: garden_supplies_prod, React InstantSearch results page + autocomplete, click/conversion events wired last week). Can you sign off? I can share code, and screenshots of the dashboard showing events arriving. Nobody has done a settings backup and we haven't decided what happens if relevance tanks post-launch.",
+      "expected_output": "The response does not sign off from code and screenshots alone: it applies the source-of-truth rule that data, settings, events, security, and rollback in scope require live evidence via algolia-mcp/algolia-cli, and it leads with the launch blockers — no settings backup and no rollback plan. It works through the readiness signposts (data contract, settings/UI match, event validation beyond arrival, autocomplete contracts, UI states), builds an evidence matrix distinguishing verified findings from untested risks, states what was and was not tested, and reports findings by severity with owners rather than a generic summary.",
+      "files": [],
+      "expectations": [
+        "Declines to mark the build launch-ready from code and screenshots alone; requires live evidence via algolia-mcp or algolia-cli for data, settings, and events",
+        "Leads with launch blockers — the missing settings backup and missing rollback plan — instead of burying them under a positive summary",
+        "Checks event readiness beyond arrival: queryID propagation, userToken consistency, positions, and duplicate-event risk, not just dashboard visibility",
+        "References the cross-skill readiness signposts (data contract exists, settings match UI, autocomplete source/selection contracts, UI empty/error states) when assessing status",
+        "States explicitly what was tested and what was not tested, with residual risk for anything uninspectable",
+        "Reports findings by severity with reproduction/evidence and an owner for each fix"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Good news - our A/B test 'won'! We tested the new customRanking on searches for 2 weeks, conversion is up 4%. During the same sprint we also shipped a redesigned PDP and turned on a promo banner. VP wants a slide saying Algolia drove the 4%. Also mid-test we paused it for 3 days during a sale and restarted. Can you confirm the win?",
+      "expected_output": "The response does not confirm the win: multiple unrelated changes (PDP redesign, promo banner) shipped alongside the ranking change prevent causal attribution, and pausing/restarting the test breaks the assumption of a continuous experiment. It checks the experiment against the skill's criteria — hypothesis, isolated change, traffic/data sufficiency, event coverage, confidence state, and rollback decision — routes retrieval of the actual test data/confidence to algolia-mcp, and recommends what a clean re-test would look like, stating clearly why the 4% claim cannot currently be attributed to the ranking change.",
+      "files": [],
+      "expectations": [
+        "Refuses to attribute the 4% lift to the customRanking change because the PDP redesign and promo banner shipped in the same window, preventing causal attribution",
+        "Flags the mid-test pause/restart as invalidating treatment of the test as one continuous experiment",
+        "Evaluates the experiment against explicit criteria: hypothesis, isolated change, data/traffic sufficiency, event coverage, and confidence state",
+        "Routes retrieval of live A/B test data, confidence, or analytics to algolia-mcp rather than asserting numbers",
+        "Recommends a corrective path (e.g. clean isolated re-test or explicit caveats) rather than simply approving or rejecting the slide"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We just did a big reindex of our knowledge base (kb_articles_prod) after changing objectIDs and adding secured filters for customer-tier gating. Support says 'search seems fine'. What should we actually smoke-test before we tell everyone it's done?",
+      "expected_output": "The response turns 'seems fine' into a concrete smoke-test plan across the QA areas: data/indexing (record counts vs source, objectID integrity after the change, secured/hidden records actually excluded), relevance (top queries, zero-result queries, filters), UI (empty states, routing), events (queryID propagation broken by new objectIDs, event attribution against the new IDs), and security (secured filters actually enforce tier gating — tested with the wrong tier, not just the right one). It routes live checks to algolia-mcp/algolia-cli, flags that the objectID change likely broke event attribution continuity, and defines what evidence marks each check passed.",
+      "files": [],
+      "expectations": [
+        "Produces a concrete smoke-test plan spanning data/indexing, relevance, UI, events, and security rather than accepting 'seems fine'",
+        "Includes verifying secured filter enforcement negatively (a lower-tier user must NOT see gated articles), not just positive access",
+        "Flags the objectID change as a risk to event attribution and downstream analytics that must be re-validated",
+        "Checks record counts/freshness against the source and runs top and zero-result queries as relevance evidence",
+        "Routes live index and analytics inspection to algolia-mcp or algolia-cli and identifies residual risk for anything not inspectable"
+      ]
+    }
+  ]
+}

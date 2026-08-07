@@ -55,6 +55,15 @@
       ]
     },
     {
+      "name": "algolia-migration",
+      "description": "Migrate existing Algolia backend/server-side API client code, or frontend search-only builds (lite client), to the latest major version. Use when upgrading algoliasearch packages, fixing initIndex removal, replacing .wait() chaining, updating imports after a version bump, or handling any breaking changes across JS (v4→v5), Python (v3→v4), Go (v3→v4), PHP (v3→v4), Java (v3→v4), C# (v6→v7), Ruby (v2→v3), Kotlin (v2→v3), Scala (v1→v2), or Swift (v8→v9). Do NOT use for new project setup, InstantSearch frontend widgets, analytics queries, or recommendations.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-migration"
+      ]
+    },
+    {
       "name": "algolia-quickstart",
       "description": "Use when a user is getting started with Algolia from scratch and has no account, application, or credentials yet. Triggers: \"create an Algolia account\", \"sign up for Algolia\", \"set up Algolia\", \"log in / authenticate the Algolia CLI\", \"provision an Algolia application\", \"I need an App ID\", \"I need an API key\". Official, ready-to-run CLI quickstart for account and application provisioning. Do NOT use for index or data operations on an existing, already-authenticated application (records, synonyms, rules, settings) — use algolia-cli. Do NOT use for frontend search UIs — use instantsearch. Do NOT use for read-only search and analytics — use algolia-mcp.",
       "source": "./",
@@ -70,6 +79,25 @@
       "strict": false,
       "skills": [
         "./skills/agent-studio"
+      ]
+    },
+    {
+      "name": "algolia-implementation",
+      "description": "Implementation-planning suite that spans the full Algolia lifecycle: discovery and phase planning, data modeling, index configuration, UI library selection, InstantSearch and Autocomplete readiness, events/Insights instrumentation, NeuralSearch and Agent Studio rollout, and release QA. Use when planning, building, migrating, auditing, or validating an Algolia implementation end to end — it sequences the work, makes data/event contracts explicit, and routes live operations to algolia-cli, algolia-mcp, algobot-cli, and code-level work to instantsearch. Install as a bundle: algolia-discovery-planning is the entry point and loads the companion skills per phase. Do NOT use for direct account operations or as the source of truth for current framework APIs — the official skills above own those.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-discovery-planning",
+        "./skills/algolia-search-implementation",
+        "./skills/algolia-data-modeling",
+        "./skills/algolia-index-configuration",
+        "./skills/algolia-ui-libraries",
+        "./skills/algolia-instantsearch-ui",
+        "./skills/algolia-autocomplete",
+        "./skills/algolia-events-insights",
+        "./skills/algolia-neuralsearch",
+        "./skills/algolia-agent-studio",
+        "./skills/algolia-release-qa"
       ]
     }
   ]

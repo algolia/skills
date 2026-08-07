@@ -1,0 +1,46 @@
+{
+  "skill_name": "algolia-discovery-planning",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "hey - we're a mid-size outdoor gear retailer and we just signed with Algolia. I've been told to \"add InstantSearch to the site\". We're on Next.js 14, catalog is in a Postgres db (~25k products, most have size/color variants), nothing is indexed yet, no events, nothing. Can you just help me drop the InstantSearch widgets in?",
+      "expected_output": "The response does not jump straight into InstantSearch widget code. It maps the request to the full implementation lifecycle, states a phase plan (data modeling, index configuration, UI library choice, InstantSearch UI, autocomplete if in scope, events, release QA) with which companion skill owns each phase and in what order, flags that nothing is indexed yet so data-modeling comes before UI, and asks only the few questions that block a responsible first design (e.g. variant expectations, business goal, conversion definition). It ends with a concrete recommended next step and the evidence needed (sample records, etc.).",
+      "files": [],
+      "expectations": [
+        "Does not treat the task as UI-only; explicitly maps the request to multiple lifecycle phases rather than stopping at InstantSearch",
+        "States a phase plan naming sibling skills for each phase (e.g. algolia-data-modeling, algolia-index-configuration, algolia-ui-libraries or algolia-instantsearch-ui, algolia-events-insights, algolia-release-qa) and the order they should run",
+        "Identifies that records must be modeled and indexed before UI work, since the catalog is in Postgres and nothing is indexed yet",
+        "Asks a small number of targeted discovery questions (roughly 3-7) about goals, variants, UX shape, or events instead of dumping an exhaustive checklist",
+        "Produces an output that includes known facts, open questions, assumptions, and a recommended next skill or step",
+        "Does not claim any companion skill informed the work unless it was actually loaded"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our support team wants to reduce ticket volume with better search on our help center (Zendesk articles, ~1200 docs). Leadership keeps saying 'AI search'. I honestly don't know if we need NeuralSearch, an Agent Studio chatbot, or just decent keyword search with synonyms. Where do we even start?",
+      "expected_output": "The response runs discovery instead of picking a product. It asks targeted questions about business outcome (deflection metric), users, content shape, and measurement; classifies the maturity level (likely beginner implementation vs AI readiness); explains that AI features like NeuralSearch and Agent Studio depend on data and event readiness; and recommends a concrete first milestone with the right companion skills for each in-scope phase. It states assumptions plainly if proceeding without answers and names the validation artifact to produce.",
+      "files": [],
+      "expectations": [
+        "Asks about or establishes the business outcome (ticket deflection / conversion definition) before recommending NeuralSearch, Agent Studio, or plain keyword search",
+        "Classifies the request by maturity level (e.g. beginner implementation vs AI readiness) and lets that drive the recommendation",
+        "States that AI features depend on data quality and event/measurement readiness rather than treating them as a starting point",
+        "Recommends a smallest useful first milestone plus the next skill(s) to load, rather than a vague multi-option essay",
+        "Output includes open questions, explicit assumptions, and the evidence or artifacts needed before implementation (e.g. sample articles, analytics)",
+        "Does not answer account-specific questions from memory; if live data is referenced, routes inspection to algolia-mcp or algolia-cli"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "quick one: can you check what our current searchableAttributes are on the prod_products index and then plan out how we should restructure relevance? App ID is BX9KF2M1QP, I can give you an API key.",
+      "expected_output": "The response routes the live inspection of prod_products settings to the official algolia-mcp or algolia-cli rather than performing or fabricating it via this planning skill, and does not invent current settings from memory. It then frames the relevance restructuring as a planning task: capture current settings as evidence first, then load algolia-index-configuration for the relevance design phase, with a stated plan and validation artifacts.",
+      "files": [],
+      "expectations": [
+        "Routes the live settings inspection to algolia-mcp or algolia-cli instead of claiming this skill can read the index",
+        "Does not fabricate or guess the current searchableAttributes of prod_products",
+        "Names algolia-index-configuration as the skill that owns the relevance redesign phase after evidence is captured",
+        "Recommends capturing current settings (settings export or live tool output) as evidence before proposing changes",
+        "Produces a concrete next step and identifies the validation artifact (e.g. settings backup, representative query set)"
+      ]
+    }
+  ]
+}

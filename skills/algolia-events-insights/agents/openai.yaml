@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Events Insights"
+  short_description: "Implement Algolia click and conversion events"
+  default_prompt: "Use $algolia-events-insights to plan and implement Algolia Insights events for search, analytics, and personalization."
