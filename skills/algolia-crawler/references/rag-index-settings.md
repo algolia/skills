@@ -26,6 +26,8 @@ Why these choices for RAG:
 - **`customRanking: ["asc(order)"]`.** The `order` you set in the extractor gives a stable, meaningful tiebreak (rank, document order) when text relevance ties.
 - **`distinct: 0`.** RAG wants recall — keep every chunk. Only raise it if near-duplicate records hurt.
 
+**Using the Markdown helper?** If you index with `helpers.markdown` + `helpers.splitTextIntoRecords` (see [record-extractor.md](record-extractor.md)), the chunk lives in a **`text`** attribute — put `text` first in `searchableAttributes` in place of `content`, and snippet/highlight `text`.
+
 ## Add semantic retrieval (NeuralSearch / vectors)
 
 Keyword search alone misses paraphrased questions ("how do I cancel" vs. a doc titled "Ending your subscription"). For RAG, enable Algolia's **NeuralSearch** on the index (dashboard → index → NeuralSearch, or via the API) so retrieval is hybrid keyword + semantic over your `content` field. This is usually the biggest single lever on retrieval quality — recommend it whenever the user's queries will be natural-language questions.
