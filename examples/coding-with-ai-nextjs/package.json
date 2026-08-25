@@ -1,0 +1,29 @@
+{
+  "name": "coding-with-ai-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference app: Algolia InstantSearch + an Agent Studio chat agent on the Next.js App Router.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "algoliasearch": "^5.56.0",
+    "instantsearch.css": "^8.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-instantsearch": "^7.40.0",
+    "react-instantsearch-nextjs": "^1.3.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.17.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.7.3"
+  }
+}

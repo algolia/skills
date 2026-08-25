@@ -13,7 +13,8 @@ metadata:
 
 ## Connection setup
 
-Use `/algolia-mcp:mcp-connect` to configure the MCP client with the Algolia MCP server.
+First enable the Algolia MCP server in the dashboard (Generate AI → MCP Servers → Productivity). This is a one-time toggle.
+Then use `/algolia-mcp:mcp-connect` to configure the MCP client with the Algolia MCP server.
 For manual client setup, see [connection-setup](references/connection-setup.md).
 
 ## Tool selection

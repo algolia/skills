@@ -30,7 +30,7 @@ algobot interactive --text "<prompt> ||| <prompt2>"  # Scripted multi-turn
 
 ```bash
 algobot profiles list
-algobot profiles add --name <name> --env <dev|staging|prod>
+algobot profiles add --name <name> --env <dev|staging|prod> --app-id <APP_ID> --api-key <ADMIN_API_KEY> [--default-agent-id <id|pending>] [--default]
 algobot profiles show [name]                          # JSON output
 algobot profiles setdefault <name>
 algobot profiles remove <name>
