@@ -1,14 +1,12 @@
 # Algolia Insights Events — Full Reference
 
 Track user behavior to power Algolia analytics and AI Personalization. Events
-are sent with the lite client's `pushEvents` method.
+are sent with the Insights client’s `pushEvents` method.
 
 ## Setup
 
-```typescript
-import { liteClient as algoliasearch } from "algoliasearch/lite";
-const client = algoliasearch(appId, apiKey);
-```
+    import { insightsClient } from "algoliasearch";
+    const client = insightsClient(appId, apiKey);
 
 ## User token management
 

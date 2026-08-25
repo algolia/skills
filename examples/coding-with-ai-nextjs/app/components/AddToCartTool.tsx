@@ -45,11 +45,15 @@ export function AddToCartTool({
         return;
       }
 
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        addToolResult({ output: { error: "Invalid quantity" } });
+        return;
+      }
+
       const line = addToCart(productId, quantity);
       // Conversion-after-search: attributed to the agent's search when we have a
       // queryID for this product (see lib/insights.ts).
       trackChatAddToCart(productId, quantity);
-
       addToolResult({
         output: { success: true, productId, quantity: line.quantity },
       });
