@@ -73,7 +73,8 @@ algobot conversations delete <id>
 ## auth / permissions
 
 ```bash
-algobot auth show                                     # Current credentials
+algobot profiles list                                 # Current credentials (auth show was removed in v2.0)
+algobot profiles show <name>                          # Full detail — prints the API key in plaintext
 algobot permissions list
 algobot permissions init
 algobot permissions add <path>
