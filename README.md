@@ -83,3 +83,23 @@ cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algob
 </details>
 
 Restart your agent to load the skill.
+
+## 🎯 Make sure your agent actually uses them
+
+Installed skills only help when the agent reads them. In our benchmarking, an agent with all
+skills installed but left to route freely invoked **1 of 18** skills on an audit-style task and
+performed identically to having none — while one trigger line in the prompt doubled its
+live-verified fix rate. Two ways to make invocation reliable:
+
+**Add one line to your agent's project config** (`CLAUDE.md`, `AGENTS.md`, or equivalent):
+
+```markdown
+For any Algolia work, invoke the `algolia-discovery-planning` skill first.
+When auditing or reviewing an existing Algolia implementation, invoke `algolia-audit` first.
+```
+
+**Or invoke explicitly per task** — Claude Code: ask it to "use the algolia-discovery-planning
+skill"; Codex/ChatGPT: `$algolia-discovery-planning` (or `$algolia-audit` for reviews).
+
+`algolia-discovery-planning` (builds) and `algolia-audit` (existing implementations) are the two
+entry points; each loads the companion skills the task needs.

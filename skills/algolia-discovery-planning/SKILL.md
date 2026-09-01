@@ -1,11 +1,11 @@
 ---
 name: algolia-discovery-planning
 description: >
-  START HERE for any non-trivial Algolia work — building, adding, migrating, redesigning, auditing, or configuring search, browse, autocomplete, indexing, relevance, recommendations, personalization, merchandising, events, or analytics. Invoke this FIRST even when the task already seems scoped or the user names one specific feature (e.g. "add InstantSearch", "build a storefront search"): its job is to map the request to the full Algolia implementation lifecycle and load every companion skill each in-scope phase needs (algolia-search-implementation, algolia-data-modeling, algolia-index-configuration, algolia-ui-libraries, algolia-instantsearch-ui, algolia-autocomplete, algolia-events-insights, algolia-neuralsearch, algolia-agent-studio, algolia-release-qa) rather than jumping straight into a single skill. This skill plans and orchestrates; the focused companion skills and the official Algolia skills execute. Do NOT use for live account inspection or write actions; use algolia-mcp or algolia-cli for those.
+  START HERE for any non-trivial Algolia work — building, adding, migrating, redesigning, auditing, or configuring search, browse, autocomplete, indexing, relevance, recommendations, personalization, merchandising, events, or analytics. Invoke this FIRST even when the task already seems scoped or the user names one specific feature (e.g. "add InstantSearch", "build a storefront search"): its job is to map the request to the full Algolia implementation lifecycle and load every companion skill each in-scope phase needs (algolia-search-implementation, algolia-data-modeling, algolia-index-configuration, algolia-ui-libraries, algolia-instantsearch-ui, algolia-autocomplete, algolia-events-insights, algolia-neuralsearch, algolia-agent-studio, algolia-release-qa) rather than jumping straight into a single skill. This skill plans and orchestrates; the focused companion skills and the official Algolia skills execute. EXCEPTION: for auditing, reviewing, or health-checking an implementation that ALREADY EXISTS ("audit our search", "we inherited this", "is this configured correctly"), start with algolia-audit instead — it enforces the symptom-free defect checklist and routes back here only if a rebuild is in scope. Do NOT use for live account inspection or write actions; use algolia-mcp or algolia-cli for those.
 license: MIT
 metadata:
   author: algolia
-  version: "0.4"
+  version: "0.5"
 ---
 
 # Algolia Discovery Planning
