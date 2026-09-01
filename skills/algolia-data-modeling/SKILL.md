@@ -1,11 +1,11 @@
 ---
 name: algolia-data-modeling
 description: >
-  Algolia data modeling and indexing guidance. Use before or alongside indexing records or building Algolia search UI for net-new search, browse, autocomplete, ecommerce, personalization, Dynamic Re-Ranking, recommendations, or analytics-aware implementations. Makes record shape, objectID, display fields, facets, ranking fields, and event attribution explicit decisions. Use for records, variants, SKUs, indices, replicas, searchable and faceting attributes, denormalization, merchandising fields, timestamps, inventory, event attribution, indexing pipelines, partial updates, secured data, multi-language or multi-region strategies, and migrations. Do NOT use for live imports, exports, record mutations, settings changes, or account actions; use algolia-cli or algolia-mcp. Do NOT use for frontend UI implementation; use algolia-instantsearch-ui, algolia-autocomplete, algolia-ui-libraries, or the official instantsearch skill.
+  Algolia data modeling and indexing guidance. Use before or alongside indexing records or building Algolia search UI for net-new search, browse, autocomplete, ecommerce, personalization, Dynamic Re-Ranking, recommendations, or analytics-aware implementations. Also use when auditing or reviewing an EXISTING implementation's record shape, ranking signals, or data contract — inherited implementations, health checks, "is our data modeled correctly". Makes record shape, objectID, display fields, facets, ranking fields, and event attribution explicit decisions. Use for records, variants, SKUs, indices, replicas, searchable and faceting attributes, denormalization, merchandising fields, timestamps, inventory, event attribution, indexing pipelines, partial updates, secured data, multi-language or multi-region strategies, and migrations. Do NOT use for live imports, exports, record mutations, settings changes, or account actions; use algolia-cli or algolia-mcp. Do NOT use for frontend UI implementation; use algolia-instantsearch-ui, algolia-autocomplete, algolia-ui-libraries, or the official instantsearch skill.
 license: MIT
 metadata:
   author: algolia
-  version: "0.5"
+  version: "0.6"
 ---
 
 # Algolia Data Modeling
@@ -95,6 +95,8 @@ Ask the smallest useful subset:
 - Separate production, staging, and development indices. Do not test destructive indexing against production.
 - Use replicas for alternate sort orders and virtual replicas for relevant sorting when appropriate.
 - Preserve queryID/objectID/position compatibility for events when shaping UI responses.
+- Define a public-response allowlist as part of the record contract: internal ranking inputs (raw or bucketed popularity, sales velocity, margin) exist to rank, not to ship — plan `attributesToRetrieve` (and `unretrievableAttributes` where appropriate) so public responses carry only display and event-attribution fields, and validate with a live query using the public search key.
+- Pick ONE effective price attribute and use it consistently for display, sorting, filtering, range facets, and replica settings. Displaying a sale price while sorting or filtering on the base price is a defect users can see (items appear out of order or outside their filter), not a stylistic choice.
 - Do not require exact stock counts in Algolia for merchandising unless there is a clear operational reason. Prefer stable buckets or booleans such as `in_stock`, `stock_bucket`, or `high_inventory` so every sale does not force unnecessary reindexing.
 - Calculate category-specific freshness, high-inventory, sale, own-brand, and best-seller flags upstream before indexing. Do not expect Algolia rules to infer missing business definitions from incomplete records.
 - Explain continuous values versus buckets. Exact sales, margin, inventory, or timestamp values can be useful, but buckets often make merchandising and custom ranking easier to reason about and less noisy.
@@ -112,6 +114,8 @@ Ask the smallest useful subset:
 - Using a highly precise first custom ranking metric that prevents later business metrics from resolving ties.
 - Adding display-only or internal fields to searchable text because they are convenient in the source system.
 - Designing events after the record contract, causing `objectID`, `index`, `queryID`, or variant aggregation problems later.
+- Shipping internal ranking inputs (raw popularity, sales velocity, margin, or their buckets) in public search responses because nothing errored — competitors and scrapers read hit payloads.
+- Sorting or filtering on base price while the UI displays sale price (or the reverse) — one effective-price contract, everywhere.
 
 ## Pre-Indexing Checkpoints
 
@@ -122,6 +126,8 @@ Before indexing records, state whether these items are ready, provisional, or de
 - Ranking fields and why they matter.
 - Ranking metric precision: raw, rounded, bucketed, or curated.
 - Retrievable display fields.
+- Public-response allowlist: internal ranking fields excluded from retrievable payloads.
+- One effective-price attribute chosen for display, sort, filter, and range facets.
 - Image, URL, title, price, availability, or other UI-required fields.
 - Event attribution fields.
 - Inventory, availability, or permissions fields needed by the UI.
