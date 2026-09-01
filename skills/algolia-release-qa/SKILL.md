@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: algolia
-  version: "0.3"
+  version: "0.4"
 ---
 
 # Algolia Release QA
@@ -75,6 +75,15 @@ Use these signposts to decide whether the implementation is launch-ready, protot
 - Browser QA passes for the relevant UI surfaces when a browser is available.
 
 If any item is missing, report it as a launch blocker, accepted deferral, or residual risk depending on severity and the user's explicit decisions.
+
+## Finish Gates
+
+These are gates, not suggestions. Do not claim launch-ready, and do not let a completion summary claim them implicitly, unless each is satisfied or explicitly deferred by the user:
+
+- **Page-startup smoke test**: the page renders with zero blocking console errors. A single uncaught error in an inline script (a missing analytics loader is the classic case) can blank the entire experience while every settings check still passes.
+- **Mobile-width render check**: at a ~375px viewport, no horizontal overflow, the search input reachable and usable, filters accessible. A desktop-only pass misses layout defects shoppers hit first.
+- **Captured event evidence**: any claim that events work is backed by at least one captured outbound Insights payload (network tab or beacon intercept) inspected for `index`, `queryID`, `objectID`, and position — never by reading the source. Count the payloads: duplicates are a finding.
+- **Claims audit**: every specific claim in the QA write-up ("X is fixed", "Y verified") was re-checked against live state — settings, live queries, rendered page — before finishing. A polished report with unverified claims is worse than a short honest one.
 
 ## Anti-Patterns
 
