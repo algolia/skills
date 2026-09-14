@@ -75,7 +75,7 @@ Run this in a browser or with `scripts/page-smoke.mjs` before any UI or events i
 - Every `<script src>` and stylesheet returned 200 (fetch each URL; see `references/verified-cdn-urls.md`).
 - At least one request reached the Algolia search API on load.
 - Hit cards rendered with readable text (name, price) — a card containing only an image is a broken template.
-- `window.aa` is the loaded Insights client, not the shim with calls waiting in `aa.queue`.
+- `window.aa` is the loaded Insights client, not the shim with calls waiting in `aa.queue` — `aa('getVersion', cb)` calls back.
 - Typing a real product word and pressing Enter fires a search request carrying that query and changes the results.
 - Clicking a hit emits an Insights request whose body carries `queryID` and `objectIDs`.
 - At 375px: no horizontal overflow; the search input is visible without scrolling.

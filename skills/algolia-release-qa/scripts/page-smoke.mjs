@@ -9,6 +9,8 @@
 //
 // Requires Playwright:  npm i -D playwright   (uses installed Google Chrome
 // when present; otherwise run `npx playwright install chromium` once).
+// --dir serves the folder with `python3 -m http.server`; pass --url instead
+// if a server is already running.
 //
 // Usage:
 //   node page-smoke.mjs --url http://localhost:8000/index.html
@@ -35,12 +37,17 @@ if (!args.url && !args.dir) {
 }
 
 const HIT_SEL = args['hit-selector'] || '.ais-Hits-item, .ais-InfiniteHits-item, [data-hit], .hit, .product-card, article';
-const INPUT_SEL = args['input-selector'] || '.ais-SearchBox-input, .aa-Input, input[type="search"], input[type="text"]';
+// Tried in order: the main search input must win over facet-search inputs that may precede it in the DOM.
+const INPUT_SELS = (args['input-selector'] || '.ais-SearchBox-input, .aa-Input, input[type="search"], input[type="text"]').split(',').map(s => s.trim());
+const INPUT_SEL = INPUT_SELS.join(', ');
 const MIN_HITS = Number(args['min-hits'] || 1);
+async function findInput(p) { for (const s of INPUT_SELS) { const el = await p.$(s); if (el) return el; } return null; }
 
+// Resolve Playwright from the project under test (cwd), not from wherever this
+// script is installed - skills usually live outside the project tree.
 let chromium;
 try {
-  ({ chromium } = createRequire(path.join(process.cwd(), 'noop.js'))('playwright'));
+  ({ chromium } = createRequire(path.join(process.cwd(), 'package.json'))('playwright'));
 } catch {
   try { ({ chromium } = await import('playwright')); }
   catch {
@@ -104,19 +111,22 @@ try {
   gate('Hit cards carry text (name/price), not a bare image', hits.length > 0 && textless === 0,
     hits.length ? `${textless} of ${hits.length} cards have no readable text` : 'no cards');
 
-  const aa = await page.evaluate(() => {
+  // The loader shim keeps `aa.queue` even after the library drains it, so queue length proves
+  // nothing. A live client answers `getVersion`; a stub swallows the call forever.
+  const aa = await page.evaluate(async () => {
     const f = window.aa;
-    if (typeof f !== 'function') return { state: 'absent' };
-    const q = f.queue;
-    return { state: Array.isArray(q) && q.length ? 'stub-with-queue' : 'loaded', queued: Array.isArray(q) ? q.length : 0 };
+    if (typeof f !== 'function') return { state: 'absent', lib: typeof window.AlgoliaAnalytics };
+    const answered = await new Promise(res => { try { f('getVersion', v => res(v || true)); } catch { res(false); } setTimeout(() => res(false), 1000); });
+    return { state: answered ? 'loaded' : 'stub', version: answered, queued: Array.isArray(f.queue) ? f.queue.length : 0, lib: typeof window.AlgoliaAnalytics };
   });
   gate('Insights client loaded (not a queued stub)', aa.state === 'loaded',
-    aa.state === 'absent' ? 'window.aa is undefined' : aa.state === 'loaded' ? 'window.aa is the real client'
-      : `window.aa is the shim with ${aa.queued} queued call(s) — the search-insights script never executed`);
+    aa.state === 'absent' ? `window.aa is undefined (search-insights library ${aa.lib === 'object' ? 'loaded but never bound — set window.AlgoliaAnalyticsObject = "aa" before the script' : 'not loaded'})`
+      : aa.state === 'loaded' ? `window.aa answers getVersion (${aa.version})`
+      : `window.aa never answers getVersion — it is the loader shim with ${aa.queued} queued call(s); the script 404'd or window.AlgoliaAnalyticsObject was not set`);
 
   if (args.query) {
     const before = searchReqs.length;
-    const input = await page.$(INPUT_SEL);
+    const input = await findInput(page);
     if (!input) gate('Typed query reaches the results', false, `no input matched "${INPUT_SEL}"`);
     else {
       await input.click(); await input.fill(''); await input.type(String(args.query), { delay: 40 });
@@ -150,7 +160,8 @@ try {
     const m = await browser.newPage({ viewport: { width: 375, height: 740 } });
     await m.goto(url, { waitUntil: 'load', timeout: 30000 }); await m.waitForTimeout(1500);
     const over = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    const inputVisible = await m.$eval(INPUT_SEL, el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.top >= 0 && r.top < window.innerHeight; }).catch(() => false);
+    const mInput = await findInput(m);
+    const inputVisible = mInput ? await mInput.evaluate(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.top >= 0 && r.top < window.innerHeight; }).catch(() => false) : false;
     gate('375px: no horizontal overflow', over <= 0, `scrollWidth exceeds viewport by ${Math.max(0, over)}px`);
     gate('375px: search input visible without scrolling', inputVisible, inputVisible ? 'visible' : 'not in first viewport');
     await m.close();
