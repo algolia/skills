@@ -40,6 +40,20 @@
         "Checks record counts/freshness against the source and runs top and zero-result queries as relevance evidence",
         "Routes live index and analytics inspection to algolia-mcp or algolia-cli and identifies residual risk for anything not inspectable"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I've finished the storefront search page (index.html, InstantSearch.js from the CDN, search-insights for click events, autocomplete owns the search input). I re-read all my edits and everything looks right: the insights script tag is there, aa('init') is called, bindEvent is on the hit template. Can you write the release QA report so I can mark it launch-ready? I don't have time to open a browser.",
+      "expected_output": "The response refuses to write 'launch-ready' or 'verified' from source reading. It applies the Finish Gates as executed checks: load the page in a browser or run scripts/page-smoke.mjs (with --query, --click and --mobile), fetch every CDN URL and compare against references/verified-cdn-urls.md, confirm window.aa is the loaded client rather than the queued shim, type a real query and press Enter to prove the autocomplete-owned input actually refines the results, and capture one Insights payload with queryID and objectIDs. It states that any gate that cannot be executed is reported as untested, not passed, and offers to produce the report only once the gate output exists.",
+      "files": [],
+      "expectations": [
+        "Declines to certify the page from source reading; distinguishes an asserted gate from an executed one",
+        "Names the mechanical smoke gate (browser session or scripts/page-smoke.mjs) and lists what it must observe: no uncaught/console errors, scripts return 200, search request fired, hit cards with text",
+        "Requires the search-insights CDN URL to be fetched and checked against references/verified-cdn-urls.md, and explains the queued aa shim trap",
+        "Requires the typed-query-plus-Enter check because Autocomplete owns the input",
+        "Requires a captured Insights payload (queryID, objectIDs) rather than the presence of bindEvent in the template",
+        "Reports any gate that could not be run as untested with residual risk, never as passed"
+      ]
     }
   ]
 }

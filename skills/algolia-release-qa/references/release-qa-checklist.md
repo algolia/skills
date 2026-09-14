@@ -67,6 +67,21 @@ Before testing, identify the changed surface and its likely blast radius: data, 
 - Rules, synonyms, typo tolerance, and optional filters are scoped and tested.
 - Category/browse pages use correct filters and analytics segmentation.
 
+## Page Startup Smoke (Mechanical)
+
+Run this in a browser or with `scripts/page-smoke.mjs` before any UI or events item below is marked passed. Each line is a pass/fail observation, not a judgment:
+
+- Zero uncaught errors and zero console errors after load.
+- Every `<script src>` and stylesheet returned 200 (fetch each URL; see `references/verified-cdn-urls.md`).
+- At least one request reached the Algolia search API on load.
+- Hit cards rendered with readable text (name, price) — a card containing only an image is a broken template.
+- `window.aa` is the loaded Insights client, not the shim with calls waiting in `aa.queue`.
+- Typing a real product word and pressing Enter fires a search request carrying that query and changes the results.
+- Clicking a hit emits an Insights request whose body carries `queryID` and `objectIDs`.
+- At 375px: no horizontal overflow; the search input is visible without scrolling.
+
+Record the output verbatim in the evidence matrix. "Read the code and it looks right" is not an entry.
+
 ## Search UI
 
 - Search box, results, facets, current refinements, sort, pagination/infinite hits, and empty states work.
@@ -84,6 +99,7 @@ Before testing, identify the changed surface and its likely blast radius: data, 
 - Mobile detached mode works if enabled.
 - No suggestions and slow network states are acceptable.
 - Autocomplete handoff to InstantSearch or routing does not create state loops.
+- When Autocomplete is the only search input: a typed free-text query plus Enter refines the results index (not only suggestion or item selection). Verify by watching the search request after Enter.
 
 ## Events And Analytics
 
