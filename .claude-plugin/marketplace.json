@@ -20,7 +20,7 @@
     },
     {
       "name": "algolia-cli",
-      "description": "Use for any hands-on Algolia admin operation: provisioning accounts (sign up, log in/out via OAuth), managing applications (create, select, list), importing/exporting records, backing up indices, managing API keys, editing synonyms, configuring rules, changing settings (facets, searchable attributes), deleting records, copying/migrating indices, or automating Algolia in CI/CD. Contains exact CLI syntax, ndjson format requirements, and flag combinations that are easy to get wrong from memory. Do NOT use for frontend SDK (InstantSearch, React) or Algolia dashboard UI questions — see algolia-mcp for read-only search and analytics.",
+      "description": "Use for any hands-on Algolia admin operation: provisioning accounts (sign up, log in/out via OAuth), managing applications (create, select, list), importing/exporting records, backing up indices, managing API keys, editing synonyms, configuring rules, changing settings (facets, searchable attributes), deleting records, copying/migrating indices, or automating Algolia in CI/CD. Contains exact CLI syntax, ndjson format requirements, and flag combinations that are easy to get wrong from memory. Do NOT use for frontend SDK (InstantSearch, React) or Algolia dashboard UI questions — see algolia-mcp for read-only search and analytics. Do NOT use to provision a first application that should come from the Vercel Marketplace — use algolia-vercel, then return here for the index work.",
       "source": "./",
       "strict": false,
       "skills": [
@@ -38,7 +38,7 @@
     },
     {
       "name": "instantsearch",
-      "description": "Build production-quality search experiences (autocomplete, search results pages, faceted search) using InstantSearch with React, Vue, or vanilla JS. Covers discovery, implementation, styling, and review with expert guidance on widget selection, styling approaches, mobile overlays, and common anti-patterns. Do NOT use for backend index operations — use algolia-cli. Do NOT use for analytics or recommendations — use algolia-mcp. Do NOT use for AI/agent/conversational search — use algobot-cli.",
+      "description": "Build production-quality search experiences (autocomplete, search results pages, faceted search) using InstantSearch with React, Vue, or vanilla JS. Covers discovery, implementation, styling, and review with expert guidance on widget selection, styling approaches, mobile overlays, and common anti-patterns. Do NOT use for backend index operations — use algolia-cli. Do NOT use for analytics or recommendations — use algolia-mcp. Do NOT use for AI/agent/conversational search — use algobot-cli. Do NOT use when there is no Algolia application yet and it should come from the Vercel Marketplace — use algolia-vercel first; an existing standalone application stays standalone.",
       "source": "./",
       "strict": false,
       "skills": [
@@ -65,11 +65,20 @@
     },
     {
       "name": "algolia-quickstart",
-      "description": "Use when a user is getting started with Algolia from scratch and has no account, application, or credentials yet. Triggers: \"create an Algolia account\", \"sign up for Algolia\", \"set up Algolia\", \"log in / authenticate the Algolia CLI\", \"provision an Algolia application\", \"I need an App ID\", \"I need an API key\". Official, ready-to-run CLI quickstart for account and application provisioning. Do NOT use for index or data operations on an existing, already-authenticated application (records, synonyms, rules, settings) — use algolia-cli. Do NOT use for frontend search UIs — use instantsearch. Do NOT use for read-only search and analytics — use algolia-mcp.",
+      "description": "Use when a user is getting started with Algolia from scratch and has no account, application, or credentials yet. Triggers: \"create an Algolia account\", \"sign up for Algolia\", \"set up Algolia\", \"log in / authenticate the Algolia CLI\", \"provision an Algolia application\", \"I need an App ID\", \"I need an API key\". Official, ready-to-run CLI quickstart for account and application provisioning. Do NOT use for index or data operations on an existing, already-authenticated application (records, synonyms, rules, settings) — use algolia-cli. Do NOT use for frontend search UIs — use instantsearch. Do NOT use for read-only search and analytics — use algolia-mcp. Do NOT use when the application should be provisioned through the Vercel Marketplace because the project ships on Vercel — use algolia-vercel.",
       "source": "./",
       "strict": false,
       "skills": [
         "./skills/algolia-quickstart"
+      ]
+    },
+    {
+      "name": "algolia-vercel",
+      "description": "Provision Algolia through the Vercel Marketplace and take a Vercel-hosted project from no Algolia at all to a validated first search, and rerun or repair one already provisioned this way (resource not connected, injected credentials missing locally): list existing resources and pick the intended one before adding, pin the team and project, read live plans and metadata from `vercel integration add algolia --help`, leave the plan and the provider terms to the user, pull the injected ALGOLIA_APP_ID / ALGOLIA_SEARCH_API_KEY / ALGOLIA_WRITE_API_KEY without clobbering .env.local and load them by parsing, import example data additively, and validate a query returns hits. Do NOT use merely because a project is Next.js — Next.js alone does not mean Vercel. Do NOT use when a standalone Algolia application already exists and the user intends to keep it. Do NOT use for index or admin operations (algolia-cli), search UI (instantsearch), or accounts created outside Vercel (algolia-quickstart).",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-vercel"
       ]
     },
     {

@@ -181,6 +181,43 @@
         "Imports @algolia/autocomplete-theme-classic (or documents the chosen theme) so the dropdown is styled",
         "Confirms the autocomplete options shape against the live Algolia docs or installed types before scaffolding"
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "Add a search box and results page to our Next.js app on Vercel. Algolia came from the Vercel Marketplace but I don't have any keys to give you.",
+      "expected_output": "Look for the injected credentials in the environment rather than asking the user for keys; route the credential work to algolia-vercel, then build the UI.",
+      "files": [],
+      "expectations": [
+        "Checks .env files and the environment for ALGOLIA_APP_ID / ALGOLIA_SEARCH_API_KEY / NEXT_PUBLIC_ALGOLIA_* before asking the user for credentials",
+        "Does NOT simply ask the user to paste an app ID and API key",
+        "Routes the credential retrieval to the algolia-vercel skill (offering 'npx skills add algolia/skills --skill algolia-vercel') because the application is a Vercel Marketplace resource",
+        "Does not print API key values",
+        "Returns to InstantSearch for the UI once the app ID, search-only key, and index name are known"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Our Next.js app is deployed on Vercel. We've had a standalone Algolia account for two years with our 'products' index and our keys in our secret manager. Add autocomplete to the header.",
+      "expected_output": "Use the existing standalone application and build autocomplete. Vercel hosting alone is not a reason to provision a Marketplace resource.",
+      "files": [],
+      "expectations": [
+        "Uses the existing standalone Algolia application and the keys already in the secret manager",
+        "Does NOT route to algolia-vercel or propose 'vercel integration add algolia' — the application already exists",
+        "Proceeds with the normal InstantSearch discovery flow (index schema, placement, rendering options)",
+        "Fetches records from the existing 'products' index to discover the attribute shape"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Our Next.js site runs on Vercel. Here's what you need: app ID LATENCY7X, search-only key 9a1b2c3d4e5f, index 'catalog'. Add a search results page.",
+      "expected_output": "Credentials were supplied, so build the UI. Vercel hosting is irrelevant here.",
+      "files": [],
+      "expectations": [
+        "Uses the supplied app ID, search-only key, and 'catalog' index directly",
+        "Does NOT route to algolia-vercel and does NOT propose 'vercel integration add algolia' — the credentials were given",
+        "Does not ask the user to re-supply credentials it already has",
+        "Fetches records from 'catalog' to discover the attribute shape before proposing rendering options"
+      ]
     }
   ]
 }

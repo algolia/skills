@@ -21,6 +21,22 @@
 | `algolia-crawler` | Crawl web pages or whole sites into a RAG-optimized index with the Algolia Crawler |
 | `algolia-migration` | Migrate API client code to the latest major version (JS, Python, Go, PHP, Java, C#, Ruby, Kotlin, Scala, Swift) |
 | `algolia-quickstart` | Create an Algolia account and provision an application (App ID / API key) via the CLI |
+| `algolia-vercel` | Provision Algolia through the Vercel Marketplace, wire the injected credentials, and validate a first search |
+
+#### Starting on Vercel
+
+```bash
+npx skills add algolia/skills --skill algolia-vercel
+```
+
+Then paste:
+
+```text
+Our project ships on Vercel and we have no Algolia yet. Use the algolia-vercel skill to
+provision Algolia as a Vercel Marketplace resource, wire up the injected credentials, load
+example data, and show me a search that returns hits. Check what already exists first, and
+confirm the team, project, region and plan with me before provisioning.
+```
 
 ### Implementation planning suite (`algolia-implementation`)
 
@@ -48,26 +64,27 @@ A companion bundle that plans, sequences, and validates Algolia implementations 
 
 ```bash
 /plugin marketplace add algolia/skills
-/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart
+/plugin install <skill>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart, algolia-vercel
 ```
 
 Or install directly:
 
 ```bash
-/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart
+/plugin install <skill>@algolia-skills   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart, algolia-vercel
 ```
 
 #### npx
 
 ```bash
-npx skills add https://github.com/algolia/skills
+npx skills add https://github.com/algolia/skills            # all skills
+npx skills add algolia/skills --skill <skill>               # one skill, e.g. algolia-vercel
 ```
 
 #### Clone / Copy
 
 ```bash
 git clone https://github.com/algolia/skills.git
-cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart
+cp -r skills/<skill> <skills-directory>   # e.g. algolia-mcp, algolia-cli, algobot-cli, instantsearch, algolia-crawler, algolia-migration, algolia-quickstart, algolia-vercel
 ```
 
 <details>

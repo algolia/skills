@@ -11,7 +11,9 @@ description: >-
   line." If someone names a specific Algolia index and wants to change, move,
   query, or manage it, use this skill. Do NOT use for frontend search UI work
   (InstantSearch, React components, autocomplete widgets), Algolia dashboard
-  GUI questions, or evaluating Algolia vs. other providers.
+  GUI questions, or evaluating Algolia vs. other providers. Do NOT use to
+  provision a first application when the project ships on Vercel and it should
+  come from the Vercel Marketplace — use algolia-vercel, then return here.
 license: MIT
 metadata:
   author: algolia
@@ -42,6 +44,10 @@ Manage Algolia search infrastructure from the terminal using the `algolia` CLI.
 Run `/algolia-cli:cli-setup` to install the CLI and configure a profile, or follow [Getting Started](references/getting-started.md).
 
 **Tip:** `algolia auth login` is the easiest way to set up credentials — it handles OAuth sign-in and profile creation in one step. Use `algolia profile add` for non-interactive / CI setups where you already have an API key.
+
+**Vercel-provisioned applications:** if the application came from the Vercel Marketplace, its credentials live in the Vercel project as `ALGOLIA_APP_ID`, `ALGOLIA_SEARCH_API_KEY`, and `ALGOLIA_WRITE_API_KEY`. Set `ALGOLIA_APPLICATION_ID` / `ALGOLIA_API_KEY` from those values for the command — they outrank every other credential source (see [Credential precedence](#key-conventions)) — instead of logging in or creating a profile.
+
+`vercel env pull <file>` only *writes* a file; it exports nothing. Parse it (`node:util` `parseEnv`) rather than `source`-ing it, and set the two variables explicitly so a stale export from another application cannot win. To provision such an application in the first place, use `algolia-vercel` (`npx skills add algolia/skills --skill algolia-vercel`) rather than `algolia application create`.
 
 ## Command Quick Reference
 

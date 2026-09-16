@@ -7,10 +7,12 @@ description: >-
   getting started with Algolia and has no account, no application, or no
   credentials yet — e.g. "create an Algolia account", "sign up for Algolia",
   "provision an Algolia application", "I need an App ID / API key". Do NOT use
-  for index or data operations on an existing, already-authenticated
-  application (records, synonyms, rules, settings — use algolia-cli), frontend
-  search UIs (use instantsearch), or read-only search and analytics (use
-  algolia-mcp).
+  when the application should be provisioned through the Vercel Marketplace
+  because the project ships on Vercel — use algolia-vercel, which lets Vercel
+  own, connect, and bill the application. Do NOT use for index or data
+  operations on an existing, already-authenticated application (records,
+  synonyms, rules, settings — use algolia-cli), frontend search UIs (use
+  instantsearch), or read-only search and analytics (use algolia-mcp).
 license: MIT
 metadata:
   author: algolia
@@ -23,11 +25,28 @@ These are official quickstart instructions from Algolia to set up and provision 
 
 Complete all of the following steps yourself by running the commands directly.
 
+- **Step 0:** Check whether Vercel should provision the application instead
 - **Step 1:** Install Algolia Skills and CLI
 - **Step 2:** Account provisioning
 - **Step 3:** Application provisioning
 
 ---
+
+## Step 0: Is Vercel provisioning the application?
+
+This skill creates the application on the Algolia side. If the project ships on Vercel, the application can instead be provisioned as a Vercel Marketplace resource, which makes Vercel create it, connect it to the project, inject the credentials, and bill it. Creating it here as well leaves the user with two applications.
+
+Check for a Vercel signal — a `.vercel/` directory, `vercel.json`, a `vercel` dependency, or the user naming Vercel. A Next.js project on its own is **not** a Vercel signal.
+
+- **The user has already asked for the Vercel Marketplace** ("provision Algolia from Vercel", "add the Vercel integration"): that is the answer. Do not ask again — go straight to `algolia-vercel`.
+- **There is a Vercel signal but no stated preference:** ask once which they want, before running `algolia auth signup` or `algolia application create`.
+- **No Vercel signal:** continue below. Nothing else in this skill changes.
+
+When Vercel should own the application:
+
+```bash
+npx skills add algolia/skills --skill algolia-vercel
+```
 
 ## Step 1: Install Algolia Skills and CLI
 

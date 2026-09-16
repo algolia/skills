@@ -18,6 +18,7 @@ Use the whole Algolia lens: data and events are not side quests. The data contra
 
 For any net-new Algolia search, browse, autocomplete, ecommerce, recommendations, personalization, or Dynamic Re-Ranking implementation, work through these checkpoints in order when practical:
 
+0. Application checkpoint (only when no Algolia application exists yet): if the project ships on Vercel, provision it as a Vercel Marketplace resource with `algolia-vercel`; otherwise use `algolia-quickstart`. Next.js alone is not evidence of Vercel, and an existing standalone application stays standalone.
 1. Data contract checkpoint: use `algolia-data-modeling`.
 2. Event instrumentation checkpoint: use `algolia-events-insights`.
 3. Index configuration checkpoint: use `algolia-index-configuration`.

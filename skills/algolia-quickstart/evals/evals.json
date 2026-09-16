@@ -37,6 +37,43 @@
         "Confirms the plan's terms of service with the user before passing --accept-terms",
         "Does NOT use 'algolia auth signup' since the user already has an account"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "We're starting from nothing — no Algolia account. Our app is a Next.js storefront that we deploy on Vercel. Set Algolia up for us.",
+      "expected_output": "Recognise the Vercel signal, ask whether Vercel should own the application, and route to algolia-vercel rather than running 'algolia auth signup'.",
+      "files": [],
+      "expectations": [
+        "Detects that the project ships on Vercel and raises the Vercel Marketplace path before provisioning",
+        "Asks the user whether Vercel should own, connect, and bill the Algolia application",
+        "Does NOT run 'algolia auth signup' or 'algolia application create' before that answer",
+        "Routes to the algolia-vercel skill (offering 'npx skills add algolia/skills --skill algolia-vercel') if the user wants Vercel to own it",
+        "Continues with the CLI quickstart only if the user declines the Vercel path"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I have a Next.js app and no Algolia account yet. Get me an App ID and an API key.",
+      "expected_output": "Next.js alone is not a Vercel signal, so this is the ordinary CLI quickstart; check for a Vercel signal, find none, and proceed.",
+      "files": [],
+      "expectations": [
+        "Treats Next.js alone as insufficient evidence of Vercel hosting — does not assume the Vercel Marketplace path",
+        "Either proceeds with 'algolia auth signup' plus application provisioning, or asks once about the deployment target",
+        "Does NOT run 'vercel integration add algolia'",
+        "Does not pass --accept-terms without explicit user confirmation"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Provision Algolia for us through the Vercel Marketplace — we want Vercel to own and bill it. No Algolia account yet.",
+      "expected_output": "The choice is already made. Route straight to algolia-vercel without re-asking for the same approval.",
+      "files": [],
+      "expectations": [
+        "Routes to algolia-vercel immediately — the user already chose the Vercel Marketplace",
+        "Does NOT ask again whether Vercel should own the application",
+        "Does NOT run 'algolia auth signup' or 'algolia application create'",
+        "Still leaves plan, region, and provider terms as decisions for the user"
+      ]
     }
   ]
 }

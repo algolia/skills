@@ -1,0 +1,172 @@
+{
+  "skill_name": "algolia-vercel",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our Next.js repo ships on Vercel and we have no Algolia account. Provision Algolia for this Vercel project and get a working search. Give me the exact commands in order.",
+      "expected_output": "Vercel Marketplace provisioning: link the project, list existing resources, read live plans/metadata from --help, get approval, provision, pull credentials, import example data into a new index, validate a query returns hits, hand the UI to instantsearch.",
+      "files": [],
+      "expectations": [
+        "Provisions through 'vercel integration add algolia' — does NOT use 'algolia auth signup' or 'algolia application create'",
+        "Runs 'vercel link' (with --project) before provisioning so the resource connects to the intended project",
+        "Checks for existing resources with 'vercel integration list' and/or 'vercel integration installations' BEFORE 'add'",
+        "Reads plans and metadata keys from 'vercel integration add algolia --help' instead of hardcoding a plan ID or region",
+        "Asks the user to approve the plan and the provider terms before running 'add'",
+        "Passes '--no-env-pull' to 'vercel integration add' so the automatic pull cannot overwrite .env.local",
+        "Passes '--scope' and explicit '-e' environments on the 'add' command rather than relying on ambient scope and the all-three default",
+        "Pulls the SAME environment it connected with '-e' by passing 'vercel env pull --environment <that environment>' — does not leave the pull on its Development default while connecting only production/preview",
+        "Pulls credentials to an explicit staging filename and does not print key values",
+        "Stops instead of reusing when the staging path already exists — does not treat the presence of the ALGOLIA_ names as proof the file belongs to this resource, and instead pulls into a fresh gitignored path that it then uses in every later command",
+        "Invokes the env helper by an absolute path to the installed skill directory (for example a resolved variable such as $ALGOLIA_VERCEL_SKILL_DIR), not a repo-relative 'skills/algolia-vercel/scripts/...' path, and keeps the working directory on the app",
+        "Loads the pulled values before using them — the pulled file is parsed, not assumed to be in the shell environment",
+        "Does NOT 'source' or 'eval' the pulled env file",
+        "Imports example data as ndjson into a NEW index name with 'algolia objects import ... -w'",
+        "Validates with 'algolia search' and requires nbHits >= 1 rather than treating a clean exit as success",
+        "Hands search UI work to the instantsearch skill and offers 'npx skills add algolia/skills --skill instantsearch'"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Algolia might already be provisioned somewhere on this Vercel team, I'm not sure. Set it up for this project without risking a second Algolia application on our bill.",
+      "expected_output": "Inspect installations and resources first; if a resource exists, connect it to the project instead of provisioning a new one.",
+      "files": [],
+      "expectations": [
+        "Runs 'vercel integration installations --integration algolia --format json' and 'vercel integration list --all --integration algolia --format=json' before anything that writes",
+        "States that 'vercel integration add' always creates a NEW resource even when the integration is already installed",
+        "If a resource already exists, uses 'vercel integration resource connect <resource> <project>' instead of 'add'",
+        "Does NOT provision 'a fresh one to be safe'",
+        "Shows the listed resources to the user and lets them choose when it is ambiguous which one is intended",
+        "If it mentions '--installation-id', attaches it to 'integration add' only — NOT to 'integration resource connect', which has no such flag",
+        "Does not claim that unrelated resources on the team make a deliberately new resource impossible",
+        "Describes the risk as a duplicate application and possible cost, not as a certain double bill"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My Next.js app is on Vercel and Algolia was added from the Vercel Marketplace, but when I run the app locally process.env.ALGOLIA_APP_ID is undefined.",
+      "expected_output": "Verify the resource is connected, list the variables by name, pull them to an explicit file without clobbering, and map only browser-safe values to NEXT_PUBLIC_.",
+      "files": [],
+      "expectations": [
+        "Checks that the resource is connected to this project ('vercel integration list') and that the variables exist ('vercel env ls')",
+        "Pulls to an explicit staging filename because 'vercel env pull' overwrites .env.local by default",
+        "Ensures the staging file is gitignored BEFORE it is written",
+        "Fails closed on an existing staging file: neither overwrites it nor reuses it on the strength of its variable NAMES (which look identical for a stale or unrelated application), and instead pulls into a fresh gitignored path threaded through every later command",
+        "Pulls the environment the resource is actually connected to ('--environment production' / 'preview' / 'development') and treats a mismatch with 'env pull's Development default as a likely cause of the missing variables",
+        "Does NOT cat, diff, or line-print the env file, and does NOT create an un-ignored .bak copy of it",
+        "Explains that Next.js does not read the staging file and merges the values into '.env.local' (or another file Next.js loads) preserving unrelated keys",
+        "Does NOT merely 'point the app at the pulled file'",
+        "Copies ALGOLIA_SEARCH_API_KEY under its raw name as well as NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY, since server-side code (next.config.js, route handlers) reads the raw variable",
+        "Maps only ALGOLIA_APP_ID and ALGOLIA_SEARCH_API_KEY to NEXT_PUBLIC_ variables",
+        "Adds a next.config.js 'env' block deriving NEXT_PUBLIC_ALGOLIA_APP_ID and NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY from the raw ALGOLIA_ names Vercel injects, merging into any existing config rather than replacing it",
+        "Keeps ALGOLIA_WRITE_API_KEY server-side only, with no NEXT_PUBLIC_ prefix and no entry in the next.config.js 'env' block",
+        "This is a repair: does NOT import a demo index and does NOT start building search UI — validates read-only against an index the application already has, if any",
+        "Notes that Vercel applies env vars at build time, so the local fix does not make the deployed app work until the next deployment"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Set up Algolia on Vercel for me. Heads up, I'm a member of three different Vercel teams and this repo isn't linked to a Vercel project yet.",
+      "expected_output": "Stop and ask which team and which project before provisioning; pin both explicitly on the commands.",
+      "files": [],
+      "expectations": [
+        "Asks which of the three Vercel teams should own and be billed for the resource — does not pick one",
+        "Asks which project to link, and runs 'vercel link --project <name>' before provisioning",
+        "Passes '--scope' (or '--team') explicitly rather than relying on the ambient active scope",
+        "Does not run 'vercel integration add' before the team and project are confirmed",
+        "Notes that 'vercel integration add' runs non-interactively when an agent is detected, so no prompt will appear to catch a wrong scope"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We self-host our Rails app on our own AWS EC2 boxes. We need Algolia from scratch — no account, no app ID, nothing.",
+      "expected_output": "Not this skill. There is no Vercel in the picture, so account and application provisioning belongs to algolia-quickstart.",
+      "files": [],
+      "expectations": [
+        "Does NOT route to Vercel Marketplace provisioning",
+        "Routes account and application creation to algolia-quickstart ('algolia auth signup', 'algolia application create')",
+        "Does not suggest adopting Vercel to obtain Algolia"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I have a Next.js app. Add a search results page with faceted filtering using Algolia. I already have my app ID, search-only key and my 'products' index.",
+      "expected_output": "Not this skill. Next.js alone does not imply Vercel, and credentials plus index already exist — this is UI work.",
+      "files": [],
+      "expectations": [
+        "Does NOT route to algolia-vercel — Next.js alone is not evidence of Vercel hosting",
+        "Does NOT propose provisioning anything; credentials and an index already exist",
+        "Routes to instantsearch (or the implementation-planning suite) for the search results page and facets"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Our Next.js app is deployed on Vercel. We've had a standalone Algolia account for two years with our 'products' index and our own API keys in our secret manager. Add autocomplete to the header.",
+      "expected_output": "The existing standalone application stays standalone. Vercel hosting alone is not a reason to provision a duplicate; this is UI work.",
+      "files": [],
+      "expectations": [
+        "Keeps the existing standalone Algolia application — does NOT provision a Vercel Marketplace resource",
+        "Does NOT run 'vercel integration add algolia' just because the app is hosted on Vercel",
+        "Uses the credentials already in the user's secret manager",
+        "Routes the autocomplete implementation to instantsearch",
+        "If it raises the Marketplace option at all, frames it as an explicit user choice to migrate, not a step in this task"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I just got a fresh empty Algolia application from the Vercel Marketplace. Load some example data and prove search actually works before we build any UI.",
+      "expected_output": "Additive ndjson import into a new index using the write key from the environment, then a search with the search-only key that returns nbHits >= 1.",
+      "files": [],
+      "expectations": [
+        "Writes ndjson (one JSON object per line, not a JSON array) with an objectID on each record",
+        "Imports into a new, clearly-example index name",
+        "Does NOT run 'algolia indices clear' or 'algolia indices delete' to prepare",
+        "Passes '-w' to the import so the validation query does not race indexing",
+        "Supplies credentials via ALGOLIA_APPLICATION_ID / ALGOLIA_API_KEY env vars rather than 'algolia auth login' or the deprecated 'algolia profile add'",
+        "If it uses the bundled env helper, calls it through an absolute path to the installed skill directory rather than a repo-relative 'skills/algolia-vercel/...' path",
+        "Validates using the search-only key, not the write key",
+        "Reports the actual nbHits and a matched record instead of asserting success",
+        "Does not claim the deployed application is working without a redeploy"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Checked with 'vercel integration list' and our Algolia resource 'storefront-search' is already there and already connected to the 'storefront' project. The local env still has nothing. Take it from here.",
+      "expected_output": "Nothing to provision and nothing to connect. Pull the credentials into a staging file, load them by parsing, and validate.",
+      "files": [],
+      "expectations": [
+        "Runs NEITHER 'vercel integration add' NOR 'vercel integration resource connect' — the intended resource is already connected",
+        "Goes straight to 'vercel env pull <explicit file> --environment <the connected environment>' and validation",
+        "Treats the missing local variables as a pull problem, not as evidence that provisioning failed",
+        "Checks the key names without printing values (for example 'cut -d= -f1', never 'cat')",
+        "Does not seed an example index or build UI for this repair — validates against an index that already exists, and only proposes seeding if there is no data to search",
+        "If a variable is still missing, considers a '--prefix'ed variable name or the wrong pulled environment before re-provisioning"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "We're on Vercel with no Algolia yet. Set Algolia up and put a working search box on our products page.",
+      "expected_output": "Provision, wire credentials, validate — then keep going and actually build the search UI with instantsearch rather than ending the turn at the query.",
+      "files": [],
+      "expectations": [
+        "Does NOT end the turn at 'search returns hits, now use the instantsearch skill' — the user asked for a search box",
+        "Loads instantsearch (offering 'npx skills add algolia/skills --skill instantsearch' if it is not available) and continues into the UI work",
+        "Passes the index name, the record shape, and the credential VARIABLE names to the UI step — not raw key values",
+        "Does not treat a minimal InstantSearch component as inherently wrong; writes it from the instantsearch guidance and the installed package version",
+        "Tells the user the index holds example data and that the deployed app needs a redeploy to see the new env vars"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I ran the search validation command against my new index and it failed. Tell me what's wrong.",
+      "expected_output": "Ask what the response actually said, then branch — an index-not-found error, a zero-hit result, and an API-key error have different causes.",
+      "files": [],
+      "expectations": [
+        "Distinguishes an index-not-found error (missing or misnamed index) from a successful response with nbHits = 0",
+        "Does NOT claim that a missing or nonexistent index returns zero hits",
+        "Treats a search-key failure conditionally — key ACLs, per-index restrictions, credentials from two different applications, or a variable that was never injected — rather than asserting it was never injected",
+        "Asks for or inspects the actual error text before prescribing a fix",
+        "Does NOT propose deleting the project's environment variables as a default remedy"
+      ]
+    }
+  ]
+}
