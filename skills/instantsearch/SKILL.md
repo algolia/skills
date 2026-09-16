@@ -5,9 +5,6 @@ description: >-
   Use when user asks to add search, autocomplete, search-as-you-type, faceted filtering, or a search results page
   to a React, Vue, or vanilla JS application, or mentions Algolia, InstantSearch, or react-instantsearch.
   Do NOT use for backend index operations (records, synonyms, settings, API keys), use algolia-cli instead.
-  Do NOT use when there is no Algolia application yet and it should come from the Vercel Marketplace,
-  use algolia-vercel to provision it first, then come back here for the UI; an existing standalone
-  Algolia application stays standalone, Vercel hosting alone is not a reason to route away.
   Do NOT use for analytics, recommendations, or MCP server queries, use algolia-mcp instead.
   Do NOT use for AI/agent/conversational search, use algobot-cli instead.
 license: MIT
@@ -45,15 +42,7 @@ Before writing any code, gather context. First check if InstantSearch is already
 
 If starting fresh, go step by step, waiting for the user's answer before moving on.
 
-- **Credentials**: Look for them before asking. Check `.env*` files and the environment for `ALGOLIA_APP_ID` / `ALGOLIA_SEARCH_API_KEY` / `NEXT_PUBLIC_ALGOLIA_*` — key names only, never print values. If the user has already given you an app ID, a key, or a config file, use it; a standalone Algolia application stays standalone even when the app is hosted on Vercel.
-
-  Only when nothing is available anywhere: if the user says Algolia came from the Vercel Marketplace, or asks for it to, the credentials come from `algolia-vercel` rather than from them. If it is simply unclear who owns the application, ask once — existing Algolia account, or Vercel-provisioned? — and route on the answer.
-
-  ```bash
-  npx skills add algolia/skills --skill algolia-vercel
-  ```
-
-  Otherwise, ask the user for their Algolia app ID, search-only API key, and index name.
+- **Credentials**: Ask the user for their Algolia app ID, search-only API key, and index name.
 - **Query Suggestions**: Ask the user if they have a Query Suggestions index.
 - **Schema**: Once you have credentials, fetch a few records from the main index to discover the available attributes and their shape. Confirm with the user rather than asking them to list everything. The schema is needed before you can propose rendering options. No need to fetch from the Query Suggestions index: its shape is standard and handled by the widget.
 

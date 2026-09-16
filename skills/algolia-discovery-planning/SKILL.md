@@ -20,7 +20,6 @@ These skills are a **suite that spans the Algolia implementation lifecycle**, no
 
    | Phase | Load this skill | Typical trigger |
    | --- | --- | --- |
-   | Provision the application via Vercel | `algolia-vercel` | no Algolia application yet **and** the project ships on Vercel (Next.js alone does not qualify; an existing standalone application stays standalone) |
    | Run a net-new build end to end | `algolia-search-implementation` | greenfield search/browse/ecommerce build; keeps checkpoints, signposts, and deferrals explicit |
    | Shape the data / records | `algolia-data-modeling` | new index, catalog, variants, objectID, ETL |
    | Configure relevance | `algolia-index-configuration` | searchable attrs, ranking, facets, synonyms, rules, replicas, sort |
