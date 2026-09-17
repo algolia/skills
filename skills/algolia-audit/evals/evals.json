@@ -1,0 +1,32 @@
+{
+  "skill_name": "algolia-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We inherited an Algolia-powered store search from a contractor who left. It seems to work — pages load, queries return results — but nobody here really knows if it's set up right. Index is northfield_products (about 300 records) plus two price-sort replicas, and there's a single index.html storefront. Credentials are in .env. Can you audit it and fix what needs fixing?",
+      "expected_output": "The response runs an evidence-first audit rather than a works/doesn't-work check: it captures live state before judging (primary AND each replica's settings, a public-key query's raw hit payload, facet-stats requests for numeric attributes the UI ranges over, the rendered page including console and a ~375px width). It works through the symptom-free checklist — ranking tie-breaker chain quality (near-unique leading metrics bucketed), searchable facets as settings+UI+live-test, hierarchical data vs flat category UI, facet stats vs raw filtering, internal ranking fields in public responses, replica-vs-primary settings drift, captured and counted Insights event payloads, and frontend key scope — routing deep work to algolia-index-configuration, algolia-data-modeling, algolia-events-insights, and algolia-release-qa, and live operations to algolia-cli/algolia-mcp. Every fix is re-verified against live state, and the report separates defects from defensible preferences with evidence per finding.",
+      "files": [],
+      "expectations": [
+        "Captures live evidence (settings for primary and each replica, public-key hit payload, rendered page) before proposing or making any change",
+        "Checks for symptom-free defects explicitly rather than only investigating visible breakage — including tie-breaker chain quality, facet-stats availability for range UIs, retrieval hygiene, and replica settings drift",
+        "Verifies the event pipeline by capturing actual outbound Insights payloads (counting them and checking index/queryID/objectID/position), not by reading source code",
+        "Flags a write-capable or over-scoped frontend API key as a critical finding if present",
+        "Routes deep configuration/data/events work to the focused companion skills and live operations to algolia-cli or algolia-mcp",
+        "Re-verifies every claimed fix against live index state or the rendered page before finishing, and separates defects from defensible preferences in the report"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Quick health check request: our Algolia search 'works fine' according to the dev team, but merchandising complains that sorting by price sometimes looks wrong and our analytics dashboards for search look thin. Before we renew our contract we want to know if the implementation is actually healthy. What do you check?",
+      "expected_output": "The response treats 'works fine' as the starting hypothesis to test, not the conclusion: for the sort complaint it checks each replica's own settings against the primary (replicas inherit only at creation; a selectable sort with no sort criterion is a classic silent defect) and whether the sorted attribute matches the price the UI displays (one effective-price contract). For thin analytics it audits the event chain with captured payloads — clickAnalytics/queryID presence, real index names, one event per interaction (no duplicates from middleware auto-events stacked with manual events), userToken consistency — since events can be silently missing, double-counted, or mis-attributed while the site looks perfect. It also runs the rest of the symptom-free checklist (searchable facets, facet stats, retrieval hygiene, hierarchy, key scope) and reports findings by severity with live evidence, distinguishing verified findings from what could not be inspected.",
+      "files": [],
+      "expectations": [
+        "Does not accept 'works fine' as evidence of health; audits against correct practice rather than visible breakage",
+        "For the sort complaint, diffs each replica's live settings against the primary and checks the sorted attribute against the displayed price",
+        "For thin analytics, verifies the event chain with captured payloads — including duplicate-event detection and correct index/queryID attribution — rather than assuming events exist because code references them",
+        "Covers the remaining symptom-free checks (searchable facets, facet stats for range UIs, retrieval hygiene, key scope) even though nobody complained about them",
+        "Reports by severity with live evidence per finding and explicitly lists what was not or could not be inspected"
+      ]
+    }
+  ]
+}
