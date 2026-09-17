@@ -89,7 +89,9 @@ Restart your agent to load the skill.
 Installed skills only help when the agent reads them. In our benchmarking, an agent with all
 skills installed but left to route freely invoked **1 of 18** skills on an audit-style task and
 performed identically to having none — while one trigger line in the prompt doubled its
-live-verified fix rate. Two ways to make invocation reliable:
+live-verified fix rate. On a smaller model the effect was starker: left to route freely it
+invoked **no skill at all**; with the trigger line it loaded seven. Two ways to make invocation
+reliable:
 
 **Add one line to your agent's project config** (`CLAUDE.md`, `AGENTS.md`, or equivalent):
 
@@ -103,3 +105,19 @@ skill"; Codex/ChatGPT: `$algolia-discovery-planning` (or `$algolia-audit` for re
 
 `algolia-discovery-planning` (builds) and `algolia-audit` (existing implementations) are the two
 entry points; each loads the companion skills the task needs.
+
+## 🧭 Which model to run them on
+
+The skills are instructions; how much they help depends on whether the model can carry them
+out. We ran the same tasks (a one-line "add search to our store" brief and an audit of a
+deliberately broken store) on four models, with and without the skills, blind-graded against
+the live index. Directional — one or two pairs per model outside the mid-tier — but consistent:
+
+| Model tier | What we saw | Guidance |
+| --- | --- | --- |
+| **Mid-tier** (Claude Sonnet 5, GPT-5.6 on Codex) | Skills won 7 of 9 pairs (one tie, one loss). Analytics wired 3 of 3 times vs 1 of 3 without; nearly double the live-verified defect fixes on an existing store; a working storefront in every round on this tier. Sonnet routes to the entry skills unprompted after the trigger-language fixes. | **Recommended.** This is the tier the skills were tuned on. |
+| **Top tier** (Claude Opus 5) | Without skills it already scored 10/10 on live checks and wired verified events. With skills it built more (suggestions index, synonyms, rules) at +65% time and shipped one shopper-facing regression its own QA missed (autocomplete-only input; Enter did nothing). | Skills add scope discipline, not knowledge. Keep them for the QA gates and the event taxonomy; expect little quality lift. |
+| **Small / fast tier** (Claude Haiku 4.5) | Runs in 4–8 minutes on a third of the tokens, and the skills' *content* works when it is read (a mandated audit repaired 5 of 10 live-checked settings defects through the CLI). But it verifies by re-reading its edits rather than loading the page: three skills builds shipped a dead Insights loader or broken product cards, and each QA report said "verified." | Only with the trigger line **and** the mechanical page-smoke gate in `algolia-release-qa` (`scripts/page-smoke.mjs`). Do not accept "launch-ready" from this tier without the gate's output. |
+
+Whatever the model: put the trigger line above in your agent config, and treat any "verified"
+claim that isn't backed by a browser session or the smoke gate's output as untested.
