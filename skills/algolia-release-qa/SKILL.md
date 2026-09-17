@@ -43,13 +43,13 @@ Use this skill before launching or after a risky change. Prioritize defects that
 1. Read `references/release-qa-checklist.md` for the relevant surface.
 2. Read `references/example-output.md` when writing a customer-facing launch or regression report.
 3. For any frontend surface, run the Finish Gates below in a real browser or with `scripts/page-smoke.mjs` before writing a single "verified" — and read `references/verified-cdn-urls.md` before trusting any `<script src>`.
-3. Capture what changed: data model, settings, UI, events, environment, credentials, or deployment.
-4. Test representative happy paths and failure paths.
-5. Verify attribution as a chain: search or browse request, queryID, hit identity and position, event payload, debugger/arrival, and downstream usability.
-6. For experiments, confirm the hypothesis, isolated change, traffic/data sufficiency, event coverage, confidence state, and rollback decision instead of treating a dashboard metric as self-explanatory.
-7. Report findings by severity with concrete reproduction steps, expected behavior, evidence source, and owner.
-8. Write the report so a non-specialist customer can decide what to fix now versus later.
-9. Include residual risk when production data, analytics windows, credentials, or live tools cannot be inspected.
+4. Capture what changed: data model, settings, UI, events, environment, credentials, or deployment.
+5. Test representative happy paths and failure paths.
+6. Verify attribution as a chain: search or browse request, queryID, hit identity and position, event payload, debugger/arrival, and downstream usability.
+7. For experiments, confirm the hypothesis, isolated change, traffic/data sufficiency, event coverage, confidence state, and rollback decision instead of treating a dashboard metric as self-explanatory.
+8. Report findings by severity with concrete reproduction steps, expected behavior, evidence source, and owner.
+9. Write the report so a non-specialist customer can decide what to fix now versus later.
+10. Include residual risk when production data, analytics windows, credentials, or live tools cannot be inspected.
 
 ## QA Areas
 
