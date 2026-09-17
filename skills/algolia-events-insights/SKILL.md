@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: algolia
-  version: "0.5"
+  version: "0.6"
 ---
 
 # Algolia Events Insights
@@ -86,6 +86,15 @@ Use this order unless the app has unusual constraints:
 
 Prefer a minimum viable event setup over a large taxonomy. For most customers, the first useful milestone is one validated result-click event and one validated primary conversion event with the same `userToken`, correct `objectID`, correct `index`, and `queryID` when search attribution applies.
 
+## InstantSearch Auto-Events And The Loader
+
+Two failure modes appear repeatedly in real implementations. Both pass demos and settings checks; both corrupt or kill the event pipeline.
+
+- **The middleware already clicks.** When the InstantSearch insights middleware (`insights: true`) is enabled, it auto-sends a click event for clicks inside a hit. Sending a manual `clickedObjectIDsAfterSearch` on the same click double-counts every CTR datapoint. A manual conversion (`convertedObjectIDsAfterSearch` / `addedToCartObjectIDsAfterSearch`) does NOT suppress the automatic click either — an add-to-cart button inside a hit produces one auto click plus your conversion, which is correct; a manual click handler on top of that is not. Expected totals per add-to-cart interaction: exactly one click event and one conversion event. Use the hit template's `sendEvent` for custom click semantics rather than a parallel manual pipeline, and never hardcode the `index` field — read the live index name (sort replicas change it), and treat `data-index="undefined"` in a payload as a failed implementation even if the call returns 200.
+- **The loader defines `window.aa`; a plain script tag does not.** Loading `search-insights` via a bare `<script src>` and then calling `aa('init', ...)` throws `ReferenceError: aa is not defined` — and because that aborts the entire surrounding inline script, the typical result is a completely blank search page, not a missing event. Always use Algolia's documented async queue snippet (or bind explicitly on script load), and smoke-test page startup: the page must render and queue events with the insights script throttled or blocked.
+
+Validation for both: capture the actual outbound payloads to the Insights endpoint (network tab, `sendBeacon`/`fetch` intercept) and count and inspect them. Reading the source is not verification — both of these failure modes look correct in source.
+
 ## Questions To Ask
 
 - Which conversions matter: view, click, add to cart, purchase, lead, signup, content save, support deflection?
@@ -116,6 +125,9 @@ Prefer a minimum viable event setup over a large taxonomy. For most customers, t
 
 ## Anti-Patterns
 
+- Stacking a manual `clickedObjectIDsAfterSearch` on top of the InstantSearch insights middleware's automatic click event — every click counts twice.
+- Loading `search-insights` with a plain script tag and calling `aa()` without the documented async queue snippet — the resulting ReferenceError can blank the entire page.
+- Hardcoding the `index` field in event payloads instead of reading the live index name (sort replicas change it), or shipping events whose payload was never actually captured and inspected.
 - Building a large taxonomy before one click and one primary conversion are validated.
 - Over-investing in P2 events such as broad view or filter interactions before P0 search-attributed clicks and conversions are healthy.
 - Sending events from a tag manager that cannot access the actual `objectID`, `queryID`, position, index, or stable userToken.
