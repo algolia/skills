@@ -1,11 +1,11 @@
 ---
 name: algolia-index-configuration
 description: >
-  Algolia index settings and relevance configuration guidance. Use when configuring searchableAttributes, attributesForFaceting, customRanking, ranking, replicas, virtual replicas, rules, synonyms, typo tolerance, distinct, filters, optional filters, merchandising, browse/category relevance, or A/B-testable relevance changes. Do NOT use for live settings writes, backups, copies, or operational account tasks; use algolia-cli or algolia-mcp instead. Do NOT use for record-shape or variant strategy; use algolia-data-modeling instead.
+  Algolia index settings and relevance configuration guidance. Use when configuring searchableAttributes, attributesForFaceting, customRanking, ranking, replicas, virtual replicas, rules, synonyms, typo tolerance, distinct, filters, optional filters, merchandising, browse/category relevance, or A/B-testable relevance changes. Also use when auditing, reviewing, health-checking, or troubleshooting an EXISTING index's settings — "is this configured correctly", inherited implementations, relevance regressions, or a settings review before launch — not only when configuring something new. Do NOT use for live settings writes, backups, copies, or operational account tasks; use algolia-cli or algolia-mcp instead. Do NOT use for record-shape or variant strategy; use algolia-data-modeling instead.
 license: MIT
 metadata:
   author: algolia
-  version: "0.3"
+  version: "0.4"
 ---
 
 # Algolia Index Configuration
@@ -62,6 +62,10 @@ Use this skill when changing how Algolia ranks, filters, facets, merchandises, o
 - Prefer ordered `searchableAttributes` that reflect the user's mental model.
 - Put numeric or boolean business signals in `customRanking`, not in frontend sort hacks.
 - Declare only needed `attributesForFaceting`; use searchable facets where users search inside facets.
+- Searchable facets are a three-part contract, not a settings flag: declare `searchable(attribute)` in `attributesForFaceting`, enable search-within-facet in the UI widget (e.g. `searchable: true` on a refinement list), and verify with a live facet-value search. For facets users know by name — brand, merchant, designer — default to searchable even at moderate value counts: it costs nothing and real catalogs grow. A plain facet on a 30+-value attribute is a defect, not a default; below that, skipping it is a documented judgment call, not a silent omission.
+- Know the facet-stats trap: numeric `filters` work WITHOUT any `attributesForFaceting` declaration — that success is misleading. Range widgets (sliders, min/max bounds, `connectRange`) need the attribute declared as a full facet to return facet statistics, and `filterOnly()` does NOT produce stats. Verify by requesting `facets: ["<attr>"]` and checking the response's `facets` object is non-empty — never by checking that filtering works.
+- Restrict what public responses carry: business-internal ranking signals (popularity, sales velocity, margin, review counts used for ranking) belong in `customRanking`, not in the payload. Set `attributesToRetrieve` to the fields the UI displays (plus event-attribution needs) and verify with a live query using the public search key that internal fields are absent.
+- Treat hierarchy as a deterministic call, not a preference: when records carry hierarchical category data (`hierarchicalCategories.lvl0/lvl1` or equivalent) and the index or UI filters on a flat mixed-level list, that is a defect to fix — declare the level facets and use a hierarchical widget. Flat mixed-level lists break drill-down and facet counts.
 - Treat synonyms and rules as governed relevance assets. Name, scope, and test them.
 - Use replicas for explicit sort-by experiences and virtual replicas where relevant sorting fits the use case.
 - Avoid irreversible production changes without a settings backup or repeatable configuration file.
@@ -72,8 +76,21 @@ Use this skill when changing how Algolia ranks, filters, facets, merchandises, o
 - Treat every sort choice as a relevance decision. Document the replica type, displayed sort label, expected loss of relevance, and whether filters/facets remain consistent.
 - Change one meaningful relevance variable per experiment. Do not infer causality when ranking, rules, data, and UI changed together.
 
+## Settings Audit Checklist
+
+When reviewing an existing index, do not stop at "nothing is erroring." The costliest configuration defects are symptom-free: the store works, queries return, and the settings are still wrong. Check each of these against the live settings, not the code:
+
+- `searchableAttributes`: a real ordered array (no comma-joined strings), name/brand-class attributes above descriptive text, deliberate `unordered()` choices.
+- `customRanking`: does a near-unique numeric lead the chain (raw popularity, raw sales)? If so, later tie-breakers are inert — bucket the leading signal and require a complete ordered chain. Adding one availability flag is necessary but not sufficient.
+- Facet completeness: every attribute the UI filters, sorts bounds, or drills into is declared with the right mode — `searchable()` for name-known or high-cardinality pickers (default it on for brand-like facets; document the decision if skipped), full facet (never `filterOnly`) for range widgets, hierarchical levels when hierarchical data exists.
+- Retrieval hygiene: query the index with the public search key and read the hit payload — internal ranking fields present is a finding.
+- Replica parity: fetch each replica's settings and diff against the primary — replicas inherit at creation only, and drifted replicas (or replicas missing their sort criterion entirely) sort wrong while looking configured.
+- Key scope: prefer a secured or index-restricted search key in production over the app-wide search key; if the plain key ships, document why.
+
 ## Anti-Patterns
 
+- Concluding a numeric attribute doesn't need faceting because raw `filters` still work — range widgets need declared facets for stats, and `filterOnly()` does not produce them.
+- Declaring a settings review complete without querying the live index as the public key would (retrieval payload, facet stats, replica sort order).
 - Tuning relevance with one anecdotal query instead of a representative query set.
 - Using synonyms to compensate for missing data or unrelated concepts.
 - Pinning or burying results globally when the intent is category, campaign, locale, or segment-specific.

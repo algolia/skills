@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: algolia
-  version: "0.3"
+  version: "0.5"
 ---
 
 # Algolia Release QA
@@ -42,13 +42,14 @@ Use this skill before launching or after a risky change. Prioritize defects that
 
 1. Read `references/release-qa-checklist.md` for the relevant surface.
 2. Read `references/example-output.md` when writing a customer-facing launch or regression report.
-3. Capture what changed: data model, settings, UI, events, environment, credentials, or deployment.
-4. Test representative happy paths and failure paths.
-5. Verify attribution as a chain: search or browse request, queryID, hit identity and position, event payload, debugger/arrival, and downstream usability.
-6. For experiments, confirm the hypothesis, isolated change, traffic/data sufficiency, event coverage, confidence state, and rollback decision instead of treating a dashboard metric as self-explanatory.
-7. Report findings by severity with concrete reproduction steps, expected behavior, evidence source, and owner.
-8. Write the report so a non-specialist customer can decide what to fix now versus later.
-9. Include residual risk when production data, analytics windows, credentials, or live tools cannot be inspected.
+3. For any frontend surface, run the Finish Gates below in a real browser or with `scripts/page-smoke.mjs` before writing a single "verified" — and read `references/verified-cdn-urls.md` before trusting any `<script src>`.
+4. Capture what changed: data model, settings, UI, events, environment, credentials, or deployment.
+5. Test representative happy paths and failure paths.
+6. Verify attribution as a chain: search or browse request, queryID, hit identity and position, event payload, debugger/arrival, and downstream usability.
+7. For experiments, confirm the hypothesis, isolated change, traffic/data sufficiency, event coverage, confidence state, and rollback decision instead of treating a dashboard metric as self-explanatory.
+8. Report findings by severity with concrete reproduction steps, expected behavior, evidence source, and owner.
+9. Write the report so a non-specialist customer can decide what to fix now versus later.
+10. Include residual risk when production data, analytics windows, credentials, or live tools cannot be inspected.
 
 ## QA Areas
 
@@ -76,9 +77,26 @@ Use these signposts to decide whether the implementation is launch-ready, protot
 
 If any item is missing, report it as a launch blocker, accepted deferral, or residual risk depending on severity and the user's explicit decisions.
 
+## Finish Gates
+
+These are gates, not suggestions. Do not claim launch-ready, and do not let a completion summary claim them implicitly, unless each is satisfied or explicitly deferred by the user.
+
+A gate is **executed**, never asserted. Reading your own edit and concluding "no console errors" is not a gate; loading the page in a browser and reading the console is. In testing, agents that had read this section still reported "no console errors ✓" and "events verified ✓" over pages with uncaught exceptions and an Insights loader that 404'd — no browser had been opened. If a browser tool is available, use it. If not, run `scripts/page-smoke.mjs` (Playwright; `node scripts/page-smoke.mjs --dir <folder> --query "<a real product word>" --click --mobile`) and paste its output into the report. If neither is possible, the gate is **untested** and the report must say so — it is never "passed."
+
+- **Page-startup smoke test**: the page loads with zero uncaught errors and zero console errors, every `<script src>` returns 200, at least one request reaches the Algolia search API, and hit cards render **with readable text** (a card whose only content is an `<img>` is a broken template, not a hit). A single uncaught error in an inline script (a missing analytics loader is the classic case) can blank the entire experience while every settings check still passes.
+- **CDN URLs verified, not guessed**: every third-party script and stylesheet URL was fetched (`curl -sI`, 200) before it shipped. See `references/verified-cdn-urls.md` — agents have shipped invented search-insights filenames and lost every event silently.
+- **Insights client actually loaded**: `window.aa` is the real client, not the loader shim with calls sitting in `aa.queue`. `typeof window.aa === 'function'` proves nothing and neither does the queue length; a callback from `aa('getVersion', cb)` does.
+- **Typed query reaches the results**: type a real product word into the search input and press Enter; a search request carrying that query must fire and the results must change. Mandatory when Autocomplete owns the input — selecting a suggestion working does not prove free-text submit works, and a storefront where Enter does nothing is a dead search box for every shopper who types.
+- **Mobile-width render check**: at a ~375px viewport, no horizontal overflow, the search input reachable and usable, filters accessible. A desktop-only pass misses layout defects shoppers hit first.
+- **Captured event evidence**: any claim that events work is backed by at least one captured outbound Insights payload (network tab, beacon intercept, or the smoke script's `--click`) inspected for `index`, `queryID`, `objectID`, and position — never by reading the source. Count the payloads: duplicates are a finding.
+- **Claims audit**: every specific claim in the QA write-up ("X is fixed", "Y verified") was re-checked against live state — settings, live queries, rendered page — before finishing. A polished report with unverified claims is worse than a short honest one. Quote the evidence (console output, request body, smoke-script line) next to each claim.
+
 ## Anti-Patterns
 
 - Reporting a checklist as passed without evidence, screenshots, payloads, settings exports, query results, or code references.
+- Asserting a Finish Gate from source reading ("the loader is included, so events work"; "I removed the crash, so the page renders") instead of executing it in a browser or with `scripts/page-smoke.mjs`.
+- Shipping a CDN `<script src>` whose URL was never fetched.
+- Treating a working suggestion click as proof that the search box works when Autocomplete is the only entry point.
 - Burying launch blockers under a positive summary.
 - Treating event payload presence as success without checking identity, attribution, duplicate risk, and downstream visibility.
 - Ignoring rollback, environment separation, API-key scope, or secured data because the UI appears to work.

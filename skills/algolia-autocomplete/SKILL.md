@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: algolia
-  version: "0.5"
+  version: "0.6"
 ---
 
 # Algolia Autocomplete
@@ -36,6 +36,7 @@ Use this skill for search-as-you-type experiences where the user has not committ
 - Do not wire selection behavior until the destination is known: submit query, navigate, refine InstantSearch, apply filter, open record, or run an approved action.
 - For net-new implementations, confirm the data contract and event taxonomy, or create minimal provisional versions and name the follow-up decisions.
 - Treat mouse, touch, Enter, and keyboard navigation as equivalent routes: each selection must reach the same URL or state with the same query and applicable scope.
+- When Autocomplete is the only search input on a results page, the free-text submit path is a hard requirement: typing a query and pressing Enter must refine the results index (via `onSubmit`/`setQuery` or the InstantSearch `autocomplete` widget's search handoff), and it must be verified live by watching the search request after Enter. Suggestion and item selection working proves nothing about typed queries: a polished suggestions panel can sit on top of a search box where Enter does nothing for every shopper who types.
 
 ## Workflow
 
@@ -93,6 +94,7 @@ Use this skill for search-as-you-type experiences where the user has not committ
 - Using the source index name where the Query Suggestions plugin expects the Query Suggestions index name.
 - Making every suggestion behave differently without clear visual or routing cues.
 - Creating two competing query states between Autocomplete and InstantSearch.
+- Making Autocomplete the sole entry point without a working typed-query submit path — or verifying "search works" by clicking a suggestion instead of typing and pressing Enter.
 - Breaking keyboard, focus, Escape, Enter, or detached mobile behavior with custom markup.
 - Sending direct-result events as search-attributed events when the item did not come from an Algolia search response with queryID.
 - Displaying a category label without defining whether it scopes the result, navigates, or is informational only.
