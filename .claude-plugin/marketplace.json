@@ -73,6 +73,15 @@
       ]
     },
     {
+      "name": "algolia-vercel",
+      "description": "The Algolia side of a Vercel Marketplace integration: which Algolia variables it injects (ALGOLIA_APP_ID / ALGOLIA_SEARCH_API_KEY / ALGOLIA_WRITE_API_KEY), how they map to the names the Algolia CLI and a browser bundle read, which index to search, and what counts as a validated first search. Use when the user is on Vercel and wants Algolia from the Marketplace, or when Marketplace-injected credentials need wiring into an app and proving with a query. Vercel's own mechanics — teams, linking, plans, terms, billing, environment commands — are delegated to the Vercel docs. Do NOT use merely because a project is Next.js — Next.js alone does not mean Vercel. Do NOT use when a standalone Algolia application already exists and the user intends to keep it. Do NOT use for index or admin operations (algolia-cli), search UI (instantsearch), or accounts created outside Vercel (algolia-quickstart).",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/algolia-vercel"
+      ]
+    },
+    {
       "name": "algolia-implementation",
       "description": "Implementation-planning suite that spans the full Algolia lifecycle: discovery and phase planning, data modeling, index configuration, UI library selection, InstantSearch and Autocomplete readiness, events/Insights instrumentation, NeuralSearch and Agent Studio rollout, and release QA. Use when planning, building, migrating, auditing, or validating an Algolia implementation end to end — it sequences the work, makes data/event contracts explicit, and routes live operations to algolia-cli, algolia-mcp, algobot-cli, and code-level work to instantsearch. Install as a bundle: algolia-discovery-planning is the entry point for builds and algolia-audit for reviewing existing implementations; each loads the companion skills per phase. Do NOT use for direct account operations or as the source of truth for current framework APIs — the official skills above own those.",
       "source": "./",

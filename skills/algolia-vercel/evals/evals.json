@@ -1,0 +1,110 @@
+{
+  "skill_name": "algolia-vercel",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our Next.js repo ships on Vercel and we have no Algolia account. Get Algolia set up for this project and prove search works.",
+      "expected_output": "Point at the Vercel integration entrypoint and its live guide for provisioning, then own the Algolia part: map the injected variables, and validate with a query using the search-only key.",
+      "files": [],
+      "expectations": [
+        "Names 'vercel integration add algolia' as the entrypoint and defers plans, terms, billing, team and project mechanics to the Vercel docs or 'vercel integration guide algolia --framework <framework>' instead of reproducing a Vercel CLI tutorial",
+        "Does NOT use 'algolia auth signup' or 'algolia application create' on this path",
+        "Does not hardcode plan IDs, region codes or metadata keys from memory",
+        "Maps the injected names to what the Algolia CLI reads: ALGOLIA_APPLICATION_ID from ALGOLIA_APP_ID, and ALGOLIA_API_KEY from the write or search key depending on the operation",
+        "Validates with 'algolia search ... -o json' using the SEARCH key and reads nbHits rather than treating a clean exit as success",
+        "Reports what the CLI query returned rather than claiming the deployed app's search is working"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our Algolia resource is already connected to this Vercel project and the ALGOLIA_APP_ID, ALGOLIA_SEARCH_API_KEY and ALGOLIA_WRITE_API_KEY are available. Wire it up and show me a search against our existing 'products' index.",
+      "expected_output": "Nothing to provision. Map the variables, search the existing index read-only, and report the result.",
+      "files": [],
+      "expectations": [
+        "Provisions nothing — no 'vercel integration add', no new Algolia application, no standalone signup",
+        "Exports ALGOLIA_APPLICATION_ID from ALGOLIA_APP_ID and ALGOLIA_API_KEY from the search key for the query",
+        "Queries the existing 'products' index rather than creating an example index",
+        "Writes no records: no 'objects import', no 'indices clear', no 'indices delete'",
+        "Reports the actual nbHits instead of asserting success"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add Algolia search to our Vercel-hosted Next.js app. Put the credentials where the client-side search component can read them.",
+      "expected_output": "Only the app ID and the search-only key become public; the write key stays server-side.",
+      "files": [],
+      "expectations": [
+        "Exposes ONLY the application ID and the search-only key to the browser",
+        "Keeps ALGOLIA_WRITE_API_KEY server-side: no NEXT_PUBLIC_ prefix and no entry in a public config block",
+        "Derives the public values from the raw injected names rather than hardcoding key values",
+        "Merges into any existing next.config.js and keeps its wrappers rather than replacing the file, or follows whatever mechanism the project already uses for public config",
+        "Does not present the next.config.js snippet as the only possible mechanism for non-Next.js frameworks"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I just got a fresh empty Algolia application through the Vercel Marketplace and the credentials are set up. Load some example data and prove search works before we build UI.",
+      "expected_output": "Additive ndjson import into a new, clearly-example index using the write key, then a search with the search-only key.",
+      "files": [],
+      "expectations": [
+        "Writes ndjson — one JSON object per line, not a JSON array — with an objectID on each record, and creates the file before referencing it with -F",
+        "Imports into a new, clearly-example index name",
+        "Does NOT run 'algolia indices clear' or 'algolia indices delete' to prepare",
+        "Passes '-w' to the import so the validation query does not race indexing",
+        "Uses the WRITE key for the import and the SEARCH key for the validation query",
+        "Tells the user the example index name so they can remove it later"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Our Vercel-connected Algolia app already has a 'catalog' index with about 400 products. The search from our app returns nothing. Figure out whether the credentials are the problem.",
+      "expected_output": "Read-only diagnosis against the existing index. Do not seed data to manufacture hits.",
+      "files": [],
+      "expectations": [
+        "Queries the existing 'catalog' index with the search-only key — does NOT import demo data to get something to query",
+        "Compares nbHits to the ~400 records the user expects rather than accepting any response as success",
+        "Distinguishes a failed request (proves nothing, including access) from a successful request returning 0 hits (credentials and index access are fine)",
+        "Does NOT claim a missing or misnamed index returns zero hits",
+        "Does not propose re-provisioning or deleting environment variables as a first remedy"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Because of a name clash our Algolia resource was connected with a prefix, so the configured variables are ALGOLIA2_ALGOLIA_APP_ID, ALGOLIA2_ALGOLIA_SEARCH_API_KEY and ALGOLIA2_ALGOLIA_WRITE_API_KEY. Get a validation query running.",
+      "expected_output": "Use the configured names verbatim, mapped to the ones the Algolia CLI reads.",
+      "files": [],
+      "expectations": [
+        "Uses the exact prefixed names as given rather than the unprefixed defaults",
+        "Does NOT invent a different transformation of the names, such as dropping the second ALGOLIA_ segment",
+        "Still supplies ALGOLIA_APPLICATION_ID and ALGOLIA_API_KEY to the Algolia CLI, sourced from the prefixed variables",
+        "Applies the same prefixed names consistently anywhere it maps public browser values",
+        "Does NOT re-provision or reconnect the resource to obtain unprefixed names"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Set Algolia up for our Vercel project. We only care about production — preview and development don't matter to us.",
+      "expected_output": "Target production explicitly on every environment-scoped command; do not silently work against a different environment.",
+      "files": [],
+      "expectations": [
+        "Targets production explicitly wherever an environment must be named, and uses the same one consistently",
+        "Does NOT quietly operate against development, and does not assert a universal default environment on the user's behalf",
+        "Sends the environment command syntax and flags to the Vercel docs rather than reproducing them as a tutorial",
+        "Still maps the variables and validates with a search-only-key query"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Our Next.js app is deployed on Vercel. We've had a standalone Algolia account for two years with our 'products' index and our own API keys in our secret manager. Add autocomplete to the header.",
+      "expected_output": "The standalone application stays standalone. Vercel hosting alone is not a reason to provision a duplicate; this is UI work.",
+      "files": [],
+      "expectations": [
+        "Keeps the existing standalone Algolia application — does NOT provision a Vercel Marketplace resource",
+        "Does NOT run 'vercel integration add algolia' just because the app is hosted on Vercel",
+        "Uses the credentials already in the user's secret manager",
+        "Routes the autocomplete implementation to instantsearch, offering 'npx skills add algolia/skills --skill instantsearch' if it is not installed rather than requiring it up front",
+        "If it raises the Marketplace option at all, frames it as an explicit migration choice, not a step in this task"
+      ]
+    }
+  ]
+}
