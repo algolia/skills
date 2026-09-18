@@ -7,15 +7,15 @@ tags: data, import, safety
 
 ## Import Example Data Additively, Into a New Index
 
-**First: does this phase apply at all?** Seed example data only when the search the user asked for has nothing to run against, *and* they want a demo index. Skip it when:
+**First: does this phase apply at all?** Seed example data only when the search the user asked for has nothing to run against *and* they want a demo index. Skip it when:
 
-- the request is a **repair** — the credentials never reached the machine, and the fix is the credentials phase. Validate read-only against an index the application already has (`algolia indices list`).
-- an index with records already exists and the user pointed at it. Query that one.
+- an index with records already exists. Query that one — `algolia indices list -o json` answers whether there is anything to search.
 - the user asked to import *their* data. That is `algolia-cli`, not a demo index.
+- the request is a repair — the credentials were the problem, so validate read-only against an index the application already has.
 
-A freshly provisioned application being empty is not, on its own, a reason to write to it. Seeding "to be thorough" leaves a stray `example_products` index on someone's application and bills its records. If it is unclear whether there is data to search, list the indices and read the answer off that; if there is none, offer the demo index rather than creating it unasked.
+A freshly provisioned application being empty is not, on its own, a reason to write to it. Seeding "to be thorough" leaves a stray index on someone's application — so list the indices, read the answer off that, and offer the demo index rather than creating it unasked.
 
-When it does apply: example data exists to prove the pipeline works, and it must not be able to damage anything. The same code path runs when the application turns out not to be fresh — a reconnected resource, a shared team application, a rerun. Reaching for `indices clear` or `indices delete` to get a clean slate is what turns a demo import into data loss.
+When it does apply, it must not be able to damage anything. Reaching for `indices clear` or `indices delete` to get a clean slate is what turns a demo import into data loss — and the same code path runs when the application turns out not to be fresh.
 
 **Incorrect (destructive prep, reused index name):**
 
@@ -26,48 +26,28 @@ algolia objects import products -F demo.ndjson
 
 `products` is the name a real catalog will want. Clearing it is unrecoverable without a backup, and there is no reason to touch it to demonstrate search.
 
-**Correct (new name, additive import, credentials bridged inside `vercel env run`):**
-
-The `sh -eu -c` block is the one from `credentials-run-with-vercel-env` — single-quoted, so the expansions happen in the child after `env run` has injected the variables. `-e development` is the environment the resource was connected with.
+**Correct (new name, additive import).** Credentials are already configured for the Algolia CLI — see `credentials-write-key-never-reaches-the-browser` — with `ALGOLIA_API_KEY` holding the **write** key for this step:
 
 ```bash
-# 1. Does any index already hold records? That answer decides whether to run step 3 at all.
-vercel env run -e development --scope acme-team -- sh -eu -c '
-: "${ALGOLIA_APP_ID:?not injected — check: vercel env ls}"
-: "${ALGOLIA_WRITE_API_KEY:?not injected — check: vercel env ls}"
-export ALGOLIA_APPLICATION_ID="$ALGOLIA_APP_ID"
-export ALGOLIA_API_KEY="$ALGOLIA_WRITE_API_KEY"
-exec "$@"
-' algolia-env algolia indices list
-
-# 2. Write ndjson — one JSON object per line, NOT a JSON array
-cat > example.ndjson <<'EOF'
-{"objectID":"1","name":"Wireless Headphones","category":"Audio","price":129}
-{"objectID":"2","name":"Mechanical Keyboard","category":"Input","price":89}
-{"objectID":"3","name":"27-inch Monitor","category":"Displays","price":329}
-EOF
-
-# 3. Import into a name that cannot collide with real data
-vercel env run -e development --scope acme-team -- sh -eu -c '
-: "${ALGOLIA_APP_ID:?not injected — check: vercel env ls}"
-: "${ALGOLIA_WRITE_API_KEY:?not injected — check: vercel env ls}"
-export ALGOLIA_APPLICATION_ID="$ALGOLIA_APP_ID"
-export ALGOLIA_API_KEY="$ALGOLIA_WRITE_API_KEY"
-exec "$@"
-' algolia-env algolia objects import example_products -F example.ndjson -w
+algolia indices list -o json                                     # is there anything already?
+algolia objects import example_products -F example.ndjson -w     # -F takes the user's file, or one you wrote
 ```
 
-Details that bite:
+Read that listing before importing: if `example_products` is already there, it is someone else's index, so pick a demo name that is not in the list (`example_products_demo`, a suffix of your choosing) and import into that instead. The import is additive — it will merge into whatever it lands on.
 
-- **ndjson, not JSON.** `objects import` takes one object per line. A `[...]` array fails.
-- **`-w`** waits for indexing to finish. Without it the validation query can run against an index that has not caught up and return zero hits.
-- **`objectID`** is what makes a re-import an upsert instead of a duplicate. Include it, or pass `-a` to have the CLI generate IDs — but then a rerun creates duplicates.
-- **No `-y` needed**, and none exists: `objects import` is non-interactive by design. Reach for `-y` only on genuinely destructive commands, which this phase should not be running.
+`example.ndjson` is either a file the user already has or one you create first — the import does not invent it. ndjson means one JSON object per line, never a JSON array:
 
-Tell the user the index name you created and that it is example data, so they know what to delete later.
+```
+{"objectID":"1","name":"Wireless Headphones","category":"Audio","price":129}
+{"objectID":"2","name":"Mechanical Keyboard","category":"Input","price":89}
+```
+
+- **`-w`** waits for indexing to finish. Without it the validation query can race the import and return zero hits.
+- **`objectID`** makes a re-import an upsert instead of a duplicate. Include it, or pass `-a` to have IDs generated — but then a rerun duplicates.
+- **No `-y`** exists on `objects import`: it is non-interactive by design. That flag belongs to destructive commands, which this phase does not run.
+- **Say what you made.** Tell the user the index name and that it holds example data, so they know what to delete later.
 
 ## Sources
 
 - `algolia objects import --help` (Algolia CLI 1.17.0) — ndjson requirement, `-F`, `-w`, `-a`; no `-y` flag
 - `algolia indices clear --help` (Algolia CLI 1.17.0) — `-y/--confirm` exists here, which is the point
-- `algolia-cli` skill — credential precedence (env vars > flags > profile), ndjson conventions
