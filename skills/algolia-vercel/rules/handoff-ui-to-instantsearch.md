@@ -1,6 +1,6 @@
 ---
 title: Carry the UI Work Into InstantSearch, Don't Stop at the Query
-impact: EXIT
+impact: MEDIUM
 impactDescription: ending the turn at a validated query leaves the user's actual request unfinished — but building UI nobody asked for is its own defect
 tags: handoff, ui, instantsearch
 ---
@@ -29,11 +29,12 @@ npx skills add algolia/skills --skill instantsearch
 
 Then carry the work forward with the context it needs, so it can skip its own credentials questions and go straight to the record shape:
 
-- **Index:** `example_products` (or the existing index the validation query ran against)
-- **Record shape:** `objectID`, `name`, `category`, `price` (3 example records)
-- **App ID:** in `NEXT_PUBLIC_ALGOLIA_APP_ID` (merged into `.env.local`)
-- **Search-only key:** in `NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY` — the browser-safe one
+- **Index:** the index the validation query ran against (`example_products` if one was seeded)
+- **Record shape:** the attributes of a record you actually saw in the response
+- **App ID:** `NEXT_PUBLIC_ALGOLIA_APP_ID`, mapped from the injected `ALGOLIA_APP_ID` in `next.config.js`
+- **Search-only key:** `NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY`, mapped from `ALGOLIA_SEARCH_API_KEY` — the browser-safe one
 - **Write key:** `ALGOLIA_WRITE_API_KEY`, server-side only, not for the UI
+- **How the dev server starts:** `vercel env run -e development --scope <team> -- npm run dev`, so the injected names are present
 
 Pass the variable names, not the values. The UI reads them through `process.env`; nothing needs a key pasted into the transcript.
 
@@ -48,7 +49,7 @@ There is nothing wrong with the markup InstantSearch produces for a first pass:
 
 That is a reasonable starting point — but write it from the `instantsearch` guidance and the installed package version, not from memory, and let that skill drive provider placement, routing, SSR, and styling.
 
-Two things to say once the UI exists: the index holds **example data** under a name the user can delete, and the deployed app only sees the new environment variables after its next deployment.
+Two things to say once the UI exists: if an example index was seeded, it holds **example data** under a name the user can delete; and the deployed app only sees the new environment variables after its next deployment.
 
 Other exits from this phase:
 

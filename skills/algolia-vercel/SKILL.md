@@ -23,9 +23,9 @@ metadata:
 
 # Algolia on Vercel
 
-Onboarding guide for provisioning Algolia as a Vercel Marketplace resource, and for repairing one that already exists. Covers 10 rules across 5 phases, ordered so each phase's gate must hold before the next begins. Vercel owns the Algolia application on this path: it creates it, injects the credentials, and bills it.
+Onboarding guide for provisioning Algolia as a Vercel Marketplace resource, and for repairing one that already exists. Covers 10 rules across 5 phases, ordered so each phase's gate must hold before the next begins.
 
-Ends at a query that returns hits, then continues into the UI with `instantsearch` if that is what the user asked for.
+Ends at a query run with the search-only key, then continues into the UI with `instantsearch` if that is what the user asked for.
 
 ## When to Apply
 
@@ -33,8 +33,8 @@ Reference these guidelines when:
 
 - The user is on Vercel and has no Algolia application yet
 - The user asks to add Algolia "from the Vercel Marketplace", or names `vercel integration add algolia`
-- A Marketplace-provisioned resource needs a **rerun or repair** — it exists but is not connected to the target project, or `ALGOLIA_APP_ID` / `ALGOLIA_SEARCH_API_KEY` / `ALGOLIA_WRITE_API_KEY` never reached the local environment
-- A Vercel-provisioned Algolia application needs its first records and its first successful query
+- A Marketplace-provisioned resource needs a **rerun or repair** — it exists but is not connected to the target project, or the injected `ALGOLIA_*` variables never reached the local environment
+- A Vercel-provisioned Algolia application needs its first successful query
 
 Do **not** apply when:
 
@@ -49,41 +49,43 @@ Do **not** apply when:
 | Priority | Category     | Gate (must hold before the next phase)                                                     | Prefix         |
 | -------- | ------------ | ------------------------------------------------------------------------------------------ | -------------- |
 | 1        | Provisioning | The intended Algolia resource exists and is connected to the target project                 | `provision-`   |
-| 2        | Credentials  | App ID and both keys load from the staged file; the write key is not reachable from browser code | `credentials-` |
-| 3        | Example data | CONDITIONAL — only when the requested first search has no data to run against. When it runs: a newly named index holds records and no pre-existing index was modified. Skipped on a repair | `data-` |
-| 4        | Validation   | A real query with the search-only key returns `nbHits` ≥ 1 — against the seeded index, or read-only against an index that already exists | `validate-`    |
+| 2        | Credentials  | An Algolia CLI command runs under `vercel env run` with the injected credentials; the write key is not reachable from browser code | `credentials-` |
+| 3        | Example data | CONDITIONAL — only when the requested search has no data to run against and the user wants a demo index. When it runs: a newly named index holds records and nothing pre-existing was modified | `data-` |
+| 4        | Validation   | A query with the search-only key returns, and the claim made about it matches what it returned | `validate-`    |
 | 5        | Handoff      | CONDITIONAL — only when UI was asked for. Then the UI work continues with the index name and the credential references it needs | `handoff-`     |
 
 ## Quick Reference
 
-### 1. Provisioning (BLOCKING)
+Each rule file carries an `impact` of CRITICAL, HIGH or MEDIUM. That is editorial severity — how much damage getting it wrong does, and which rule to read first when time is short. It is not runtime enforcement, and it does not say whether a phase runs: the conditions for that stay in the category table above and in each rule's body.
 
-- `provision-vercel-owns-the-app` - Do not run `algolia auth signup` or `algolia application create` on this path
+### 1. Provisioning
+
+- `provision-vercel-owns-the-app` - On this path Vercel creates the application; do not run `algolia auth signup` or `algolia application create`
 - `provision-list-before-add` - `integration add` always creates a new resource; list first and pick the intended one
 - `provision-scope-and-link-explicitly` - Pin the team with `--scope` and the project with `vercel link --project`
 - `provision-read-help-for-plans-and-metadata` - Plan IDs and metadata keys are live data; never write them from memory
-- `provision-user-approves-plan-and-terms` - Plan and provider terms are the user's decision, and the CLI may hand terms acceptance back to a browser
+- `provision-user-approves-plan-and-terms` - Plan, terms and environments are the user's decision; a human step only when the CLI or browser requires one
 
-### 2. Credentials (BLOCKING)
+### 2. Credentials
 
-- `credentials-pull-without-clobbering` - `vercel env pull` overwrites its target and defaults to Development; ignore the staging pattern first, stop if the staging path already exists, pull the environment you connected, merge by parsing
-- `credentials-write-key-never-reaches-the-browser` - Only the search-only key gets a `NEXT_PUBLIC_` mapping, in `.env.local` and in the `next.config.js` `env` block that Vercel builds need
+- `credentials-run-with-vercel-env` - Run every Algolia command through `vercel env run -e <connected env>`, bridging `ALGOLIA_APP_ID` → `ALGOLIA_APPLICATION_ID` inside the child; `env pull` only when a file is genuinely required
+- `credentials-write-key-never-reaches-the-browser` - Only the search-only key gets a `NEXT_PUBLIC_` mapping, in the `next.config.js` `env` block
 
-### 3. Example data (CONDITIONAL — new setups that need data)
+### 3. Example data — only when there is nothing to search
 
-- `data-additive-example-index` - Import into a new index name; never clear or delete to make room, and do not seed at all when an index with records already exists
+- `data-additive-example-index` - Import into a new index name; never clear or delete to make room, and do not seed on a repair or when an index already holds records
 
-### 4. Validation (REQUIRED)
+### 4. Validation
 
-- `validate-search-returns-hits` - Query with the search-only key and read `nbHits`; "no error" is not a passing search
+- `validate-search-returns-hits` - Query with the search-only key and read `nbHits`; "no error" is not a passing search, and a 0-hit response proves access, not results
 
-### 5. Handoff (CONDITIONAL — EXIT when UI was asked for)
+### 5. Handoff — only when UI was asked for
 
 - `handoff-ui-to-instantsearch` - Keep going into the UI with `instantsearch`; do not stop at the query and leave the ask unfinished
 
 ## How to Use
 
-**Read the rule file for a phase before you run that phase's commands**, not afterwards. The Sequence below is safe on its own, but every judgement call it compresses — which resource, which plan, what to do when a variable is missing — lives in the rule files:
+**Read the rule file for a phase before you run that phase's commands**, not afterwards. The Sequence below is an outline, not a script you can follow safely on its own: every judgement call it compresses — which resource, which plan, which index name, what to do when a variable is missing or points at the wrong application — lives in the rule files:
 
 ```
 rules/provision-vercel-owns-the-app.md
@@ -91,7 +93,7 @@ rules/provision-list-before-add.md
 rules/provision-scope-and-link-explicitly.md
 rules/provision-read-help-for-plans-and-metadata.md
 rules/provision-user-approves-plan-and-terms.md
-rules/credentials-pull-without-clobbering.md
+rules/credentials-run-with-vercel-env.md
 rules/credentials-write-key-never-reaches-the-browser.md
 rules/data-additive-example-index.md
 rules/validate-search-returns-hits.md
@@ -100,13 +102,9 @@ rules/handoff-ui-to-instantsearch.md
 
 Each rule file contains why it matters, an incorrect example with what it breaks, a correct example, and sources for the commands and flags used.
 
-[`scripts/with-algolia-env.mjs`](scripts/with-algolia-env.mjs) runs one Algolia CLI command with credentials read from the staged env file. It parses the file with `node:util` `parseEnv` — it never sources or evals it — and overrides only `ALGOLIA_APPLICATION_ID` and `ALGOLIA_API_KEY`, so a stale export cannot point the command at a different application. Needs Node ≥ 20.12.
-
-Every example below invokes it as `"$ALGOLIA_VERCEL_SKILL_DIR/scripts/with-algolia-env.mjs"`. Set that variable once (step 0 below) to the **absolute path of the directory containing the `SKILL.md` you are reading** — wherever this skill happens to be installed. Do not write a repository-relative path such as `skills/algolia-vercel/…`: installed on its own, this skill is not inside the app's repository. Keep the working directory on the app being wired up; only the helper path points at the skill.
-
 ## Sequence
 
-The happy path for a **new setup**. Step 0 and steps 2–3 only read; step 1 (`vercel link`) writes `.vercel/project.json` in the repo; step 4 is the one command that creates a resource and attaches it to a billing plan.
+The happy path for a **new setup**. Steps 2–3 are the read-only discovery; step 0 is not read-only (`vercel login` authenticates and writes local CLI config) and step 1 (`vercel link`) writes `.vercel/project.json`; step 4 is the one command that creates a resource and attaches it to a billing plan. The working directory stays on the app.
 
 ```bash
 # 0. Tooling and auth, before anything else.
@@ -114,10 +112,6 @@ The happy path for a **new setup**. Step 0 and steps 2–3 only read; step 1 (`v
 vercel --version    || npx vercel --version         # https://vercel.com/docs/cli
 algolia --version   || npx @algolia/cli --version   # https://www.algolia.com/doc/tools/cli/get-started/overview/
 vercel whoami       || vercel login                 # opens a browser; hand the user the URL if you cannot open one
-
-#    Resolve this skill's installed directory ONCE — absolute, no trailing slash. cwd stays the app.
-ALGOLIA_VERCEL_SKILL_DIR="$HOME/.claude/skills/algolia-vercel"   # replace with this skill's real path
-test -f "$ALGOLIA_VERCEL_SKILL_DIR/scripts/with-algolia-env.mjs"
 
 # 1. Pin the team and the project (--yes is safe once both are settled)
 vercel link --yes --project storefront --scope acme-team
@@ -130,58 +124,66 @@ vercel integration list --all --integration algolia --format=json --scope acme-t
 vercel integration add algolia --help
 
 # 4. Provision — only once the user has settled plan, region, terms AND environments.
-#    Set PLAN_ID and REGION_CODE from step 3's own output — the user picks the LABEL
-#    ("Free", "Europe"), you read the matching ID off the help you just ran. The IDs are
-#    version-stamped, so nothing here hardcodes one; the expansions below abort the command
-#    rather than let an unset or remembered value through.
-#    -e development here is ILLUSTRATIVE: pass the environment(s) the user chose, and pull
-#    that same environment in step 5. --no-env-pull keeps add's automatic pull from
-#    overwriting .env.local behind your back.
+#    Set PLAN_ID and REGION_CODE from step 3's own output: the user picks the LABEL
+#    ("Free", "Europe"), you read the matching ID off the help you just ran.
+#    -e development is ILLUSTRATIVE — pass the environment(s) the user chose, and name
+#    that same one on every `vercel env run` below.
 : "${PLAN_ID:?Set PLAN_ID to the exact ID from the live --help output}"
 : "${REGION_CODE:?Set REGION_CODE to a cluster_region_code option from the same output}"
 vercel integration add algolia --name storefront-search --scope acme-team \
   -m cluster_region_code="$REGION_CODE" --plan "$PLAN_ID" \
   -e development --no-env-pull
 
-# 5. Stage the credentials. Ignore the pattern BEFORE anything writes it, and pull only
-#    into a path that does not exist yet — see below for why an existing one is a stop.
-grep -q '^\.env\*\.local$' .gitignore 2>/dev/null || printf '\n.env*.local\n' >> .gitignore
-STAGING=.env.algolia.local
-if [ -e "$STAGING" ]; then
-  echo "refusing to touch existing $STAGING — choose an unused .env.*.local path" >&2
-  exit 1
-fi
-vercel env ls --scope acme-team                                  # names and targets, no values
-vercel env pull "$STAGING" --environment development --scope acme-team   # match step 4's -e
-cut -d= -f1 "$STAGING" | grep '^ALGOLIA_'                        # confirm the names, no values
+# 5. Confirm the variable NAMES the integration injected. No values are printed.
+#    If --prefix was used, the names differ — use whatever this prints, verbatim, below.
+vercel env ls --scope acme-team
 
-# 6. NEW SETUPS THAT NEED DATA ONLY — skip entirely on a repair, or when an index with
-#    records already exists. Import example records into a NEW index with the write key.
-node "$ALGOLIA_VERCEL_SKILL_DIR/scripts/with-algolia-env.mjs" "$STAGING" ALGOLIA_WRITE_API_KEY -- \
-  algolia objects import example_products -F example.ndjson -w
+# 6. ONLY IF THERE IS NOTHING TO SEARCH and the user wants a demo index. Skip on a repair.
+cat > example.ndjson <<'EOF'
+{"objectID":"1","name":"Wireless Headphones","category":"Audio","price":129}
+{"objectID":"2","name":"Mechanical Keyboard","category":"Input","price":89}
+{"objectID":"3","name":"27-inch Monitor","category":"Displays","price":329}
+EOF
+vercel env run -e development --scope acme-team -- sh -eu -c '
+: "${ALGOLIA_APP_ID:?not injected — check: vercel env ls}"
+: "${ALGOLIA_WRITE_API_KEY:?not injected — check: vercel env ls}"
+export ALGOLIA_APPLICATION_ID="$ALGOLIA_APP_ID"
+export ALGOLIA_API_KEY="$ALGOLIA_WRITE_API_KEY"
+exec "$@"
+' algolia-env algolia objects import example_products -F example.ndjson -w
 
-# 7. Validate with the key the browser will use. On a repair, point this at the index that
-#    already exists (algolia indices list) — a read-only query, no seeding.
-node "$ALGOLIA_VERCEL_SKILL_DIR/scripts/with-algolia-env.mjs" "$STAGING" ALGOLIA_SEARCH_API_KEY -- \
-  algolia search example_products --query "headphones" --output json
+# 7. Validate with the key the browser will use. On a repair, point this at an index the
+#    application already has (algolia indices list) — read-only, no seeding.
+vercel env run -e development --scope acme-team -- sh -eu -c '
+: "${ALGOLIA_APP_ID:?not injected — check: vercel env ls}"
+: "${ALGOLIA_SEARCH_API_KEY:?not injected — check: vercel env ls}"
+export ALGOLIA_APPLICATION_ID="$ALGOLIA_APP_ID"
+export ALGOLIA_API_KEY="$ALGOLIA_SEARCH_API_KEY"
+exec "$@"
+' algolia-env algolia search example_products --query "headphones" --output json
+
+# 8. Run the app with the same variables.
+vercel env run -e development --scope acme-team -- npm run dev
 ```
 
-Step 5 stops rather than reuses. A file already at the staging path is credentials from *some* run — possibly a different Algolia application, a different project, or a rotated key — and the variable names inside it look identical in every one of those cases, so the names cannot tell you it is the right one. Pulling over it destroys it; trusting it wires the app to whatever it happens to hold. Neither is acceptable silently, so the existence test is a hard stop: set `STAGING` to an unused path that still matches the ignored pattern (`.env.algolia.2.local`, `.env.algolia-storefront.local`), thread that same `$STAGING` through every later command — the helper invocations in steps 6 and 7 and the merge — and pull fresh into it. Only the user can decide to delete the old file; say what is there and let them.
+The `sh -eu -c` block is **single-quoted on purpose**: your shell expands nothing, so `$ALGOLIA_APP_ID` is resolved by the child, after `env run` has fetched the variables. The `${VAR:?…}` guards stop before `exec` if one is missing, and the command sits after the closing quote as argv, so a query containing `$` or `;` stays data. Change the key variable and the trailing command; leave the rest identical.
 
-`--environment` on the pull must name the environment you connected on `add`: `vercel env pull` defaults to Development regardless of what `add` received, so `-e production` plus a bare `env pull` stages nothing. For a preview branch, add `--git-branch <branch>`.
+The guards catch an **absent** variable, not a wrong one. `env run` layers the fetched records first, then local `.env` files, then your shell — last wins — so a stale export or an old `.env.local` overrides what Vercel just sent, with no error. A name in `vercel env ls` means the project has it configured, not that the command used that value. Precedence, prefixed names and how to clear a stale local value: `rules/credentials-run-with-vercel-env.md`.
+
+`-e` on `env run` must name the environment you connected on `add`. It defaults to `development` regardless of what `add` received, so `-e production` on `add` plus a bare `env run` fetches variables that are not there.
 
 Branches off this path:
 
-- **Step 2 lists the intended resource, already connected to this project** → skip steps 3–4 and the `connect` command entirely. Go to step 5; a missing variable locally is a pull problem, not a provisioning problem.
-- **Step 2 lists the intended resource, not connected to this project** → connect it with the environment the user chose and pull the same one: `vercel integration resource connect storefront-search storefront --scope acme-team -e development --yes`, then step 5.
+- **Step 2 lists the intended resource, already connected to this project** → skip steps 3–4 and `connect` entirely. Go to step 5; a missing variable locally is a credentials problem, not a provisioning problem.
+- **Step 2 lists the intended resource, not connected to this project** → connect it with the environment the user chose: `vercel integration resource connect storefront-search storefront --scope acme-team -e development --yes`, then step 5.
 - **Step 2 lists resources but none is the one the user wants** → show them the list and let them choose; only provision when they say they want a separate one.
-- **Repair only** ("the variables never reached my machine", "`process.env.ALGOLIA_APP_ID` is undefined") → steps 5 and 7 plus the merge, and nothing else. Do not seed a demo index and do not build UI; validate read-only against an index the application already has. Seed only if the user's own first search has no data behind it.
+- **Repair only** ("the variables never reached my machine", "`process.env.ALGOLIA_APP_ID` is undefined", "it is pointing at the wrong application") → steps 5, 7 and 8, and nothing else. Do not seed a demo index and do not build UI. Check the local layers too: a stale shell export or `.env.local` overrides the fetched values, so "wrong app ID" is usually local, not a provisioning fault. A query that returns `nbHits` 0 against an existing index still shows the credentials work — report that, do not seed to make the number bigger.
 
-The staging file is not a file Next.js reads. Merging it into `.env.local` is part of the credentials phase — see `rules/credentials-pull-without-clobbering.md`.
+**When the app is Next.js**, getting the two browser-safe values into client code is `next.config.js`, not a dotenv file — see `rules/credentials-write-key-never-reaches-the-browser.md`. For any other framework the same principle holds (search-only key to the browser, write key never), but the mechanism differs: read `vercel integration guide algolia --framework <framework>` rather than porting the Next.js snippet.
 
 ## Stop and Ask
 
-These are the user's decisions. Ask for the ones you do not already have an answer to, once — an answer they already gave ("free tier", "Europe", "the acme-team account") counts, and re-confirming it is noise.
+These are the user's decisions. Ask once for the ones you do not already have an answer to — an answer they already gave ("free tier", "Europe", "the acme-team account") counts, and re-confirming it is noise. Do not add approval gates beyond these.
 
 | Ambiguity                                                      | Ask                                                                      |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -190,11 +192,12 @@ These are the user's decisions. Ask for the ones you do not already have an answ
 | No linked Vercel project                                       | Which project? Link it before provisioning.                              |
 | Plan not chosen, or its terms not yet accepted                 | Which plan, and do you accept the provider terms?                        |
 | Crawler metadata (`crawler`, `crawler_domain`) offered         | Enable the crawler, and for which domain?                                |
-| Environments to connect (`production`/`preview`/`development`) | Which ones? `-e` defaults to all three, and `vercel env pull` must then name the same one — it defaults to Development. |
+| Environments to connect (`production`/`preview`/`development`) | Which ones? `-e` on `add` defaults to all three, and `vercel env run -e` must then name the one you want — it defaults to development. |
+| Nothing in the application to search                           | Seed a small example index, or point at data you already have?           |
 
 `vercel integration add` runs non-interactively when it detects an agent, so a prompt you would have relied on will not appear — settle these before running it, not during.
 
-Terms acceptance is not yours to give. `vercel integration accept-terms` requires an interactive terminal and human confirmation, and `add` can stop on the same requirement or send the user to the dashboard. If it does, relay the message and the URL and wait. Do not look for a way around it. The Vercel dashboard marketplace flow is a fully supported alternative — if the user prefers it, let them provision there and pick up at step 5.
+Terms acceptance is not yours to give, and it becomes a human step when the CLI or the browser makes it one: `vercel integration accept-terms` requires an interactive terminal and human confirmation, and `add` can stop on the same requirement or send the user to the dashboard. If it does, relay the message and the URL and wait. The Vercel dashboard marketplace flow is a fully supported alternative — if the user prefers it, let them provision there and pick up at step 5.
 
 ## Companion Skills
 
@@ -211,4 +214,4 @@ Referencing a skill does not install it. Offer the explicit command when the use
 
 The rule-category / prefixed-rule layout of this skill is modelled on the public [`vercel-labs/agent-skills`](https://github.com/vercel-labs/agent-skills) format (`skills/react-best-practices`, `skills/composition-patterns`). Algolia adapted it for onboarding; this is not an endorsed or adopted Vercel skill.
 
-Commands were verified against Vercel CLI 56.2.1, Algolia CLI 1.17.0, [`vercel integration`](https://vercel.com/docs/cli/integration) and [`vercel link`](https://vercel.com/docs/cli/link). Plan IDs, metadata keys, and variable names come from the live integration and change without notice — read them from `vercel integration add algolia --help` and `vercel integration guide algolia` at run time.
+Commands were verified against Vercel CLI 56.2.1 and Algolia CLI 1.17.0, against [`vercel env`](https://vercel.com/docs/cli/env#running-commands-with-environment-variables), [`vercel integration`](https://vercel.com/docs/cli/integration) and [`vercel link`](https://vercel.com/docs/cli/link). Plan IDs, metadata keys, and variable names come from the live integration and change without notice — read them from `vercel integration add algolia --help`, `vercel integration guide algolia`, and `vercel env ls` at run time.

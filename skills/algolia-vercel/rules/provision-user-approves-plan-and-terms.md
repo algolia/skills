@@ -1,32 +1,27 @@
 ---
 title: The Plan and the Terms Are the User's to Accept
-impact: BLOCKING
+impact: HIGH
 impactDescription: provisioning attaches a billing plan and accepts a third party's legal terms on the user's behalf
 tags: provisioning, billing, terms, consent
 ---
 
 ## The Plan and the Terms Are the User's to Accept
 
-`vercel integration add` installs a marketplace integration on the team and provisions a resource against a billing plan. That is a commercial and a legal decision, and it is not one an agent gets to make silently.
+`vercel integration add` installs a marketplace integration on the team and provisions a resource against a billing plan. That is a commercial and a legal decision, and `--non-interactive` is the default when an agent is detected — so the confirmation screen a human would have seen does not appear. Nothing will stop a wrong `--plan`.
 
-Two things follow, and they are easy to confuse:
-
-1. **You must not pick the plan.** `--non-interactive` is "the default when an agent is detected", so the confirmation screen a human would have seen does not appear. Nothing will stop a wrong `--plan`.
-2. **You also cannot promise to accept the terms.** Terms acceptance can require a human: `vercel integration accept-terms <integration>` requires an interactive terminal and human confirmation, and the marketplace flow can route the acceptance to the Vercel dashboard. If the command stops and asks for that, it has stopped for a reason.
+Ask for exactly what is still open: team/scope, project, plan, environments, and the crawler metadata if it is offered. **An answer the user already gave is an answer.** "Europe, free tier" settles the plan and the region; going back to confirm it is noise, and confirming a plan *ID* they have no way to check is worse than noise.
 
 **Incorrect (inventing a plan ID, then treating a block as an obstacle):**
 
 ```bash
 # "Provision Algolia on Vercel, Europe, free tier"
-vercel integration add algolia -m cluster_region_code=cdg1 --plan v8.5-plg-free
+vercel integration add algolia -m cluster_region_code=cdg1 --plan "$SOME_ID_FROM_MEMORY"
 # → terms not accepted; command stops
 ```
 
-Two defects. The plan ID was written from memory — Algolia's are version-stamped and go stale — and the user never saw the real list. And when the command stops on terms, there is no flag to get past it and inventing one is worse than reporting the stop.
+Two defects. The plan ID was written from memory — Algolia's are version-stamped and go stale. And when the command stops on terms, there is no flag to get past it; inventing one is worse than reporting the stop.
 
 **Correct (read the live plans, resolve only what is still open, then run):**
-
-The user said "Europe, free tier". That is an answer; do not ask for it again. What is still unknown is which plan ID carries the Free label and which cluster code is the European one, and both are in `--help`:
 
 ```bash
 vercel integration add algolia --help
@@ -46,11 +41,11 @@ vercel integration add algolia --name storefront-search --scope acme-team \
   -e development --no-env-pull
 ```
 
-Set both from that output — `PLAN_ID` to the ID printed next to `Free`, `REGION_CODE` to the European cluster code. The user already chose the labels; do not go back and ask them to confirm an ID they have no way to check.
+The environment list also has a downstream consequence: `vercel env run` must name the same environment, since it defaults to development.
 
-The environment list is also the user's to confirm, and it has a consequence downstream: `vercel env pull` must name the same environment, since it defaults to Development on its own.
+### If a human step is required
 
-If it stops on terms, relay the message and any URL verbatim and wait for the user. The Vercel dashboard marketplace flow is a fully supported alternative — the user can provision there and you pick up at the credentials phase.
+Terms acceptance goes to a human **when the CLI or the browser demands it** — not as a routine extra gate you add. `vercel integration accept-terms <integration>` "requires an interactive terminal and human confirmation", and the marketplace flow can route acceptance to the Vercel dashboard or to a browser. If `add` stops on that, relay the message and any URL verbatim and wait. Do not look for a way around it. The dashboard marketplace flow is a fully supported alternative — the user can provision there and you pick up at the credentials phase.
 
 Notes:
 
@@ -60,6 +55,7 @@ Notes:
 
 ## Sources
 
-- https://vercel.com/docs/cli/integration — non-interactive detection, `accept-terms` ("requires an interactive terminal and human confirmation"), `balance`, `create-threshold`
-- `vercel --help` (Vercel CLI 56.2.1) — `--non-interactive`: "when an agent is detected this is the default"
+- `vercel --help` / `vercel env --help` global options (Vercel CLI 56.2.1) — `--non-interactive`: "Run without interactive prompts; when an agent is detected this is the default"
+- `vercel integration accept-terms --help` (Vercel CLI 56.2.1) — "Requires an interactive terminal and human confirmation. Does not replace integrations that require a browser or device attestation."
+- https://vercel.com/docs/cli/integration — `add`, `accept-terms`, `balance`, `resource create-threshold`
 - https://vercel.com/kb/guide/using-coding-agents-to-procure-vercel-marketplace-integrations — critical actions such as choosing a paid plan or accepting terms are routed to human review

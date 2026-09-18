@@ -23,21 +23,6 @@
 | `algolia-quickstart` | Create an Algolia account and provision an application (App ID / API key) via the CLI |
 | `algolia-vercel` | Provision Algolia through the Vercel Marketplace, wire the injected credentials, and validate a first search |
 
-#### Starting on Vercel
-
-```bash
-npx skills add algolia/skills --skill algolia-vercel
-```
-
-Then paste:
-
-```text
-Our project ships on Vercel and we have no Algolia yet. Use the algolia-vercel skill to
-provision Algolia as a Vercel Marketplace resource, wire up the injected credentials, load
-example data, and show me a search that returns hits. Check what already exists first, and
-confirm the team, project, region and plan with me before provisioning.
-```
-
 ### Implementation planning suite (`algolia-implementation`)
 
 A companion bundle that plans, sequences, and validates Algolia implementations end to end. It routes live operations to `algolia-cli` / `algolia-mcp` / `algobot-cli` and code-level UI work to `instantsearch`. Install as a bundle — `algolia-discovery-planning` is the entry point and loads the companion skills per phase.
