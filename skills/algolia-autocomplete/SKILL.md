@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: algolia
-  version: "0.6"
+  version: "0.7"
 ---
 
 # Algolia Autocomplete
