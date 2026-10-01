@@ -80,7 +80,7 @@ Use this skill when changing how Algolia ranks, filters, facets, merchandises, o
 
 When reviewing an existing index, do not stop at "nothing is erroring." The costliest configuration defects are symptom-free: the store works, queries return, and the settings are still wrong. Check each of these against the live settings, not the code:
 
-- `searchableAttributes`: a real ordered array (no comma-joined strings), name/brand-class attributes above descriptive text, deliberate `unordered()` choices.
+- `searchableAttributes`: an ordered array, with name/brand-class attributes above descriptive text and deliberate `unordered()` choices. A comma-joined entry (`"name,brand"`) is valid and gives those attributes equal priority — flag it only when the tie looks unintended, such as a title sharing a level with a long description.
 - `customRanking`: does a near-unique numeric lead the chain (raw popularity, raw sales)? If so, later tie-breakers are inert — bucket the leading signal and require a complete ordered chain. Adding one availability flag is necessary but not sufficient.
 - Facet completeness: every attribute the UI filters, sorts bounds, or drills into is declared with the right mode — `searchable()` for name-known or high-cardinality pickers (default it on for brand-like facets; document the decision if skipped), full facet (never `filterOnly`) for range widgets, hierarchical levels when hierarchical data exists.
 - Retrieval hygiene: query the index with the public search key and read the hit payload — internal ranking fields present is a finding.
