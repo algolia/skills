@@ -1,10 +1,10 @@
 # Autocomplete Feature Implementation Guidance
 
-The autocomplete widget is exported as `EXPERIMENTAL_Autocomplete` from `react-instantsearch`. Despite the `EXPERIMENTAL_` prefix, this is the widget to use. It is the maintained autocomplete path in React InstantSearch.
+The autocomplete widget is exported as `Autocomplete` from `react-instantsearch`. It is stable from react-instantsearch 7.41.0 and is the maintained autocomplete path in React InstantSearch. Earlier 7.x releases export it as `EXPERIMENTAL_Autocomplete`. That name remains as a deprecated alias. It is marked `@deprecated` with the message "EXPERIMENTAL_Autocomplete is no longer experimental. Please use Autocomplete instead." The npm builds don't print it at runtime, so rely on the type annotation. Import `Autocomplete`; if the installed version predates 7.41.0, prefer upgrading.
 
 ## Discovering Widget Capabilities
 
-Before implementing any feature manually, read the type definitions from `node_modules/react-instantsearch` to discover `EXPERIMENTAL_Autocomplete`'s available props. Do not rely on training data or web searches for this. The installed types are the source of truth. Many features (recent searches, keyboard navigation, responsive behavior, etc.) are handled via built-in props.
+Before implementing any feature manually, read the type definitions from `node_modules/react-instantsearch` to discover `Autocomplete`'s available props. Do not rely on training data or web searches for this. The installed types are the source of truth. Many features (recent searches, keyboard navigation, responsive behavior, etc.) are handled via built-in props.
 
 - Use built-in props rather than building custom behavior
 - If a feature is available as a prop, use it. Do not reimplement it

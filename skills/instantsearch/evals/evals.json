@@ -4,13 +4,13 @@
     {
       "id": 1,
       "prompt": "Add autocomplete search to this site using Algolia.",
-      "expected_output": "Discovery questions followed by a full-featured autocomplete implementation using EXPERIMENTAL_Autocomplete from react-instantsearch",
+      "expected_output": "Discovery questions followed by a full-featured autocomplete implementation using Autocomplete from react-instantsearch",
       "files": [],
       "expectations": [
         "Asks for Algolia credentials (app ID, API key, index name) before writing any code",
         "Asks whether a query suggestions index exists",
         "Inspects the project's styling approach, breakpoints, and framework before building",
-        "Uses EXPERIMENTAL_Autocomplete from react-instantsearch, not @algolia/autocomplete-js",
+        "Uses Autocomplete from react-instantsearch (not the deprecated EXPERIMENTAL_Autocomplete alias), not @algolia/autocomplete-js",
         "Uses InstantSearchNext from react-instantsearch-nextjs if the project uses Next.js App Router",
         "Creates the search client with algoliasearch v5 outside of React components",
         "Implements multiple sources (query suggestions + products) when a QS index is available",
@@ -170,16 +170,16 @@
     {
       "id": 12,
       "prompt": "Add autocomplete search to a vanilla JS site. The page already mounts an InstantSearch.js results page. The autocomplete should sit in the header and link to product detail pages.",
-      "expected_output": "Autocomplete built with @algolia/autocomplete-js, separate from the instantsearch.js widget tree, sharing the same module-level searchClient",
+      "expected_output": "Autocomplete built with the autocomplete widget from instantsearch.js/es/widgets, added to the existing InstantSearch.js instance that runs the results page",
       "files": [],
       "expectations": [
-        "Picks @algolia/autocomplete-js as the autocomplete library, NOT the instantsearch.js searchBox widget for autocomplete behavior",
-        "Does NOT treat @algolia/autocomplete-js as an anti-pattern (it is the recommended path for vanilla JS, unlike React)",
-        "Calls autocomplete({ container, getSources, ... }) once and saves the returned instance for later destroy() on teardown",
-        "Reuses the module-level searchClient already used by instantsearch.js, declared outside any function",
-        "Uses algoliasearch v5's search method shape inside getSources",
-        "Imports @algolia/autocomplete-theme-classic (or documents the chosen theme) so the dropdown is styled",
-        "Confirms the autocomplete options shape against the live Algolia docs or installed types before scaffolding"
+        "Picks the autocomplete widget from instantsearch.js/es/widgets, NOT @algolia/autocomplete-js and NOT a searchBox + hits dropdown",
+        "Adds autocomplete to the page's existing instantsearch instance with addWidgets, rather than creating a second instance or a second input",
+        "Reuses the module-level searchClient and instance, declared outside any function, with search.start() called once",
+        "Uses showQuerySuggestions and/or indices (with getURL linking to /products/[objectID]) instead of hand-written getSources",
+        "Uses the widget's options (showRecent, showQuerySuggestions, indices, templates) only after reading the installed autocomplete.d.ts or the live widget reference",
+        "Targets ais-Autocomplete* classes (or an instantsearch.css theme) for styling, not aa-* classes",
+        "If the answer covers teardown, it uses search.removeWidgets(...) or search.dispose(), not an autocomplete-js destroy() call"
       ]
     }
   ]
