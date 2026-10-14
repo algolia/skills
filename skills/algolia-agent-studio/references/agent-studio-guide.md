@@ -158,6 +158,31 @@ When an answer is incomplete, unsafe, or wrong, diagnose in this order:
 
 Record the broken link and retest the original scenario plus one adjacent edge case after each change.
 
+## Integration Facts
+
+Verified against the completions endpoint and Conversations view in October 2026. Re-check the [conversations guide](https://www.algolia.com/doc/guides/algolia-ai/agent-studio/how-to/conversations.md) and [completions reference](https://www.algolia.com/doc/rest-api/agent-studio/completions) before relying on them; conversation endpoints are beta.
+
+- **Conversation identity.** The request body takes an optional top-level `id` (prefix `alg_cnv_`). Without it, Agent Studio generates a new conversation per request. A turn that calls a client-side tool is two requests, so it shows as two conversations, and a follow-up that replays history shows as a third.
+- **Client-chosen ids are global to the agent.** Hash a browser-supplied conversation name with the authenticated tenant and user on the server, so one user cannot write into another's transcript.
+- **Message ids must be stable.** When a client replays history, send each message with the id it was first sent with (prefix `alg_msg_`). A replay with new ids duplicates turns; a replay with the same ids updates them.
+- **Titles come from the first user message** (up to 60 characters). Put the user's question first in that message and any serialized context after it.
+- **Request-time search parameters are a whitelist.** `algolia.searchParameters[index]` accepts only filtering and personalization keys (for example `filters`, `facet_filters`, `optional_filters`, `distinct`, `attributes_to_retrieve`, `user_token`). `hitsPerPage`, `attributesToHighlight` and `attributesToSnippet` return HTTP 422 there. Set them on the Search tool's index configuration instead.
+- **Default retrieval is large.** Unset, each search returns 20 hits with full records plus `_highlightResult` and `_snippetResult`; on one text-heavy index the markup was half the payload. For answer generation, set `hitsPerPage`, `attributesToRetrieve`, and empty `attributesToHighlight` and `attributesToSnippet` on the tool.
+- **The Conversations list loads after the page.** It shows "No conversations found" until its request returns, which can take well over ten seconds. Wait for it before concluding anything.
+
+## Latency
+
+Trace a streamed completion (`stream=true`) and time the events: `start`, `tool-input-available`, `tool-output-available`, the first `text-delta`, and `finish`. On a two-index retrieval agent the split was roughly: planning generation 3–6 s, search about 40 ms, results to first text 1–3 s, answer streaming 2–3 s.
+
+Levers, largest first:
+
+1. **Retrieve before the agent when retrieval is predictable.** Run the same searches server-side, concurrently with other request preparation, and pass compact results in the request context with an instruction to answer from them. Keep the Search tool attached as a fallback. On one implementation this took median time to first text from 7.9 s to 2.7 s, and the agent made no tool calls of its own. Trade-offs to handle: apply the same access filters the tool uses; build a sensible query for short follow-ups (for example, include the previous question); and note that Agent Studio's search-usage analytics no longer reflect retrieval.
+2. **Shrink retrieval payloads** as described in Integration Facts.
+3. **Shorten the answer contract.** Output length is streaming time; a structured envelope that repeats citations adds tokens after the answer.
+4. **Model choice last.** Compare models only after the phases above are measured.
+
+Benchmark changes against the published agent with several distinct questions per variant. Identical requests can be served from Agent Studio's response cache in well under a second, which hides the real cost.
+
 ## Events And Feedback
 
 Plan events early:
@@ -182,6 +207,8 @@ Use stable event names and preserve userToken/session identity when the same exp
 
 ## QA Checklist
 
+- A two-turn conversation with a tool call appears as one conversation in Conversations, titled by the question, with no duplicated turns.
+- Time to first text and total time measured per phase against the published agent, not the dashboard preview.
 - Happy path and ambiguous intent.
 - No results and low-confidence retrieval.
 - Tool error and slow response.
