@@ -125,11 +125,11 @@
     {
       "id": 11,
       "prompt": "My production shopping agent scores badly on tone and faithfulness evals. Can you improve its settings automatically?",
-      "expected_output": "Proposes the clone-based tuning loop: keep the production agent untouched, clone it via scaffold + create + providerId patch, keep the clone as draft (evals work on unpublished agents), run a baseline eval on the original, tune the clone, re-run on the same dataset, compare before/after, and only promote to the production agent after showing the diff and getting explicit approval.",
+      "expected_output": "Proposes the clone-based tuning loop: keep the production agent untouched, clone it via scaffold + create (the scaffold strips deprecated config fields and captures providerId), keep the clone as draft (evals work on unpublished agents), run a baseline eval on the original, tune the clone, re-run on the same dataset, compare before/after, and only promote to the production agent after showing the diff and getting explicit approval.",
       "files": [],
       "assertions": [
         "Does NOT modify the production agent directly without explicit approval",
-        "Clones the agent (scaffold + create + patch providerId) and keeps the clone in draft",
+        "Clones the agent (scaffold + create) and keeps the clone in draft",
         "Runs a baseline eval on the original and compares candidate runs against it (same dataset)",
         "Maps tone failures to an OUTPUT STYLE instruction contract and faithfulness failures to accuracy instructions or tool returned fields",
         "Requires showing the config diff and explicit user approval before promoting/publishing"

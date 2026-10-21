@@ -33,10 +33,12 @@ If duplicating (default), create the clone and record its id:
 
 ```bash
 algobot agents scaffold <srcId>
-# edit agent-config.json: remove deprecated config fields (enableAlgoliaMcp),
-# set name to "<name> [eval-tuning <date>]"
+# edit agent-config.json: set name to "<name> [eval-tuning <date>]"
+# (since genai-demos#23 the scaffold already strips deprecated config fields
+#  and captures providerId, which `agents create` forwards; until the npm
+#  release ships it, manually remove `enableAlgoliaMcp` and patch the
+#  provider: algobot agents patch <cloneId> --json provider-patch.json)
 algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"
-algobot agents patch <cloneId> --json <(echo '{"providerId": "<srcProviderId>"}')
 ```
 
 Keep the clone in `draft` for the entire loop: agents do not need to be

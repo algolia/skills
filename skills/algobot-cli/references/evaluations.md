@@ -240,11 +240,12 @@ Safety rules for the loop:
 
 ## Gotchas
 
-- `evals experiments create` requires the agent to have a provider linked
-  (scaffolded clones need `agents patch` with `providerId`, see issue
-  algolia/genai-demos#23).
-- `agents copy` refuses same-environment copies; use the scaffold -> create ->
-  patch flow above.
+- `evals experiments create` requires the agent to have a provider linked.
+  Since genai-demos#23, `agents scaffold` captures `providerId` and `agents
+  create` forwards it, so the clone flow below needs no manual patch (needs
+  an npm release containing #23; until then use the manual patch).
+- `agents copy` refuses same-environment copies; use the scaffold -> create
+  flow above.
 - Datasets resolve-or-create per experiment: pass `--dataset-id` of the
   baseline experiment's dataset to make runs comparable.
 - `compare` requires the two runs to share a dataset; deltas are B - A.

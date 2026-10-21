@@ -175,9 +175,8 @@ clone-based "improve my agent" tuning loop, read
 - **`--config` auto-discovers `agent-config.json`** in cwd. Explicit: `--config path/to/config.json`.
 - **algobot = dev/deploy tool; REST API = production invocation.** Use algobot to build and publish agents; call the Agent Studio completions API directly from your app. Don't guess the endpoint URL — run `algobot agents get <id>` to retrieve it, or check the Agent Studio dashboard.
 - **Completions URL has no `/agent-studio` prefix.** Use `agent-studio.<region>.algolia.com/1/agents/<id>/completions?stream=false&compatibilityMode=ai-sdk-4`. `compatibilityMode` is required (omitting → 422). Response: `{ id, role, content }` with `content` as a flat string.
-- **`agents scaffold` output is not re-creatable as-is.** `agents create` rejects the scaffolded `config.enableAlgoliaMcp` ("not supported anymore", HTTP 422) and the scaffold omits `providerId`, so the clone fails anything needing a provider (including `evals experiments create`, "Agent has no provider set"). Strip the field and `agents patch <id> --json '{"providerId":"<uuid>"}'` after create.
 - **Agents do not need to be published to be evaluated.** `evals experiments create` works on a `draft` agent (it runs completions server-side without serving traffic). Publish only when the tuning result should go live.
-- **`agents create --provider <name>` does not link the provider.** Agent stays `draft`, publish 409s. After create, run `algobot agents patch <id> --json patch.json` with `{"providerId": "<uuid>"}`, then publish.
+- **`agents create --provider <name>` does not link the provider.** Agent stays `draft`, publish 409s. Prefer passing `providerId` in the config (since genai-demos#23, `agents scaffold` captures it and `agents create` forwards it — needs an npm release with #23); otherwise after create, run `algobot agents patch <id> --json patch.json` with `{"providerId": "<uuid>"}`, then publish.
 
 ## Reference Docs
 
