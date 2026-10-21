@@ -199,12 +199,13 @@ The full loop is encoded in the `/improve-agent` command
 algobot evals experiments create --index-name <idx> --agent-uuid <srcId> \
     --metric-ids <m1,m2> --num-cases 100
 
-# 2. Clone (agents copy refuses same-env copies; scaffold -> create -> patch instead)
+# 2. Clone (agents copy refuses same-env copies; scaffold -> create instead)
+#    Since genai-demos#23: scaffold strips deprecated config fields
+#    (enableAlgoliaMcp) and captures providerId, which agents create forwards
+#    - no manual provider patch needed (needs an npm release with #23).
 algobot agents scaffold <srcId>
-# edit agent-config.json: remove deprecated config fields (enableAlgoliaMcp),
-# set a tracking name like "<name> [eval-tuning <date>]"
+# edit agent-config.json: set a tracking name like "<name> [eval-tuning <date>]"
 algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"
-algobot agents patch <cloneId> --json provider-patch.json   # {"providerId": "<src providerId>"}
 
 # 3. Tune the DRAFT clone and re-run on the SAME dataset
 algobot agents patch <cloneId> --json instructions-patch.json
