@@ -82,6 +82,19 @@ algobot evals experiments create --index-name <idx> --agent-uuid <srcId> \
 # with an imported dataset: add --dataset-id <importedDatasetId>
 ```
 
+If the experiment enters `awaiting_review`, the generated cases need a review
+pass before it can run:
+
+```bash
+algobot evals datasets list-cases <datasetId> --status suggested
+algobot evals datasets bulk-status <datasetId> --status approved --filter-status suggested
+algobot evals datasets finalize <datasetId>
+algobot evals experiments run <expId>
+```
+
+Record the **candidate id** for the whole loop: the clone id when duplicating
+(Step 1), otherwise the draft agent's own id when modifying it freely.
+
 Record the experiment id, its dataset id, and its run id. Read
 `algobot evals runs summary <expId> <runId>`: per-metric pass rates, mean
 scores, confidence intervals, `underpowered` flag.
@@ -97,19 +110,20 @@ scores, confidence intervals, `underpowered` flag.
    tool returned fields; relevance -> index settings via the `algolia-cli`
    skill; tool errors -> tool config).
 
-Present to the user: themes, counts, the planned change(s) to the CLONE's
+Present to the user: themes, counts, the planned change(s) to the candidate's
 config, and expected impact. Wait for approval before touching anything.
 
-## Step 4: Tune the clone and re-run
+## Step 4: Tune the candidate and re-run
 
-Apply the approved change(s) to the clone only (e.g.
-`algobot agents patch <cloneId> --json patch.json`), then re-run on the SAME
-dataset and compare:
+Apply the approved change(s) to the CANDIDATE only - the clone when the target
+was duplicated, otherwise the draft agent itself (e.g.
+`algobot agents patch <candidateId> --json patch.json`) - then re-run on the
+SAME dataset and compare:
 
 ```bash
-algobot evals experiments create --index-name <idx> --agent-uuid <cloneId> \
+algobot evals experiments create --index-name <idx> --agent-uuid <candidateId> \
     --metric-ids <m1,m2> --num-cases <n> --dataset-id <baselineDatasetId>
-algobot evals compare --run-a <baselineRunId> --run-b <cloneRunId>
+algobot evals compare --run-a <baselineRunId> --run-b <candidateRunId>
 ```
 
 Report before/after per metric. Iterate Step 3-4 while failures remain and the
