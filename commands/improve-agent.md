@@ -42,7 +42,23 @@ algobot agents patch <cloneId> --json <(echo '{"providerId": "<srcProviderId>"}'
 Keep the clone in `draft` for the entire loop: agents do not need to be
 published to be evaluated, and a draft agent serves no traffic.
 
-## Step 2: Baseline
+## Step 2: Dataset source + baseline
+
+Ask the user which dataset the loop should run on (same choice for the whole
+loop; the baseline and every candidate run must share it):
+
+- **Generated (default)**: let `experiments create` resolve-or-create one.
+  Broad synthetic catalog coverage, zero authoring.
+- **Real conversation history**: evaluate on the agent's actual user
+  distribution. Build an imported dataset first (full recipe in
+  `references/evaluations.md`, "Real conversation history datasets"):
+  extract the agent's conversations (`conversations list/get --agent-id`),
+  transform each user turn into an import row (prior turns verbatim as
+  `messages`, served responses dropped, PII scrubbed), `datasets import`
+  with `--validate-only` then `--auto-finalize`. This needs more authoring
+  care (per-metric `expected` keys) but makes the baseline/candidate delta
+  directly credible on real traffic. Prefer `faithfulness` + `tone` metrics
+  here; author `relevance` targets only if you can do it confidently.
 
 Run the baseline eval on the CURRENT production agent config (not the clone)
 and wait for completion (poll `algobot evals experiments get <id>`):
@@ -50,6 +66,7 @@ and wait for completion (poll `algobot evals experiments get <id>`):
 ```bash
 algobot evals experiments create --index-name <idx> --agent-uuid <srcId> \
     --metric-ids <m1,m2> --num-cases <n>
+# with an imported dataset: add --dataset-id <importedDatasetId>
 ```
 
 Record the experiment id, its dataset id, and its run id. Read

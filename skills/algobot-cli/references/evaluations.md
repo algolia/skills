@@ -46,7 +46,8 @@ algobot evals datasets list-cases <datasetId> [--status suggested]
 algobot evals datasets bulk-status <datasetId> --status approved --filter-status suggested
 # case review status: suggested | approved | edited | rejected
 algobot evals datasets finalize <datasetId>
-algobot evals datasets import --name <name> --rows '<json|file>' [--auto-finalize]
+algobot evals datasets import --name <name> --rows '<json|file>' \
+    [--rows-jsonl <file>] [--validate-only] [--auto-finalize]
 
 # Experiments
 algobot evals experiments create --index-name <idx> --agent-uuid <id> \
@@ -97,6 +98,78 @@ Trust rules:
 | Tool errors, wrong tool use | Agent tool configuration; instructions on tool-usage budget |
 | Guardrail misses | Agent guardrails/entry points; instructions Prohibited section |
 | Slow/costly runs | Model tier, `--num-cases` only as high as needed |
+
+## Real conversation history datasets (import)
+
+Generated datasets cover the catalog synthetically. Imported datasets let you
+evaluate the agent on its actual user traffic: each row is a question a real
+user asked (with the conversation's prior turns as frozen context). Source of
+truth for the format: `common/data/external_evals/importing.py` in
+conversational-ai (import format version 1).
+
+Row shapes (JSONL, one row per line):
+
+```jsonc
+// narrow: one case
+{"query": "...", "metricSlug": "faithfulness", "expected": {"fact_type": "..."},
+ "difficulty": "medium", "language": "en"}
+// wide: explodes into one case per metrics entry (cost is disclosed in the
+// import report before anything is created)
+{"query": "...", "metrics": {"relevance": {...}, "faithfulness": {...}}}
+// multi-turn: freeze the prior turns verbatim; "query" is the last turn. At
+// run time the history is replayed ahead of the query and only the last turn
+// is generated and scored.
+{"query": "so which of those two is machine washable?",
+ "metrics": {"faithfulness": {"fact_type": "care_instructions"}},
+ "messages": [{"role": "user", "content": "..."},
+              {"role": "assistant", "content": "..."}]}
+```
+
+Asymmetry rule: capture inputs only (query + prior turns) and drop the
+response the agent actually served. The run regenerates the answer, which is
+what makes baseline vs candidate deltas meaningful on the same real inputs.
+(Scoring a served historical completion without re-generating is a different
+tool: `evals judgments create`.)
+
+Required `expected` keys per metric (caught by `--validate-only`):
+
+- `faithfulness`: `{"fact_type": "..."}` minimum; no golden answer needed.
+  Best default metric for history datasets.
+- `relevance`: requires NON-EMPTY `should_contain_categories` and/or
+  `keywords_in_results`; the scorer is retrieval F1 and empty targets score 0.
+  Targets must be product terms that can appear in the catalog corpus, never
+  query function words ("what's", "return policy"). Skip relevance if you
+  cannot author them confidently.
+- `tone` / `compliance`: style contract / `{"expectedOutcome": "allow"|"block"}`.
+
+Recipe:
+
+```bash
+# 1. Extract the agent's conversations (needs an algobot-ai build that
+#    forwards the global --agent/--agent-id override; genai-demos#25)
+algobot conversations list --agent-id <agentId> --short
+algobot conversations get <convId> --agent-id <agentId> --json
+
+# 2. Transform (script it): one row per user turn; history = prior turns
+#    verbatim; SCRUB PII FIRST - imported cases are visible in the dashboard
+
+# 3. Profiles (async; poll with evals profiles build-status <taskId>)
+algobot evals profiles build --index-name <idx> --agent-uuid <agentId>
+
+# 4. Import: validate first, then create (atomic: any bad line fails the
+#    whole import; cases land APPROVED, report errors are line-numbered)
+algobot evals datasets import --name "real-history-<date>" \
+    --rows-jsonl rows.jsonl --index-profile-id <id> --agent-profile-id <id> \
+    --validate-only
+algobot evals datasets import --name "real-history-<date>" \
+    --rows-jsonl rows.jsonl --index-profile-id <id> --agent-profile-id <id> \
+    --auto-finalize
+
+# 5. Pilot small before a full run: the dataset is free to build, runs cost
+#    num-cases x metrics x iterations. Caps: 1000 rows / 1000 cases.
+algobot evals experiments create --index-name <idx> --agent-uuid <agentId> \
+    --metric-ids <m1,m2> --dataset-id <datasetId> --num-cases 12
+```
 
 ## Clone-based tuning loop (improve a production agent safely)
 
