@@ -140,20 +140,33 @@ Required `expected` keys per metric (caught by `--validate-only`):
   Targets must be product terms that can appear in the catalog corpus, never
   query function words ("what's", "return policy"). Skip relevance if you
   cannot author them confidently.
-- `tone` / `compliance`: style contract / `{"expectedOutcome": "allow"|"block"}`.
+- `tone`: `{"tone_constraint": "<style contract>", "bad_response_patterns": ["<substring patterns>"]}`;
+  `compliance`: `{"expectedOutcome": "allow"|"block"}` (rewritten server-side to per-case rules).
 
 Recipe:
 
 ```bash
 # 1. Extract the agent's conversations (needs an algobot-ai build that
-#    forwards the global --agent/--agent-id override; genai-demos#25)
-algobot conversations list --agent-id <agentId> --short
+#    forwards the global --agent/--agent-id override; genai-demos#25).
+#    conversations list caveats: it prints a COLORED TABLE even when piped
+#    (strip ANSI escapes before parsing; --jq is silently ignored), it
+#    truncates IDs longer than 20 chars to 8+"..." (UUID conversation IDs
+#    become ungettable - use the raw API or ids from elsewhere), and --limit
+#    caps at 100 per page (paginate with --page).
+algobot conversations list --agent-id <agentId> --short --limit 100 --page 1
 algobot conversations get <convId> --agent-id <agentId> --json
+#    `conversations export --start-date <date> -o file` bulk-dumps full JSON
+#    but has NO --agent-id flag: it always targets the profile's default
+#    agent - a silent wrong-agent footgun for this recipe.
 
-# 2. Transform (script it): one row per user turn; history = prior turns
-#    verbatim; SCRUB PII FIRST - imported cases are visible in the dashboard
+# 2. Transform (script it): one row per user turn; flatten each message's
+#    parts array ({type:'text', text}) into a content string; history = prior
+#    turns verbatim; SCRUB PII FIRST - imported cases are visible in the
+#    dashboard
 
-# 3. Profiles (async; poll with evals profiles build-status <taskId>)
+# 3. Profiles (async): the `profiles build` RESPONSE ITSELF returns
+#    indexProfileId and agentProfileId (build-status only reports progress) -
+#    use those ids in step 4
 algobot evals profiles build --index-name <idx> --agent-uuid <agentId>
 
 # 4. Import: validate first, then create (atomic: any bad line fails the
@@ -165,8 +178,10 @@ algobot evals datasets import --name "real-history-<date>" \
     --rows-jsonl rows.jsonl --index-profile-id <id> --agent-profile-id <id> \
     --auto-finalize
 
-# 5. Pilot small before a full run: the dataset is free to build, runs cost
-#    num-cases x metrics x iterations. Caps: 1000 rows / 1000 cases.
+# 5. Pilot small before a full run: the dataset is free to build. An
+#    IMPORTED case carries exactly one metric, so a run costs
+#    num-cases x iterations judgments (generated datasets are different:
+#    num-cases is per metric there). Caps: 1000 rows / 1000 cases.
 algobot evals experiments create --index-name <idx> --agent-uuid <agentId> \
     --metric-ids <m1,m2> --dataset-id <datasetId> --num-cases 12
 ```
