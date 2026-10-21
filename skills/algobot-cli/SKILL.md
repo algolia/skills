@@ -166,7 +166,7 @@ clone-based "improve my agent" tuning loop, read
 
 ## Gotchas
 
-- **TUI requires TTY.** `algobot` with no args launches the TUI — hangs in scripts. Always use `ask` or `--text` in non-interactive contexts.
+- **TUI requires TTY.** `algobot` with no args launches the TUI — hangs in scripts. Always use `ask` or `--text` in non-interactive contexts. Since genai-demos#24, unknown subcommands fail with exit 1 instead of silently becoming a chat message (needs an npm release with #24); until then, a typo'd command in a script may still print a chat reply with exit 0.
 - **Exit codes are 0/1 only** in v2.0. Can't distinguish "not found" from "auth error" — parse stderr if needed.
 - **`--output json` missing on most commands** in v2.0. Use `--jq` or JSON-structured stdout.
 - **`algobot init` is interactive.** Don't use in CI — use `profiles add` with flags instead.
