@@ -14,29 +14,36 @@ running any command below.
 ## Step 0: Preconditions
 
 1. Confirm the CLI has evals support: `algobot evals metrics list`. If unknown
-   command, ask the user to `npm update -g algobot-ai` and stop.
+   command, the installed `algobot-ai` predates evals (npm 2.0.0 does not
+   ship it): stop and ask the user to install a release that does
+   (`npm i -g algobot-ai@latest`).
 2. Resolve the target agent: `algobot agents list` / `algobot agents get <id>`.
    Record: id, name, `status`, `providerId`, index (`tools[].indices[]`).
 3. Ask the user for metrics if not specified (`algobot evals metrics list`),
    a case count (default 100), and any focus (tone, faithfulness, ...).
-4. Announce the cost: each case = a real completion + judge calls per metric.
+4. Announce the cost: every case = a real completion + judge calls.
+   Generated dataset: `num-cases` cases per metric. Imported dataset: one
+   metric per case.
 
 ## Step 1: Mode selection (only if the agent is published)
 
 | Target agent | Behavior |
 |---|---|
-| `published` + created by the user (production) | Ask: duplicate (recommended default) or modify in place (requires explicit confirmation; changes go live on publish) |
-| `published` + named `... [eval-tuning <date>]` (created by this loop) | It is this loop's own testbed: modify freely |
-| `draft` (never published, not live) | Modify freely, still show diffs |
+| `published` (production, serving traffic) | Duplicate (recommended default). NEVER modify in place. |
+| `draft` clone created by this loop (id recorded in the lineage, Step 2) | It is this loop's own testbed: modify freely |
+| any other `draft` (never published, not live) | Modify freely, still show diffs |
+
+A `published` agent named `... [eval-tuning <date>]` is treated like any other
+published agent: the name is not proof it is this loop's testbed.
 
 If duplicating (default), create the clone and record its id:
 
 ```bash
 algobot agents scaffold <srcId>
 # edit agent-config.json: set name to "<name> [eval-tuning <date>]"
-# (since genai-demos#23 the scaffold already strips deprecated config fields
-#  and captures providerId, which `agents create` forwards; until the npm
-#  release ships it, manually remove `enableAlgoliaMcp` and patch the
+# (recent releases: the scaffold already strips deprecated config fields and
+#  captures providerId, which `agents create` forwards - see the version gate
+#  in the skill; otherwise manually remove `enableAlgoliaMcp` and patch the
 #  provider: algobot agents patch <cloneId> --json provider-patch.json)
 algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"
 ```
@@ -54,10 +61,14 @@ loop; the baseline and every candidate run must share it):
 - **Real conversation history**: evaluate on the agent's actual user
   distribution. Build an imported dataset first (full recipe in
   `references/evaluations.md`, "Real conversation history datasets"):
+  build the profiles (`algobot evals profiles build --index-name <idx>
+  --agent-uuid <srcId>`; the response returns both profile ids - build the
+  agent profile on the SOURCE agent, the dataset is reused for clone runs),
   extract the agent's conversations (`conversations list/get --agent-id`),
   transform each user turn into an import row (prior turns verbatim as
   `messages`, served responses dropped, PII scrubbed), `datasets import`
-  with `--validate-only` then `--auto-finalize`. This needs more authoring
+  with `--index-profile-id` / `--agent-profile-id`, `--validate-only` then
+  `--auto-finalize`. This needs more authoring
   care (per-metric `expected` keys) but makes the baseline/candidate delta
   directly credible on real traffic. Prefer `faithfulness` + `tone` metrics
   here; author `relevance` targets only if you can do it confidently.
@@ -121,7 +132,11 @@ When the user is satisfied with the clone's results:
    save the `algobot agents get <srcId>` output. This is what makes the
    promotion reversible.
 2. Show the exact config diff between the production agent and the clone
-   (instructions, config, tools).
+   (instructions, config, tools). Build `patch.json` from the **tuned fields
+   only** (`instructions`, `config`, `tools`). NEVER include `name`, `id`,
+   `status`, `providerId`, or timestamps (the clone's name/suffix and ids
+   must not leak onto the production agent). Show `patch.json` itself to the
+   user as the diff being approved.
 3. Ask for explicit approval, warning what will happen:
    - once published, the changes are IMMEDIATELY live for all users of the
      original agent, on every surface that integrates it;
@@ -129,15 +144,23 @@ When the user is satisfied with the clone's results:
    - the frontend and integrations keep working unchanged (agent id unchanged,
      no re-wiring needed);
    - recommend doing it outside peak traffic if the change is large.
-4. On approval: apply the winning changes to the original agent
+4. On approval: apply the approved patch to the original agent
    (`algobot agents patch <srcId> --json patch.json`) and publish
    (`--publish` or `algobot agents publish <srcId>`).
 5. Optionally run a small confirmation eval on the original agent id to verify
    the promoted config scores like the clone did.
 6. Offer cleanup: delete the clone and any scratch artifacts, or keep them.
 
-Rollback path: re-apply the Step 5.1 snapshot config to the original agent and
-publish again. Tell the user about it BEFORE they approve.
+Rollback path (spell it out, keep the snapshot dir until the user confirms the
+promotion is good):
+
+```bash
+# restore the Step 5.1 snapshot config, then publish
+algobot agents update <srcId> --config <snapshotDir>/agent-config.json
+algobot agents publish <srcId>
+```
+
+Tell the user about the rollback path BEFORE they approve.
 
 ## Rules
 

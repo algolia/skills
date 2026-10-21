@@ -47,7 +47,8 @@ algobot evals datasets bulk-status <datasetId> --status approved --filter-status
 # case review status: suggested | approved | edited | rejected
 algobot evals datasets finalize <datasetId>
 algobot evals datasets import --name <name> --rows '<json|file>' \
-    [--rows-jsonl <file>] [--validate-only] [--auto-finalize]
+    [--rows-jsonl <file>] --index-profile-id <id> --agent-profile-id <id> \
+    [--validate-only] [--auto-finalize]
 
 # Experiments
 algobot evals experiments create --index-name <idx> --agent-uuid <id> \
@@ -65,6 +66,10 @@ algobot evals runs case <experimentId> <runId> <caseId>  # one case drilldown
 # Stateless helpers
 algobot evals judge --metric-slug tone --query "..." --response-text "..."
 algobot evals compare --run-a <baselineRun> --run-b <candidateRun>
+
+# Stored-completion verdicts (score a served completion WITHOUT regenerating)
+algobot evals judgments create <messageId>   # judge one stored completion
+algobot evals judgments list <messageId>     # every recorded verdict for it
 ```
 
 JSON-valued flags accept inline JSON or a path to a JSON file
@@ -85,8 +90,8 @@ Trust rules:
   drawing conclusions. Prefer n >= 50 per metric for tuning decisions.
 - Faithfulness failures usually mean the answer contains claims not supported
   by retrieved records (invented names, invented attributes).
-- Tone failures are style-contract violations: exclamation marks, emojis,
-  hype/superlatives, mirroring user excitement, ampersands.
+- Tone failures are violations of the case's `tone_constraint` /
+  `bad_response_patterns` (e.g. emojis, exclamation marks, hype).
 
 ## Failure theme -> knob mapping
 
@@ -103,9 +108,9 @@ Trust rules:
 
 Generated datasets cover the catalog synthetically. Imported datasets let you
 evaluate the agent on its actual user traffic: each row is a question a real
-user asked (with the conversation's prior turns as frozen context). Source of
-truth for the format: `common/data/external_evals/importing.py` in
-conversational-ai (import format version 1).
+user asked (with the conversation's prior turns as frozen context). Import
+format version 1; the report from `--validate-only` is the authoritative check
+that your rows match it.
 
 Row shapes (JSONL, one row per line):
 
@@ -146,22 +151,20 @@ Required `expected` keys per metric (caught by `--validate-only`):
 Recipe:
 
 ```bash
-# 1. Extract the agent's conversations (needs an algobot-ai release that
-#    includes genai-demos#25 AND genai-demos#27; until that release npm ships
-#    both bugs below).
-#    Fixed by #25: the global --agent/--agent-id override is forwarded to ALL
-#    conversations commands (list, get, export).
-#    Fixed by #27: conversations list gains --json (single JSON payload, the
-#    global --jq filter applies); when piped, output is ANSI-free and IDs are
-#    NEVER truncated (truncation happens only on interactive TTYs). --limit
-#    still caps at 100 per page (paginate with --page).
+# 1. Extract the agent's conversations.
+#    REQUIRES a release where the global --agent/--agent-id override reaches
+#    ALL conversations commands and `conversations list` supports --json with
+#    ANSI-free, untruncated piped output (see the version gate in SKILL.md).
+#    On npm 2.0.0 neither exists, so real-history extraction is impossible:
+#    stop and upgrade instead of working around.
 algobot conversations list --agent-id <agentId> --json --jq '.data[].id'
 #    --jq returns JSON-QUOTED strings (no raw mode): strip the quotes before
 #    feeding an id to the next command, e.g.
 #    ... --jq '.data[0].id' | tr -d '"'
 algobot conversations get <convId> --agent-id <agentId> --json
 #    Alternative for bulk extraction: `conversations export --agent-id
-#    <agentId> --start-date <date> -o file` dumps full conversation JSON.
+#    <agentId> --start-date <date> -o /tmp/<tmpdir>/convs.json` dumps full
+#    conversation JSON.
 
 # 2. Transform (script it): one row per user turn; flatten each message's
 #    parts array ({type:'text', text}) into a content string; history = prior
@@ -171,6 +174,9 @@ algobot conversations get <convId> --agent-id <agentId> --json
 #    runs (messageIds starting with `evalcase-`, conversationIds matching
 #    `eval-experiment_run_*`) and technical test conversations. Exclude them,
 #    or the dataset evaluates the eval harness instead of real users.
+#    DATA HYGIENE: the export and rows.jsonl hold real user conversations -
+#    write them to a temp dir and DELETE both after the import; never commit
+#    them.
 
 # 3. Profiles (async): the `profiles build` RESPONSE ITSELF returns
 #    indexProfileId and agentProfileId (build-status only reports progress) -
@@ -186,10 +192,10 @@ algobot evals datasets import --name "real-history-<date>" \
     --rows-jsonl rows.jsonl --index-profile-id <id> --agent-profile-id <id> \
     --auto-finalize
 
-# 5. Pilot small before a full run: the dataset is free to build. An
-#    IMPORTED case carries exactly one metric, so a run costs
-#    num-cases x iterations judgments (generated datasets are different:
-#    num-cases is per metric there). Caps: 1000 rows / 1000 cases.
+# 5. Pilot small before a full run: the dataset is free to build. Cost rule:
+#    IMPORTED case = one metric, so a run costs num-cases completions and
+#    num-cases judgments (generated datasets differ: num-cases is PER METRIC
+#    there). Caps: 1000 rows / 1000 cases.
 algobot evals experiments create --index-name <idx> --agent-uuid <agentId> \
     --metric-ids <m1,m2> --dataset-id <datasetId> --num-cases 12
 ```
@@ -207,9 +213,9 @@ algobot evals experiments create --index-name <idx> --agent-uuid <srcId> \
     --metric-ids <m1,m2> --num-cases 100
 
 # 2. Clone (agents copy refuses same-env copies; scaffold -> create instead)
-#    Since genai-demos#23: scaffold strips deprecated config fields
+#    Recent releases: scaffold strips deprecated config fields
 #    (enableAlgoliaMcp) and captures providerId, which agents create forwards
-#    - no manual provider patch needed (needs an npm release with #23).
+#    - no manual provider patch needed (see the version gate in SKILL.md).
 algobot agents scaffold <srcId>
 # edit agent-config.json: set a tracking name like "<name> [eval-tuning <date>]"
 algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"
@@ -234,23 +240,25 @@ Safety rules for the loop:
 - Agents do not need to be published to be evaluated: keep the clone in
   `draft` for the whole loop (it serves no traffic).
 - The user decides the mode up front when the target agent is published:
-  duplicate (default, recommended) or modify in place (explicit confirmation;
-  changes go live on publish).
+  duplicate (default, recommended). Never modify a published agent in place.
 - Show the exact config diff and get explicit approval before promoting to the
-  production agent. Never publish automatically. Snapshot the original config
-  first (rollback path: re-apply the snapshot and publish again), and warn
-  that publishing makes the change immediately live for all users of the
-  original agent on every surface that integrates it.
-- Cost: every case is a real completion plus judge calls. Announce the
-  approximate cost (num-cases x metrics) before launching large runs.
+  production agent. Build the promotion patch from the tuned fields only
+  (instructions, config, tools); never include `name`, `id`, `status`,
+  `providerId`, or timestamps. Never publish automatically. Snapshot the
+  original config first (rollback path: re-apply the snapshot and publish
+  again), and warn that publishing makes the change immediately live for all
+  users of the original agent on every surface that integrates it.
+- Cost: every case is a real completion plus judge calls. Generated dataset:
+  `num-cases` cases per metric. Imported dataset: one metric per case.
+  Announce the approximate cost before launching large runs.
 - Track lineage: source agent id, clone id, baseline run id, candidate run ids.
 
 ## Gotchas
 
 - `evals experiments create` requires the agent to have a provider linked.
-  Since genai-demos#23, `agents scaffold` captures `providerId` and `agents
-  create` forwards it, so the clone flow below needs no manual patch (needs
-  an npm release containing #23; until then use the manual patch).
+  Recent releases: `agents scaffold` captures `providerId` and `agents
+  create` forwards it, so the clone flow above needs no manual patch (see the
+  version gate in SKILL.md).
 - `agents copy` refuses same-environment copies; use the scaffold -> create
   flow above.
 - Datasets resolve-or-create per experiment: pass `--dataset-id` of the

@@ -16,7 +16,7 @@
     },
     {
       "id": 2,
-      "prompt": "I'm building a conversational product discovery experience for my e-commerce site using Algolia. Users should chat naturally and get product recommendations. I've heard about Agent Studio \u2014 walk me through creating and testing an agent.",
+      "prompt": "I'm building a conversational product discovery experience for my e-commerce site using Algolia. Users should chat naturally and get product recommendations. I've heard about Agent Studio — walk me through creating and testing an agent.",
       "expected_output": "Uses the skill to walk through: install algobot-ai, algobot init wizard, create an agent with the right tools/model, test it interactively with algobot ask or TUI, and notes on non-interactive mode for CI.",
       "files": [],
       "assertions": [
@@ -35,7 +35,7 @@
         "Frames Agent Studio as the generative layer on top of Algolia search results",
         "References algobot CLI commands for creating or deploying the carousel agent",
         "Distinguishes algobot (dev/deploy tool) from the REST API (production invocation)",
-        "Does NOT fabricate API endpoints \u2014 uses commands from the skill or acknowledges uncertainty"
+        "Does NOT fabricate API endpoints — uses commands from the skill or acknowledges uncertainty"
       ]
     },
     {
@@ -52,7 +52,7 @@
     },
     {
       "id": 5,
-      "prompt": "I want my customer support agent to remember user preferences across sessions \u2014 like their preferred language, past issues, and whether they've already tried the standard troubleshooting steps. How does Agent Studio handle memory?",
+      "prompt": "I want my customer support agent to remember user preferences across sessions — like their preferred language, past issues, and whether they've already tried the standard troubleshooting steps. How does Agent Studio handle memory?",
       "expected_output": "Explains Agent Studio's two memory types (semantic for facts/preferences, episodic for past interactions), the memory tools (algolia_memorize, algolia_ponder, algolia_memory_search), retrieval modes (preload vs preflight), and how to configure memory in the agent config.",
       "files": [],
       "assertions": [
@@ -64,7 +64,7 @@
     },
     {
       "id": 6,
-      "prompt": "We're in Europe and need our AI agent's conversation history to be GDPR-compliant \u2014 configurable retention, user data deletion on request, and auditability. Can Agent Studio handle this?",
+      "prompt": "We're in Europe and need our AI agent's conversation history to be GDPR-compliant — configurable retention, user data deletion on request, and auditability. Can Agent Studio handle this?",
       "expected_output": "Confirms Agent Studio has built-in GDPR-aligned conversation storage with configurable retention policies and automated cleanup. Explains how algobot can be used to manage and export conversation history, and notes this is a beta feature.",
       "files": [],
       "assertions": [
@@ -88,7 +88,7 @@
     },
     {
       "id": 8,
-      "prompt": "I have InstantSearch.js already on my site. I want to add a conversational chat widget alongside the search results \u2014 so users can either search normally OR ask the agent questions. How do I wire this up with Agent Studio?",
+      "prompt": "I have InstantSearch.js already on my site. I want to add a conversational chat widget alongside the search results — so users can either search normally OR ask the agent questions. How do I wire this up with Agent Studio?",
       "expected_output": "Explains Agent Studio's native InstantSearch.js integration (compatible with ai-sdk v5), how the chat widget can live alongside InstantSearch results, and how algobot is used to create and publish the backing agent that powers the widget.",
       "files": [],
       "assertions": [
@@ -100,7 +100,7 @@
     },
     {
       "id": 9,
-      "prompt": "I want to add source citations to my agent's responses \u2014 like when it says 'this product is on sale', it should show [1] linking to the search result that confirmed it. Is this possible?",
+      "prompt": "I want to add source citations to my agent's responses — like when it says 'this product is on sale', it should show [1] linking to the search result that confirmed it. Is this possible?",
       "expected_output": "Explains Agent Studio's experimental citation markers feature, which adds [1], [2] references to responses based on search tool call results. Notes it's experimental, explains how to enable it in agent config, and uses algobot to update the agent.",
       "files": [],
       "assertions": [
