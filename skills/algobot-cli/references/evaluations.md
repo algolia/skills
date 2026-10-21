@@ -146,8 +146,9 @@ Required `expected` keys per metric (caught by `--validate-only`):
 Recipe:
 
 ```bash
-# 1. Extract the agent's conversations (needs an algobot-ai build that
-#    forwards the global --agent/--agent-id override; genai-demos#25).
+# 1. Extract the agent's conversations (needs an algobot-ai release that
+#    includes genai-demos#25: the global --agent/--agent-id override is
+#    forwarded to conversations commands; until then npm ships the bug).
 #    conversations list caveats: it prints a COLORED TABLE even when piped
 #    (strip ANSI escapes before parsing; --jq is silently ignored), it
 #    truncates IDs longer than 20 chars to 8+"..." (UUID conversation IDs
