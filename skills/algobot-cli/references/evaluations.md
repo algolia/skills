@@ -156,6 +156,9 @@ Recipe:
 #    NEVER truncated (truncation happens only on interactive TTYs). --limit
 #    still caps at 100 per page (paginate with --page).
 algobot conversations list --agent-id <agentId> --json --jq '.data[].id'
+#    --jq returns JSON-QUOTED strings (no raw mode): strip the quotes before
+#    feeding an id to the next command, e.g.
+#    ... --jq '.data[0].id' | tr -d '"'
 algobot conversations get <convId> --agent-id <agentId> --json
 #    Alternative for bulk extraction: `conversations export --agent-id
 #    <agentId> --start-date <date> -o file` dumps full conversation JSON.
@@ -164,6 +167,10 @@ algobot conversations get <convId> --agent-id <agentId> --json
 #    parts array ({type:'text', text}) into a content string; history = prior
 #    turns verbatim; SCRUB PII FIRST - imported cases are visible in the
 #    dashboard
+#    FILTER NON-USER TRAFFIC: the history contains artifacts of previous eval
+#    runs (messageIds starting with `evalcase-`, conversationIds matching
+#    `eval-experiment_run_*`) and technical test conversations. Exclude them,
+#    or the dataset evaluates the eval harness instead of real users.
 
 # 3. Profiles (async): the `profiles build` RESPONSE ITSELF returns
 #    indexProfileId and agentProfileId (build-status only reports progress) -
