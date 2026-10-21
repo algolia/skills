@@ -123,8 +123,13 @@ algobot evals experiments create --index-name <idx> --agent-uuid <cloneId> \
     --metric-ids <m1,m2> --num-cases 100 --dataset-id <baselineDatasetId>
 algobot evals compare --run-a <baselineRun> --run-b <cloneRun>
 
-# 4. Promotion is a separate, explicit step: show the config diff to the user,
-#    get approval, then patch the source agent and publish.
+# 4. Promotion is a separate, explicit step. The clone has a NEW agent id and
+#    the frontend embeds the ORIGINAL agent id (wiring usually owned by
+#    another team), so the improvements go live by applying them to the
+#    original agent, not by switching to the clone. Snapshot the original
+#    config first (agents scaffold) for rollback, show the diff, warn that
+#    publishing makes the change immediately live for all users, get
+#    approval, then patch + publish the original agent.
 ```
 
 Safety rules for the loop:
@@ -135,7 +140,10 @@ Safety rules for the loop:
   duplicate (default, recommended) or modify in place (explicit confirmation;
   changes go live on publish).
 - Show the exact config diff and get explicit approval before promoting to the
-  production agent. Never publish automatically.
+  production agent. Never publish automatically. Snapshot the original config
+  first (rollback path: re-apply the snapshot and publish again), and warn
+  that publishing makes the change immediately live for all users of the
+  original agent on every surface that integrates it.
 - Cost: every case is a real completion plus judge calls. Announce the
   approximate cost (num-cases x metrics) before launching large runs.
 - Track lineage: source agent id, clone id, baseline run id, candidate run ids.

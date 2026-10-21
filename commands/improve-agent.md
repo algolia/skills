@@ -88,16 +88,37 @@ valid; check `underpowered` before celebrating small deltas.
 
 ## Step 5: Promotion (never automatic)
 
-When the user is satisfied:
+Why promote to the original agent instead of switching to the clone: the clone
+has a NEW agent id, and the frontend/integration embeds the ORIGINAL agent id.
+That wiring is usually owned by a different team, so the tuning user cannot
+repoint it. The only way the improvements go live without a frontend change is
+to apply the validated changes to the original live agent: its id (and every
+integration pointing at it) stays valid.
 
-1. Show the exact config diff between the production agent and the clone
+When the user is satisfied with the clone's results:
+
+1. Take a rollback snapshot of the original agent BEFORE any change (if not
+   already saved): `algobot agents scaffold <srcId>` (config + PROMPT.md) or
+   save the `algobot agents get <srcId>` output. This is what makes the
+   promotion reversible.
+2. Show the exact config diff between the production agent and the clone
    (instructions, config, tools).
-2. Ask for explicit approval to apply it to the production agent. If the
-   in-place mode was chosen at Step 1, this approval already happened per
-   change; still show each diff before applying.
-3. On approval: `algobot agents patch <srcId> --json patch.json` (and
-   `--publish` / `algobot agents publish <srcId>` if the agent must go live).
-4. Offer cleanup: delete the clone and any scratch artifacts, or keep them.
+3. Ask for explicit approval, warning what will happen:
+   - once published, the changes are IMMEDIATELY live for all users of the
+     original agent, on every surface that integrates it;
+   - users with an open conversation may see the behavior change mid-session;
+   - the frontend and integrations keep working unchanged (agent id unchanged,
+     no re-wiring needed);
+   - recommend doing it outside peak traffic if the change is large.
+4. On approval: apply the winning changes to the original agent
+   (`algobot agents patch <srcId> --json patch.json`) and publish
+   (`--publish` or `algobot agents publish <srcId>`).
+5. Optionally run a small confirmation eval on the original agent id to verify
+   the promoted config scores like the clone did.
+6. Offer cleanup: delete the clone and any scratch artifacts, or keep them.
+
+Rollback path: re-apply the Step 5.1 snapshot config to the original agent and
+publish again. Tell the user about it BEFORE they approve.
 
 ## Rules
 
