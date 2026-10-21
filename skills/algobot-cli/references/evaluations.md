@@ -147,18 +147,18 @@ Recipe:
 
 ```bash
 # 1. Extract the agent's conversations (needs an algobot-ai release that
-#    includes genai-demos#25: the global --agent/--agent-id override is
-#    forwarded to conversations commands; until then npm ships the bug).
-#    conversations list caveats: it prints a COLORED TABLE even when piped
-#    (strip ANSI escapes before parsing; --jq is silently ignored), it
-#    truncates IDs longer than 20 chars to 8+"..." (UUID conversation IDs
-#    become ungettable - use the raw API or ids from elsewhere), and --limit
-#    caps at 100 per page (paginate with --page).
-algobot conversations list --agent-id <agentId> --short --limit 100 --page 1
+#    includes genai-demos#25 AND genai-demos#27; until that release npm ships
+#    both bugs below).
+#    Fixed by #25: the global --agent/--agent-id override is forwarded to ALL
+#    conversations commands (list, get, export).
+#    Fixed by #27: conversations list gains --json (single JSON payload, the
+#    global --jq filter applies); when piped, output is ANSI-free and IDs are
+#    NEVER truncated (truncation happens only on interactive TTYs). --limit
+#    still caps at 100 per page (paginate with --page).
+algobot conversations list --agent-id <agentId> --json --jq '.data[].id'
 algobot conversations get <convId> --agent-id <agentId> --json
-#    `conversations export --start-date <date> -o file` bulk-dumps full JSON
-#    but has NO --agent-id flag: it always targets the profile's default
-#    agent - a silent wrong-agent footgun for this recipe.
+#    Alternative for bulk extraction: `conversations export --agent-id
+#    <agentId> --start-date <date> -o file` dumps full conversation JSON.
 
 # 2. Transform (script it): one row per user turn; flatten each message's
 #    parts array ({type:'text', text}) into a content string; history = prior
