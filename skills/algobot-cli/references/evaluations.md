@@ -61,7 +61,9 @@ algobot evals experiments runs <experimentId>     # list runs
 algobot evals runs get <experimentId> <runId>            # receipt + progress counts
 algobot evals runs summary <experimentId> <runId>        # per-metric stats, CI, macro
 algobot evals runs judgments <experimentId> <runId> --limit 200   # verdicts + reasons
-algobot evals runs case <experimentId> <runId> <caseId>  # one case drilldown
+algobot evals runs case <experimentId> <runId> <caseId>  # one case drilldown;
+    # <caseId> = the judgment's `evalCaseId` field (NOT the judgment `id` -
+    # that returns a misleading 404 "Case ... is not part of run ...")
 
 # Stateless helpers
 algobot evals judge --metric-slug tone --query "..." --response-text "..."
@@ -158,6 +160,8 @@ Recipe:
 #    On npm 2.0.0 neither exists, so real-history extraction is impossible:
 #    stop and upgrade instead of working around.
 algobot conversations list --agent-id <agentId> --json --jq '.data[].id'
+#    NOTE: paginate with the LONG form `--page 2`; the short `-p` collides
+#    with the global `--profile` flag ("Profile '2' not found").
 #    --jq returns JSON-QUOTED strings (no raw mode): strip the quotes before
 #    feeding an id to the next command, e.g.
 #    ... --jq '.data[0].id' | tr -d '"'
