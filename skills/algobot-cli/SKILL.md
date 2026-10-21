@@ -187,3 +187,4 @@ clone-based "improve my agent" tuning loop, read
 
 - [Command Reference](references/commands.md) — Full flags for every command
 - [Config-as-Code Guide](references/config-as-code.md) — Templates, variables, multi-env patterns
+- [Shareable eval prompt](templates/eval-improvement-prompt.md) — Copy-paste prompt for ANY AI agent (no skills needed): install the CLI, authenticate, run an Agent Studio evaluation, and propose agent improvements
