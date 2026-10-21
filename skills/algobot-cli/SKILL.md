@@ -7,10 +7,11 @@ description: >-
   or recommendation agents using Algolia as retrieval, config-as-code
   workflows, multi-environment deploy (dev/staging/prod), memory and
   personalization, MCP tool integrations, conversation history / GDPR
-  retention, or adding a chat widget alongside InstantSearch. Trigger on:
+  retention, Agent Studio evaluations (run evals, analyze results, improve an
+  agent's score), or adding a chat widget alongside InstantSearch. Trigger on:
   "algobot", "Agent Studio", "RAG with Algolia", "conversational experience",
-  "AI agent" + Algolia, "genAI carousel", "chat widget", or building AI
-  features on top of Algolia search. Do NOT use for raw index ops (records,
+  "AI agent" + Algolia, "genAI carousel", "chat widget", "agent evals",
+  "improve my agent", or building AI features on top of Algolia search. Do NOT use for raw index ops (records,
   synonyms, settings) — use algolia-cli. Do NOT use for pure frontend search
   UI (InstantSearch, autocomplete) with no AI/agent layer.
 license: MIT
@@ -125,6 +126,33 @@ Use `algobot agents scaffold` to inspect/edit these settings, `algobot --dry-run
 algobot agents watch patch.json             # Auto-apply patches on file change
 ```
 
+## Agent Studio Evaluations (EXPERIMENTAL)
+
+`algobot evals` runs Agent Studio Evaluations from the terminal: metric catalog,
+profile snapshots, dataset lifecycle, experiment runs, per-case verdicts, and
+before/after comparison. Requires a recent `algobot-ai` release; probe with
+`algobot evals metrics list` and ask the user to `npm update -g algobot-ai` if
+the command is unknown.
+
+```bash
+algobot evals metrics list                                        # pick metric UUIDs
+algobot evals experiments create --index-name <idx> --agent-uuid <id> \
+    --metric-ids <m1,m2> --num-cases 100
+algobot evals runs summary <experimentId> <runId>                 # pass rates, mean, CI
+algobot evals runs judgments <experimentId> <runId> --limit 200   # every verdict + reason
+algobot evals compare --run-a <baselineRun> --run-b <candidateRun>
+```
+
+Key facts: experiments are asynchronous (poll `evals experiments get`);
+`runs summary` / `runs case` are the analysis entry points; agents do NOT need
+to be published to be evaluated (a draft agent serves no traffic), but they DO
+need a provider. Each case is a real completion plus judge calls, so cost
+scales with `--num-cases`.
+
+For the full command map, dataset lifecycle, output schemas, and the
+clone-based "improve my agent" tuning loop, read
+[references/evaluations.md](references/evaluations.md).
+
 ## Global Flags
 
 | Flag | Effect |
@@ -147,6 +175,8 @@ algobot agents watch patch.json             # Auto-apply patches on file change
 - **`--config` auto-discovers `agent-config.json`** in cwd. Explicit: `--config path/to/config.json`.
 - **algobot = dev/deploy tool; REST API = production invocation.** Use algobot to build and publish agents; call the Agent Studio completions API directly from your app. Don't guess the endpoint URL — run `algobot agents get <id>` to retrieve it, or check the Agent Studio dashboard.
 - **Completions URL has no `/agent-studio` prefix.** Use `agent-studio.<region>.algolia.com/1/agents/<id>/completions?stream=false&compatibilityMode=ai-sdk-4`. `compatibilityMode` is required (omitting → 422). Response: `{ id, role, content }` with `content` as a flat string.
+- **`agents scaffold` output is not re-creatable as-is.** `agents create` rejects the scaffolded `config.enableAlgoliaMcp` ("not supported anymore", HTTP 422) and the scaffold omits `providerId`, so the clone fails anything needing a provider (including `evals experiments create`, "Agent has no provider set"). Strip the field and `agents patch <id> --json '{"providerId":"<uuid>"}'` after create.
+- **Agents do not need to be published to be evaluated.** `evals experiments create` works on a `draft` agent (it runs completions server-side without serving traffic). Publish only when the tuning result should go live.
 - **`agents create --provider <name>` does not link the provider.** Agent stays `draft`, publish 409s. After create, run `algobot agents patch <id> --json patch.json` with `{"providerId": "<uuid>"}`, then publish.
 
 ## Reference Docs

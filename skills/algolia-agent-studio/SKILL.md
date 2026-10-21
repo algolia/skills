@@ -28,6 +28,7 @@ Use this skill for Agent Studio work after confirming the product goal and the q
 - Use official `algobot-cli` for Agent Studio setup, agent config-as-code, tools, memory, conversations, dry runs, and deploy/publish workflows.
 - Use official `algolia-mcp` for live search, analytics, recommendations, and index inspection that inform the agent's tools.
 - Use official `algolia-cli` for index, settings, rules, synonyms, or record changes the agent depends on.
+- For eval-driven tuning (run Agent Studio evaluations, analyze failing cases, adjust agent settings, re-measure), use the official `algobot-cli` skill and its `/improve-agent` command; use this skill to interpret what the eval deltas mean for the agent contract and launch readiness.
 - Use this skill after the official tool call to produce the agent contract, readiness gates, security checks, event/feedback plan, and launch recommendation.
 
 ## Source-Of-Truth Rules
@@ -73,6 +74,7 @@ Ask the smallest useful subset before building:
 - Keep prompts grounded in business policy and available tools. Avoid prompts that imply access to data or actions the agent cannot actually use.
 - Instrument feedback and conversion loops early; AI product tuning without events becomes anecdotal.
 - Validate failure modes: no results, ambiguous user intent, unavailable items, policy refusal, tool errors, auth failures, and slow LLM/tool responses.
+- Prefer measured deltas over anecdote: run an Agent Studio evaluation before and after any tuning change (same dataset, same case count), and treat `underpowered` small-sample results as inconclusive.
 - Use Conversations for qualitative review before relying on aggregate analytics. Look for unclear instructions, bad follow-up behavior, weak retrieval, inappropriate fallback, and guardrail misses.
 - Use Analytics as a feedback loop, not a vanity dashboard. Let usage, token/cost patterns, search usage, feedback, and outcome signals drive configuration changes.
 - Define each enabled tool as a contract: trigger, allowed parameters, access scope, confirmation requirement, user-visible result, failure response, and measurement event.
