@@ -76,6 +76,8 @@ Ask the smallest useful subset before building:
 - Validate failure modes: no results, ambiguous user intent, unavailable items, policy refusal, tool errors, auth failures, and slow LLM/tool responses.
 - Prefer measured deltas over anecdote: run an Agent Studio evaluation before and after any tuning change (same dataset, same case count), and treat `underpowered` small-sample results as inconclusive.
 - Use Conversations for qualitative review before relying on aggregate analytics. Look for unclear instructions, bad follow-up behavior, weak retrieval, inappropriate fallback, and guardrail misses.
+- Verify an integration in Conversations, not only by its answers: run a two-turn chat that triggers a tool call against the published agent and confirm one conversation, a title that names the question, the question visible first, and no duplicated turns. Read `references/agent-studio-guide.md` → Integration Facts before building a custom transport.
+- Treat latency as a budget per phase. A tool-using turn is a planning generation, the search (tens of milliseconds), then the answer generation; the planning generation usually dominates. See Latency in the guide.
 - Use Analytics as a feedback loop, not a vanity dashboard. Let usage, token/cost patterns, search usage, feedback, and outcome signals drive configuration changes.
 - Define each enabled tool as a contract: trigger, allowed parameters, access scope, confirmation requirement, user-visible result, failure response, and measurement event.
 - Treat memory as intentional product behavior. Enable it for authenticated, multi-turn value; document identity, retention, consent, and what must never be retained. Do not assume dashboard enablement alone creates safe end-to-end memory.
@@ -83,6 +85,10 @@ Ask the smallest useful subset before building:
 
 ## Anti-Patterns
 
+- Omitting the conversation `id` on custom completions requests: every POST, including each client-tool continuation, becomes its own conversation, and nothing errors.
+- Leading the user message with a serialized context block: the Conversations title and transcript describe the block, not the question.
+- Inventing context (a stand-in record, page or course) so a request fits a payload builder written for another surface. It becomes prompt content the agent is told to prioritize.
+- Leaving the Search tool at default retrieval for an answer-generating agent: 20 full records per query with highlight and snippet markup inflates input tokens and slows every answer.
 - Starting with prompts before defining tools, permissions, data boundaries, and success measures.
 - Giving a client-facing agent write-capable tools before a read-only rollout has been validated.
 - Relying on prompt instructions as the only guardrail for sensitive data or consequential actions.

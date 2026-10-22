@@ -1,6 +1,6 @@
 # Autocomplete (Vue)
 
-Vue does not ship an `EXPERIMENTAL_Autocomplete` widget equivalent to React InstantSearch. The recommended path is **`@algolia/autocomplete-js`** integrated into the Vue app, optionally with a wrapper component that mounts and unmounts it via the Vue lifecycle. This is **not** an anti-pattern in Vue (it is in React).
+Vue InstantSearch has no counterpart to the `Autocomplete` widget in React InstantSearch and InstantSearch.js. Its `<ais-autocomplete>` is only a connector wrapper. It renders a `<div class="ais-Autocomplete">` and passes `refine`, `currentRefinement` and `indices` to its default scoped slot. It supplies no input, panel, keyboard handling or recent searches, and without slot content it shows a placeholder message. The recommended path is **`@algolia/autocomplete-js`** integrated into the Vue app, optionally with a wrapper component that mounts and unmounts it via the Vue lifecycle. This is **not** an anti-pattern in Vue (it is in React).
 
 Before implementing, run the [Source-of-truth check](../source-of-truth.md) and confirm the recommended path against the live docs.
 
