@@ -1,0 +1,4 @@
+interface:
+  display_name: "Algolia Audit"
+  short_description: "Review an existing Algolia implementation"
+  default_prompt: "Use $algolia-audit to review our existing Algolia implementation: capture the live settings, replica settings, a public-key hit payload, facet stats and the rendered page first, then hunt the defects that never error."
