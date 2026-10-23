@@ -6,9 +6,9 @@ guides authentication, runs an Agent Studio evaluation with generated cases,
 analyzes the results, and proposes improvements without touching the
 production agent.
 
-Requires an `algobot-ai` release that ships the `evals` command group
-(not in npm 2.0.0); the prompt itself verifies this in Step 1 and stops with a
-clear message if the feature is unavailable.
+Requires `algobot-ai` 2.1.0 or later, which ships the `evals` command
+group; the prompt itself verifies this in Step 1 and stops with a clear
+message if the installed version is older.
 
 ---
 
@@ -24,11 +24,11 @@ publish the user's agent without their explicit approval.
 
 1. Check Node.js >= 18 (`node --version`). If missing, tell the user to install
    it from https://nodejs.org and stop.
-2. `npm install -g algobot-ai`
-3. Verify evaluations are available: `algobot evals metrics list`. If the
-   command is unknown, run `npm i -g algobot-ai@latest` and retry. If it still
-   fails, STOP and tell the user their installed version predates the
-   Evaluations feature.
+2. `npm install -g algobot-ai@latest` (evaluations require 2.1.0+).
+3. Verify the version and that evaluations are available:
+   `algobot --version` (must be >= 2.1.0) and `algobot evals metrics list`.
+   If `evals` is unknown, STOP and tell the user to upgrade:
+   `npm i -g algobot-ai@latest`.
 
 ## Step 2: Authenticate
 
@@ -110,9 +110,10 @@ If the user asks you to apply the changes, follow the safe clone path:
    output for rollback).
 2. `algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"`.
    The clone stays in `draft` - drafts are evaluable and serve no traffic.
-   Recent CLI releases strip deprecated config fields and capture `providerId`
-   in the scaffold; on npm 2.0.0 you may need to remove `enableAlgoliaMcp`
-   from the config manually and link the provider with
+   Recent CLI releases (2.1.0+) strip deprecated config fields and capture
+   `providerId` in the scaffold, so the clone is usually ready as-is; if the
+   scaffold still contains deprecated fields such as `enableAlgoliaMcp`,
+   remove them and link the provider with
    `algobot agents patch <cloneId> --json patch.json` where
    `patch.json` is `{"providerId": "<uuid>"}`.
 3. Patch the clone: `algobot agents patch <cloneId> --json patch.json`.

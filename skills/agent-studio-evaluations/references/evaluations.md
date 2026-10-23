@@ -1,8 +1,9 @@
 # Agent Studio Evaluations (`algobot evals`)
 
 EXPERIMENTAL: the endpoints are undocumented (not in the public OpenAPI spec or
-the official SDK) and may change without notice. Requires a recent
-`algobot-ai` release that ships the `evals` command group; probe with
+the official SDK) and may change without notice. Requires `algobot-ai` >= 2.1.0
+(npm latest), which ships the `evals` command group and the `agents`/
+`conversations` fixes this guide relies on; probe with
 `algobot evals metrics list` first.
 
 ## Mental model
@@ -154,11 +155,11 @@ Recipe:
 
 ```bash
 # 1. Extract the agent's conversations.
-#    REQUIRES a release where the global --agent/--agent-id override reaches
-#    ALL conversations commands and `conversations list` supports --json with
-#    ANSI-free, untruncated piped output (see the version gate in SKILL.md).
-#    On npm 2.0.0 neither exists, so real-history extraction is impossible:
-#    stop and upgrade instead of working around.
+#    REQUIRES algobot-ai >= 2.1.0: the global --agent/--agent-id override
+#    reaches ALL conversations commands and `conversations list` supports
+#    --json with ANSI-free, untruncated piped output (see the version gate
+#    in SKILL.md). On older releases neither exists, so real-history
+#    extraction is impossible: stop and upgrade instead of working around.
 algobot conversations list --agent-id <agentId> --json --jq '.data[].id'
 #    NOTE: paginate with the LONG form `--page 2`; the short `-p` collides
 #    with the global `--profile` flag ("Profile '2' not found").
@@ -217,7 +218,7 @@ algobot evals experiments create --index-name <idx> --agent-uuid <srcId> \
     --metric-ids <m1,m2> --num-cases 100
 
 # 2. Clone (agents copy refuses same-env copies; scaffold -> create instead)
-#    Recent releases: scaffold strips deprecated config fields
+#    2.1.0+: scaffold strips deprecated config fields
 #    (enableAlgoliaMcp) and captures providerId, which agents create forwards
 #    - no manual provider patch needed (see the version gate in SKILL.md).
 algobot agents scaffold <srcId>
@@ -260,8 +261,8 @@ Safety rules for the loop:
 ## Gotchas
 
 - `evals experiments create` requires the agent to have a provider linked.
-  Recent releases: `agents scaffold` captures `providerId` and `agents
-  create` forwards it, so the clone flow above needs no manual patch (see the
+  2.1.0+: `agents scaffold` captures `providerId` and `agents create`
+  forwards it, so the clone flow above needs no manual patch (see the
   version gate in SKILL.md).
 - `agents copy` refuses same-environment copies; use the scaffold -> create
   flow above.
