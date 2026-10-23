@@ -199,8 +199,8 @@ algobot evals datasets import --name "real-history-<date>" \
 
 # 5. Pilot small before a full run: the dataset is free to build. Cost rule:
 #    IMPORTED case = one metric, so a run costs num-cases completions and
-#    num-cases judgments (generated datasets differ: num-cases is PER METRIC
-#    there). Caps: 1000 rows / 1000 cases.
+#    num-cases judgments. GENERATED datasets: --num-cases is a TOTAL split
+#    evenly (ceil) across the selected metrics, not a per-metric count. Caps: 1000 rows / 1000 cases.
 algobot evals experiments create --index-name <idx> --agent-uuid <agentId> \
     --metric-ids <m1,m2> --dataset-id <datasetId> --num-cases 12
 ```
@@ -254,8 +254,10 @@ Safety rules for the loop:
   again), and warn that publishing makes the change immediately live for all
   users of the original agent on every surface that integrates it.
 - Cost: every case is a real completion plus judge calls. Generated dataset:
-  `num-cases` cases per metric. Imported dataset: one metric per case.
-  Announce the approximate cost before launching large runs.
+  `--num-cases` is a TOTAL split evenly (ceil) across the selected metrics
+  (`numCasesPerMetric` is the separate API field for an exact per-metric
+  count). Imported dataset: one metric per case. Announce the approximate
+  cost before launching large runs.
 - Track lineage: source agent id, clone id, baseline run id, candidate run ids.
 
 ## Gotchas
