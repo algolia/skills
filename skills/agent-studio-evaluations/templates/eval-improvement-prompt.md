@@ -8,7 +8,10 @@ production agent.
 
 Requires `algobot-ai` 2.1.0 or later, which ships the `evals` command
 group; the prompt itself verifies this in Step 1 and stops with a clear
-message if the installed version is older.
+message if the installed version is older. The flow below uses
+Agent Studio-generated cases; building eval cases from the agent's real
+conversation history is a separate flow documented in the
+agent-studio-evaluations skill.
 
 ---
 
@@ -105,7 +108,14 @@ Present to the user: the failure themes with counts, ONE concrete proposed
 change at a time (exact instruction text to add or setting to change), and the
 expected impact. Do not apply anything yourself.
 
-If the user asks you to apply the changes, follow the safe clone path:
+If the user asks you to apply the changes, first pick the mode:
+- Agent is `published` and was created by the user: default to the clone
+  path below (a draft clone serves no traffic, so zero risk); direct edits
+  to a published agent need explicit confirmation.
+- Agent is a `[eval-tuning ...]` copy this loop created earlier: edit it
+  directly, no new clone needed.
+
+Then follow the safe clone path:
 1. Snapshot the current config: `algobot agents scaffold <agentId>` (keep the
    output for rollback).
 2. `algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"`.
@@ -119,8 +129,12 @@ If the user asks you to apply the changes, follow the safe clone path:
 3. Patch the clone: `algobot agents patch <cloneId> --json patch.json`.
 4. Re-run the eval on the clone with `--dataset-id <baselineDatasetId>` and
    compare: `algobot evals compare --run-a <baselineRun> --run-b <cloneRun>`.
-5. Only on explicit approval, apply the winning changes to the original agent
-   and publish, warning that publishing makes them immediately live.
+5. Promotion applies the winning changes to the ORIGINAL agent, not the
+   clone: the clone has a different agent id and the frontend keeps
+   embedding the original one, so switching traffic to the clone is not a
+   promotion path. Show the user the exact config diff first, warn that
+   publishing makes the change immediately live for all users, then patch
+   and publish the original agent only on explicit approval.
 
 ## Rules
 
