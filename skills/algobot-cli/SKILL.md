@@ -7,10 +7,12 @@ description: >-
   or recommendation agents using Algolia as retrieval, config-as-code
   workflows, multi-environment deploy (dev/staging/prod), memory and
   personalization, MCP tool integrations, conversation history / GDPR
-  retention, or adding a chat widget alongside InstantSearch. Trigger on:
+  retention, Agent Studio evaluations (run evals, analyze results, improve an
+  agent's score), or adding a chat widget alongside InstantSearch. Trigger on:
   "algobot", "Agent Studio", "RAG with Algolia", "conversational experience",
-  "AI agent" + Algolia, "genAI carousel", "chat widget", or building AI
-  features on top of Algolia search. Do NOT use for raw index ops (records,
+  "AI agent" + Algolia, "genAI carousel", "chat widget", "agent evals",
+  "improve my agent", or building AI features on top of Algolia search.
+  Do NOT use for raw index ops (records,
   synonyms, settings) — use algolia-cli. Do NOT use for pure frontend search
   UI (InstantSearch, autocomplete) with no AI/agent layer.
 license: MIT
@@ -125,6 +127,37 @@ Use `algobot agents scaffold` to inspect/edit these settings, `algobot --dry-run
 algobot agents watch patch.json             # Auto-apply patches on file change
 ```
 
+## Agent Studio Evaluations (EXPERIMENTAL)
+
+`algobot evals` runs Agent Studio Evaluations from the terminal: metric catalog,
+profile snapshots, dataset lifecycle, experiment runs, per-case verdicts, and
+before/after comparison.
+
+**Version gate:** the `evals` command group (and several `agents`/`conversations`
+fixes this skill relies on) is NOT in npm 2.0.0 (published 2026-03). Probe with
+`algobot evals metrics list`; if the command is unknown, the installed
+`algobot-ai` predates evals — stop and install the release that ships it
+(`npm i -g algobot-ai@latest`).
+
+```bash
+algobot evals metrics list                                        # pick metric UUIDs
+algobot evals experiments create --index-name <idx> --agent-uuid <id> \
+    --metric-ids <m1,m2> --num-cases 100
+algobot evals runs summary <experimentId> <runId>                 # pass rates, mean, CI
+algobot evals runs judgments <experimentId> <runId> --limit 200   # every verdict + reason
+algobot evals compare --run-a <baselineRun> --run-b <candidateRun>
+```
+
+Key facts: experiments are asynchronous (poll `evals experiments get`);
+`runs summary` / `runs case` are the analysis entry points; agents do NOT need
+to be published to be evaluated (a draft agent serves no traffic), but they DO
+need a provider. Each case is a real completion plus judge calls, so cost
+scales with `--num-cases`.
+
+For the full command map, dataset lifecycle, output schemas, and the
+clone-based "improve my agent" tuning loop, read
+[references/evaluations.md](references/evaluations.md).
+
 ## Global Flags
 
 | Flag | Effect |
@@ -138,7 +171,7 @@ algobot agents watch patch.json             # Auto-apply patches on file change
 
 ## Gotchas
 
-- **TUI requires TTY.** `algobot` with no args launches the TUI — hangs in scripts. Always use `ask` or `--text` in non-interactive contexts.
+- **TUI requires TTY.** `algobot` with no args launches the TUI — hangs in scripts. Always use `ask` or `--text` in non-interactive contexts. Recent releases reject unknown subcommands with exit 1 instead of silently becoming a chat message (probe: `algobot frobnicate` must exit 1; see the version gate above). On npm 2.0.0 a typo'd command in a script may still print a chat reply with exit 0.
 - **Exit codes are 0/1 only** in v2.0. Can't distinguish "not found" from "auth error" — parse stderr if needed.
 - **`--output json` missing on most commands** in v2.0. Use `--jq` or JSON-structured stdout.
 - **`algobot init` is interactive.** Don't use in CI — use `profiles add` with flags instead.
@@ -147,9 +180,11 @@ algobot agents watch patch.json             # Auto-apply patches on file change
 - **`--config` auto-discovers `agent-config.json`** in cwd. Explicit: `--config path/to/config.json`.
 - **algobot = dev/deploy tool; REST API = production invocation.** Use algobot to build and publish agents; call the Agent Studio completions API directly from your app. Don't guess the endpoint URL — run `algobot agents get <id>` to retrieve it, or check the Agent Studio dashboard.
 - **Completions URL has no `/agent-studio` prefix.** Use `agent-studio.<region>.algolia.com/1/agents/<id>/completions?stream=false&compatibilityMode=ai-sdk-4`. `compatibilityMode` is required (omitting → 422). Response: `{ id, role, content }` with `content` as a flat string.
-- **`agents create --provider <name>` does not link the provider.** Agent stays `draft`, publish 409s. After create, run `algobot agents patch <id> --json patch.json` with `{"providerId": "<uuid>"}`, then publish.
+- **Agents do not need to be published to be evaluated.** `evals experiments create` works on a `draft` agent (it runs completions server-side without serving traffic). Publish only when the tuning result should go live.
+- **`agents create --provider <name>` does not link the provider.** Agent stays `draft`, publish 409s. Prefer passing `providerId` in the config: recent releases make `agents scaffold` capture it and `agents create` forward it (see the version gate above). Otherwise after create, run `algobot agents patch <id> --json patch.json` with `{"providerId": "<uuid>"}`, then publish.
 
 ## Reference Docs
 
 - [Command Reference](references/commands.md) — Full flags for every command
 - [Config-as-Code Guide](references/config-as-code.md) — Templates, variables, multi-env patterns
+- [Shareable eval prompt](templates/eval-improvement-prompt.md) — Copy-paste prompt for ANY AI agent (no skills needed): install the CLI, authenticate, run an Agent Studio evaluation, and propose agent improvements

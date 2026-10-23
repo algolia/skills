@@ -29,7 +29,7 @@
     },
     {
       "name": "algobot-cli",
-      "description": "Use for anything AI/agent/conversational built on Algolia: algobot CLI, Agent Studio, RAG systems, conversational product discovery, genAI content generation from search results (carousels, descriptions, headers), chatbots or recommendation agents using Algolia as retrieval, config-as-code workflows, multi-environment deploy (dev/staging/prod), memory and personalization, MCP tool integrations, conversation history / GDPR retention, or adding a chat widget alongside InstantSearch. Do NOT use for raw index ops (records, synonyms, settings) — use algolia-cli. Do NOT use for pure frontend search UI (InstantSearch, autocomplete) with no AI/agent layer.",
+      "description": "Use for anything AI/agent/conversational built on Algolia: algobot CLI, Agent Studio, RAG systems, conversational product discovery, genAI content generation from search results (carousels, descriptions, headers), chatbots or recommendation agents using Algolia as retrieval, config-as-code workflows, multi-environment deploy (dev/staging/prod), memory and personalization, MCP tool integrations, conversation history / GDPR retention, or adding a chat widget alongside InstantSearch, running Agent Studio evaluations (algobot evals) and eval-driven agent tuning (clone, analyze failing cases, compare before/after). Do NOT use for raw index ops (records, synonyms, settings) — use algolia-cli. Do NOT use for pure frontend search UI (InstantSearch, autocomplete) with no AI/agent layer.",
       "source": "./",
       "strict": false,
       "skills": [
