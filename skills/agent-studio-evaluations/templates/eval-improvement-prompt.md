@@ -83,12 +83,12 @@ credential problem.
    server-side and they can ask you to check again later with the same
    command. Statuses: resolving_profiles -> generating -> awaiting_review ->
    running -> judging -> completed.
-4. If it stalls in `awaiting_review`, the generated cases need a review pass:
+5. If it stalls in `awaiting_review`, the generated cases need a review pass:
    - `algobot evals datasets list-cases <datasetId> --status suggested`
    - `algobot evals datasets bulk-status <datasetId> --status approved --filter-status suggested`
    - `algobot evals datasets finalize <datasetId>`
    - `algobot evals experiments run <expId>`
-5. Find the run id with `algobot evals experiments runs <expId>`.
+6. Find the run id with `algobot evals experiments runs <expId>`.
 
 ## Step 5: Analyze the results
 
