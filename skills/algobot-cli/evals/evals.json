@@ -109,31 +109,6 @@
         "Notes the experimental/beta status appropriately",
         "References algobot agents update or patch to enable the feature in the agent config"
       ]
-    },
-    {
-      "id": 10,
-      "prompt": "I have a shopping assistant agent in Agent Studio and I want to run an evaluation on it to see how good it is. How do I do that from the CLI?",
-      "expected_output": "Uses algobot evals: metrics list to pick metric UUIDs, experiments create with index-name/agent-uuid/metric-ids/num-cases, poll experiments get, then runs summary and runs judgments to read results. Mentions it's experimental and that each case costs a real completion.",
-      "files": [],
-      "assertions": [
-        "Uses algobot evals commands (metrics list, experiments create, runs summary)",
-        "Explains experiments are asynchronous and must be polled",
-        "Mentions cost: each case is a real completion plus judge calls",
-        "Flags the evals command group as EXPERIMENTAL"
-      ]
-    },
-    {
-      "id": 11,
-      "prompt": "My production shopping agent scores badly on tone and faithfulness evals. Can you improve its settings automatically?",
-      "expected_output": "Proposes the clone-based tuning loop: keep the production agent untouched, clone it via scaffold + create (the scaffold strips deprecated config fields and captures providerId), keep the clone as draft (evals work on unpublished agents), run a baseline eval on the original, tune the clone, re-run on the same dataset, compare before/after, and only promote to the production agent after showing the diff and getting explicit approval.",
-      "files": [],
-      "assertions": [
-        "Does NOT modify the production agent directly without explicit approval",
-        "Clones the agent (scaffold + create) and keeps the clone in draft",
-        "Runs a baseline eval on the original and compares candidate runs against it (same dataset)",
-        "Maps tone failures to an OUTPUT STYLE instruction contract and faithfulness failures to accuracy instructions or tool returned fields",
-        "Requires showing the config diff and explicit user approval before promoting/publishing"
-      ]
     }
   ]
 }

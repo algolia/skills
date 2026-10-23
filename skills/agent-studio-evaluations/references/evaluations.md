@@ -1,8 +1,9 @@
 # Agent Studio Evaluations (`algobot evals`)
 
 EXPERIMENTAL: the endpoints are undocumented (not in the public OpenAPI spec or
-the official SDK) and may change without notice. Requires a recent
-`algobot-ai` release that ships the `evals` command group; probe with
+the official SDK) and may change without notice. Requires `algobot-ai` >= 2.1.0
+(npm latest), which ships the `evals` command group and the `agents`/
+`conversations` fixes this guide relies on; probe with
 `algobot evals metrics list` first.
 
 ## Mental model
@@ -154,11 +155,11 @@ Recipe:
 
 ```bash
 # 1. Extract the agent's conversations.
-#    REQUIRES a release where the global --agent/--agent-id override reaches
-#    ALL conversations commands and `conversations list` supports --json with
-#    ANSI-free, untruncated piped output (see the version gate in SKILL.md).
-#    On npm 2.0.0 neither exists, so real-history extraction is impossible:
-#    stop and upgrade instead of working around.
+#    REQUIRES algobot-ai >= 2.1.0: the global --agent/--agent-id override
+#    reaches ALL conversations commands and `conversations list` supports
+#    --json with ANSI-free, untruncated piped output (see the version gate
+#    in SKILL.md). On older releases neither exists, so real-history
+#    extraction is impossible: stop and upgrade instead of working around.
 algobot conversations list --agent-id <agentId> --json --jq '.data[].id'
 #    NOTE: paginate with the LONG form `--page 2`; the short `-p` collides
 #    with the global `--profile` flag ("Profile '2' not found").
@@ -198,8 +199,8 @@ algobot evals datasets import --name "real-history-<date>" \
 
 # 5. Pilot small before a full run: the dataset is free to build. Cost rule:
 #    IMPORTED case = one metric, so a run costs num-cases completions and
-#    num-cases judgments (generated datasets differ: num-cases is PER METRIC
-#    there). Caps: 1000 rows / 1000 cases.
+#    num-cases judgments. GENERATED datasets: --num-cases is a TOTAL split
+#    evenly (ceil) across the selected metrics, not a per-metric count. Caps: 1000 rows / 1000 cases.
 algobot evals experiments create --index-name <idx> --agent-uuid <agentId> \
     --metric-ids <m1,m2> --dataset-id <datasetId> --num-cases 12
 ```
@@ -217,7 +218,7 @@ algobot evals experiments create --index-name <idx> --agent-uuid <srcId> \
     --metric-ids <m1,m2> --num-cases 100
 
 # 2. Clone (agents copy refuses same-env copies; scaffold -> create instead)
-#    Recent releases: scaffold strips deprecated config fields
+#    2.1.0+: scaffold strips deprecated config fields
 #    (enableAlgoliaMcp) and captures providerId, which agents create forwards
 #    - no manual provider patch needed (see the version gate in SKILL.md).
 algobot agents scaffold <srcId>
@@ -253,15 +254,17 @@ Safety rules for the loop:
   again), and warn that publishing makes the change immediately live for all
   users of the original agent on every surface that integrates it.
 - Cost: every case is a real completion plus judge calls. Generated dataset:
-  `num-cases` cases per metric. Imported dataset: one metric per case.
-  Announce the approximate cost before launching large runs.
+  `--num-cases` is a TOTAL split evenly (ceil) across the selected metrics
+  (`numCasesPerMetric` is the separate API field for an exact per-metric
+  count). Imported dataset: one metric per case. Announce the approximate
+  cost before launching large runs.
 - Track lineage: source agent id, clone id, baseline run id, candidate run ids.
 
 ## Gotchas
 
 - `evals experiments create` requires the agent to have a provider linked.
-  Recent releases: `agents scaffold` captures `providerId` and `agents
-  create` forwards it, so the clone flow above needs no manual patch (see the
+  2.1.0+: `agents scaffold` captures `providerId` and `agents create`
+  forwards it, so the clone flow above needs no manual patch (see the
   version gate in SKILL.md).
 - `agents copy` refuses same-environment copies; use the scaffold -> create
   flow above.

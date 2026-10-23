@@ -8,15 +8,16 @@ Improve an Agent Studio agent's eval score: run an evaluation, analyze failing
 cases, change agent settings on a draft clone, re-evaluate, compare, and
 promote only with the user's explicit approval.
 
-Load the `algobot-cli` skill (and `references/evaluations.md` inside it) before
-running any command below.
+Load the `agent-studio-evaluations` skill (and `references/evaluations.md`
+inside it) before running any command below. For pure CLI mechanics (install,
+auth, agents/chat/profiles command syntax) also see the `algobot-cli` skill.
 
 ## Step 0: Preconditions
 
-1. Confirm the CLI has evals support: `algobot evals metrics list`. If unknown
-   command, the installed `algobot-ai` predates evals (npm 2.0.0 does not
-   ship it): stop and ask the user to install a release that does
-   (`npm i -g algobot-ai@latest`).
+1. Confirm the CLI has evals support: `algobot evals metrics list`.
+   Evaluations require `algobot-ai` >= 2.1.0 (npm latest). If the command is
+   unknown, the installed version predates evals: stop and ask the user to
+   upgrade (`npm i -g algobot-ai@latest`) and verify with `algobot --version`.
 2. Resolve the target agent: `algobot agents list` / `algobot agents get <id>`.
    Record: id, name, `status`, `providerId`, index (`tools[].indices[]`).
 3. Ask the user for metrics if not specified (`algobot evals metrics list`),
@@ -41,10 +42,10 @@ If duplicating (default), create the clone and record its id:
 ```bash
 algobot agents scaffold <srcId>
 # edit agent-config.json: set name to "<name> [eval-tuning <date>]"
-# (recent releases: the scaffold already strips deprecated config fields and
-#  captures providerId, which `agents create` forwards - see the version gate
-#  in the skill; otherwise manually remove `enableAlgoliaMcp` and patch the
-#  provider: algobot agents patch <cloneId> --json provider-patch.json)
+# (2.1.0+: the scaffold already strips deprecated config fields and
+#  captures providerId, which `agents create` forwards; otherwise manually
+#  remove `enableAlgoliaMcp` and patch the provider:
+#  algobot agents patch <cloneId> --json provider-patch.json)
 algobot agents create --config agent-config.json --name "<name> [eval-tuning <date>]"
 ```
 
