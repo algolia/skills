@@ -63,10 +63,16 @@ def analyze(run: Dict[str, Any], top: int = 5) -> Dict[str, Any]:
     by_metric: Dict[str, Dict[str, Any]] = {}
     for j in run["judgments"]:
         slug = str(j.get("metricSlug") or "unknown")
-        entry = by_metric.setdefault(slug, {"judged": 0, "failed": 0, "themes": Counter(), "reasons": Counter(),
-                                            "artifactCases": [], "retrievalReasons": 0})
+        entry = by_metric.setdefault(slug, {"judged": 0, "failed": 0, "judgeErrors": 0, "themes": Counter(),
+                                            "reasons": Counter(), "artifactCases": [], "retrievalReasons": 0})
         entry["judged"] += 1
-        if ab.is_passed(j):
+        state = ab.passed_state(j)
+        if state is None:
+            # A judge error is infrastructure, not an agent failure: its reason
+            # must not shape themes or trigger the instrument-artifact warning.
+            entry["judgeErrors"] += 1
+            continue
+        if state:
             continue
         entry["failed"] += 1
         reason = str(j.get("reason") or "")
@@ -90,6 +96,7 @@ def analyze(run: Dict[str, Any], top: int = 5) -> Dict[str, Any]:
             "artifactCheck": "skipped (retrieval-scored metric)" if retrieval_based else "applied",
             "judged": e["judged"],
             "failed": e["failed"],
+            "judgeErrors": e["judgeErrors"],
             "themes": sorted(e["themes"].items(), key=lambda kv: (-kv[1], kv[0])),
             "topReasons": sorted(e["reasons"].items(), key=lambda kv: (-kv[1], kv[0]))[:top],
             "artifactReasonCount": len(e["artifactCases"]),
@@ -116,7 +123,8 @@ def analyze(run: Dict[str, Any], top: int = 5) -> Dict[str, Any]:
 def render(result: Dict[str, Any]) -> str:
     lines = ["# Failure themes", ""]
     for slug, m in result["metrics"].items():
-        lines.append("## %s: %d of %d failed" % (slug, m["failed"], m["judged"]))
+        suffix = "" if not m["judgeErrors"] else " (+%d judge error(s) with no verdict, excluded)" % m["judgeErrors"]
+        lines.append("## %s: %d of %d failed%s" % (slug, m["failed"], m["judged"], suffix))
         if m["failed"] == 0:
             lines += ["", "No failures.", ""]
             continue
@@ -147,7 +155,9 @@ def render(result: Dict[str, Any]) -> str:
             "1. Open 2 of the cases below and compare `completion.responseText` with `completion.answerText`.",
             "2. If the customer-facing text is clean, re-judge it: `rescore_clean.py DIR --metric <slug>`",
             "   (prints the planned judge-call count; add `--yes` to spend them).",
-            "3. Treat a clean re-score as an instrument artifact, not an agent defect.",
+            "3. A flip after a clean re-score still needs investigation: judge variability alone can produce",
+            "   it. Treat a flip as an instrument artifact only when the original judge input was contaminated",
+            "   (the case text check above shows the two texts differ).",
             "",
             "Examples:",
         ]

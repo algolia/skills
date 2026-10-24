@@ -279,7 +279,10 @@ judge reasons mentioned "logs, tool calls, raw data".
 Rule: if the reasons mention logs, tool calls, raw data, repeated text or
 chain-of-thought but the answer the user sees is clean, treat it as an
 instrument artifact, not an agent defect. Do not tune prompts against it, and
-report it. Relevance appeared to grade displayed values by design in our
+report it. A failure that PASSES a clean re-judge (a flip) is evidence for
+this reading only when the two texts differ: judge variability alone can
+produce a flip, so investigate it before excluding the case from tuning.
+Relevance appeared to grade displayed values by design in our
 runs, so do not apply the rule to relevance. We have not measured whether faithfulness, compliance or
 text-statistics metrics are skewed the same way.
 
@@ -534,7 +537,9 @@ Safety rules for the loop:
   never runs them. Datasets still generating cannot be deleted yet. When
   `experiments create` resolved to an existing dataset, record it with
   `add dataset <datasetId> --reused`: reused datasets are never deleted by
-  `cleanup-plan` and are listed under "left alone".
+  `cleanup-plan` and are listed under "left alone". Re-adding a dataset with
+  `--reused` corrects a `created` entry, and a `reused` origin is never
+  downgraded by a later plain `add`.
 - Long runs: experiments are asynchronous and a 150-case run took about 10
   minutes in our runs. `python3 "$SKILL_DIR/scripts/wait_experiments.py" ID [ID ...] --timeout S`
   polls several experiments, treats the CLI timeout message as retryable and

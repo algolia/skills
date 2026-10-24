@@ -8,8 +8,11 @@ for the paired pass-rate delta and one for the paired mean-score delta, both
 from a paired percentile bootstrap (fixed seed, deterministic). Below 50
 shared cases a metric is underpowered: its "CI excludes 0" is reported as
 n/a, never as significant. It also prints mean and median input tokens,
-output tokens and duration per run, and the tone pass rate grouped by each
-case's `expected.tone_constraint`.
+output tokens and duration per run. The two "shared cases" efficiency rows
+cover exactly the same case set: the shared cases that were actually fetched
+in both runs (a partial fetch in either run excludes the case from both
+summaries, never from one only). It also prints the tone pass rate grouped
+by each case's `expected.tone_constraint`.
 
 Judgments with `passed: null` (judge error) are excluded from pass counts
 and shown in an errors column. When a run holds several judgments for the
@@ -109,12 +112,15 @@ def compare(run_a: Dict[str, Any], run_b: Dict[str, Any], resamples: int = 2000,
     metrics = sorted({m for m, _ in ja} | {m for m, _ in jb})
     result: Dict[str, Any] = {"ciMethod": CI_METHOD % (resamples, seed), "metrics": {}, "efficiency": {},
                               "toneByContract": [], "aggregatedKeys": {"A": multi_a, "B": multi_b}}
-    shared_case_ids = set()
+    # fetch_run.py allows partial fetches, so a shared judgment key can have a
+    # case file in one run only. Both efficiency summaries must sit on the SAME
+    # fetched cases, or a case missing from B alone would make B look cheaper.
+    shared_judged = set()
     for metric in metrics:
         a_ids = {c for m, c in ja if m == metric}
         b_ids = {c for m, c in jb if m == metric}
         shared = sorted(a_ids & b_ids)
-        shared_case_ids |= {ab.safe_name(c) for c in shared}
+        shared_judged |= {ab.safe_name(c) for c in shared}
         errors_a = sum(1 for c in shared if ja[(metric, c)]["passed"] is None)
         errors_b = sum(1 for c in shared if jb[(metric, c)]["passed"] is None)
         judged = [c for c in shared if ja[(metric, c)]["passed"] is not None and jb[(metric, c)]["passed"] is not None]
@@ -139,10 +145,17 @@ def compare(run_a: Dict[str, Any], run_b: Dict[str, Any], resamples: int = 2000,
             "meanScoreCiExcludesZero": excludes_zero(s_lo, s_hi, len(score_diffs)),
             "underpowered": n < UNDERPOWERED_N,
         }
+    fetched_in_both = set(run_a["cases"]) & set(run_b["cases"])
+    shared_case_ids = shared_judged & fetched_in_both
     result["efficiency"] = {
         "A_allFetchedCases": efficiency(run_a), "B_allFetchedCases": efficiency(run_b),
         "A_sharedCases": efficiency(run_a, shared_case_ids), "B_sharedCases": efficiency(run_b, shared_case_ids),
     }
+    missing_files = sorted(shared_judged - fetched_in_both)
+    if missing_files:
+        result["efficiencySharedCasesNote"] = (
+            "%d shared case(s) have no fetched case file in at least one run and are excluded from BOTH "
+            "shared efficiency summaries: %s" % (len(missing_files), ", ".join(missing_files[:5])))
     groups: Dict[str, List[int]] = {}
     for metric, case_id in sorted(ja):
         if metric != "tone" or (metric, case_id) not in jb:
@@ -202,6 +215,9 @@ def render(result: Dict[str, Any], meta_a: Dict[str, Any], meta_b: Dict[str, Any
             label, e["cases"], ab.fmt(e["inputTokensMean"], 0), ab.fmt(e["inputTokensMedian"], 0),
             ab.fmt(e["outputTokensMean"], 0), ab.fmt(e["outputTokensMedian"], 0),
             ab.fmt(e["durationMsMean"], 0), ab.fmt(e["durationMsMedian"], 0)))
+    note = result.get("efficiencySharedCasesNote")
+    if note:
+        lines += ["", "Note: %s" % note]
     if result["toneByContract"]:
         lines += ["", "## Tone pass rate by contract (shared, judged cases)", "",
                   "| tone_constraint | shared | pass A | pass B |", "|---|---|---|---|"]

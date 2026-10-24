@@ -8,7 +8,10 @@ Maintains lineage.json in the current folder (or --file):
 Subcommands:
   add KIND ID [--note TEXT] [--experiment EXPERIMENT_ID] [--reused]
       KIND is one of: source-agent, clone, snapshot, dataset, experiment, run
-      datasets are recorded as `created` by the loop unless --reused
+      datasets are recorded as `created` by the loop unless --reused. Re-adding
+      a dataset reconciles its origin: a later `--reused` corrects a
+      `created` entry, and a `reused` origin is never downgraded to
+      `created` (so a shared dataset can never enter the cleanup plan)
   list [--json]
   cleanup-plan [--profile P]
       PRINTS delete commands in a safe order (experiments, then datasets
@@ -68,7 +71,17 @@ def add(data: Dict[str, Any], kind: str, ident: str, note: Optional[str], experi
     key = MULTI[kind]
     if kind == "run" and experiment:
         entry["experimentId"] = experiment
-    if any(e.get("id") == ident for e in data[key]):
+    existing = next((e for e in data[key] if e.get("id") == ident), None)
+    if existing is not None:
+        if kind == "dataset":
+            current = existing.get("origin", "created")
+            if reused and current != "reused":
+                existing["origin"] = "reused"
+                return "dataset %s already recorded; origin corrected %s -> reused (kept out of the cleanup plan)" % (ident, current)
+            if not reused and current == "reused":
+                # A later plain `add` must not downgrade a reused dataset to
+                # created: that would put a shared dataset in the cleanup plan.
+                return "dataset %s already recorded as reused; keeping that origin" % ident
         return "%s %s already recorded" % (kind, ident)
     data[key].append(entry)
     return "added %s %s%s" % (kind, ident, " (%s)" % entry["origin"] if "origin" in entry else "")

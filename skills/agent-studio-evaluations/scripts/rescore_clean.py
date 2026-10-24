@@ -7,10 +7,17 @@ sends `completion.responseText` (what the customer reads) to
 --expected <case expected>` and prints the stored score next to the clean
 score. `evals judge` stores nothing, but every call is a paid judge call.
 
+Cases with several stored iterations (same metric and evalCaseId) are
+judged once: the stored verdict is aggregated first (score = mean,
+passed = majority of iterations with a verdict). Judgments with
+`passed: null` (judge error) are never re-judged and never count as
+failures; they are listed separately.
+
 Without --yes it only prints the planned judge-call count and exits 0.
---limit N caps the cases re-judged (and so the calls). A judge call is never
-retried: a timeout is reported as "unknown" and counted, so calls made never
-exceed the planned count. Results are written to DIR/rescore-<metric>.json.
+--limit N caps the cases re-judged (and so the calls), after the
+deduplication above. A judge call is never retried: a timeout is reported
+as "unknown" and counted, so calls made never exceed the planned count.
+Results are written to DIR/rescore-<metric>.json.
 
 Limits: the judge sees only the last query and the text; prior turns of a
 multi-turn case are not sent. Whether faithfulness, compliance or text
@@ -28,13 +35,21 @@ import _algobot as ab  # noqa: E402
 
 
 def plan(run: Dict[str, Any], metric: str, include_passing: bool, limit: Optional[int]) -> Dict[str, Any]:
-    targets, skipped = [], []
+    targets, skipped, judge_errors = [], [], []
+    by_case: Dict[str, List[Dict[str, Any]]] = {}
     for j in sorted(run["judgments"], key=lambda x: str(x.get("evalCaseId"))):
         if str(j.get("metricSlug")) != metric or j.get("evalCaseId") is None:
             continue
-        if ab.is_passed(j) and not include_passing:
+        if ab.passed_state(j) is None:
+            judge_errors.append({"evalCaseId": str(j["evalCaseId"]),
+                                 "why": "stored judgment has no verdict (passed is null): a judge error, not a failure"})
             continue
-        case_id = str(j["evalCaseId"])
+        by_case.setdefault(str(j["evalCaseId"]), []).append(j)
+    for case_id, items in by_case.items():
+        verdicts = [ab.passed_state(j) for j in items]
+        stored_passed = sum(1 for v in verdicts if v) * 2 > len(verdicts)  # tie counts as failed
+        if stored_passed and not include_passing:
+            continue
         doc = ab.case_for(run, case_id)
         comp = ab.completion(doc)
         query = (doc.get("case") or {}).get("query") if isinstance(doc, dict) else None
@@ -44,10 +59,12 @@ def plan(run: Dict[str, Any], metric: str, include_passing: bool, limit: Optiona
             continue
         targets.append({"evalCaseId": case_id, "query": query, "responseText": text,
                         "answerTextDiffers": (comp.get("answerText") or "").strip() != text.strip(),
-                        "expected": ab.expected(doc), "storedScore": ab.score_of(j), "storedPassed": ab.is_passed(j)})
+                        "expected": ab.expected(doc),
+                        "storedScore": ab.mean(s for s in (ab.score_of(j) for j in items) if s is not None),
+                        "storedPassed": stored_passed, "iterations": len(items)})
     if limit is not None:
         targets = targets[:limit]
-    return {"metric": metric, "targets": targets, "skipped": skipped}
+    return {"metric": metric, "targets": targets, "skipped": skipped, "judgeErrors": judge_errors}
 
 
 def verdict_fields(value: Any) -> Dict[str, Any]:
@@ -74,7 +91,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     run = ab.load_run_dir(args.dir)
     p = plan(run, args.metric, args.include_passing, args.limit)
     n = len(p["targets"])
-    print("planned judge calls: %d (metric %s, %d skipped without case text)" % (n, args.metric, len(p["skipped"])))
+    print("planned judge calls: %d (metric %s, %d skipped without case text, %d judge error(s) not re-judged)"
+          % (n, args.metric, len(p["skipped"]), len(p["judgeErrors"])))
     if not args.yes:
         print("dry plan only: re-run with --yes to spend %d judge call(s)." % n)
         return 0
@@ -106,7 +124,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                      "status": status, "answerTextDiffers": t["answerTextDiffers"]})
 
     stored_failing = [r for r in rows if not r["storedPassed"]]
-    flipped = sum(1 for r in stored_failing if r["cleanPassed"] is True)
+    flipped_rows = [r for r in stored_failing if r["cleanPassed"] is True]
+    with_evidence = [r for r in flipped_rows if r["answerTextDiffers"]]
     print("")
     print("| evalCaseId | stored score | clean score | clean passed | status | answerText differs |")
     print("|---|---|---|---|---|---|")
@@ -115,12 +134,18 @@ def main(argv: Optional[List[str]] = None) -> int:
                                               r["cleanPassed"], r["status"], "yes" if r["answerTextDiffers"] else "no"))
     print("")
     print("judge calls made: %d of %d planned; %d unknown (timeout, not re-sent), %d error(s)" % (calls, n, unknown, errors))
-    print("%d of %d stored-failing case(s) pass when judged on responseText." % (flipped, len(stored_failing)))
-    if flipped:
-        print("Treat those as instrument artifacts, not agent defects. Do not tune prompts against them.")
+    print("%d of %d stored-failing case(s) pass when judged on responseText." % (len(flipped_rows), len(stored_failing)))
+    if flipped_rows:
+        print("Investigate those flips before tuning against them: judge variability alone can produce them,")
+        print("so a flip is NOT by itself evidence of an instrument artifact.")
+    if with_evidence:
+        print("%d flip(s) had responseText != answerText: the original judge likely graded the contaminated "
+              "answerText, and only those flips support an instrument-artifact reading. Check the original "
+              "judge input (answerTextDiffers) before excluding any failure from tuning." % len(with_evidence))
     ab.write_json(os.path.join(args.dir, "rescore-%s.json" % ab.safe_name(args.metric)),
-                  {"metric": args.metric, "rows": rows, "skipped": p["skipped"], "callsMade": calls,
-                   "plannedCalls": n, "unknown": unknown, "errors": errors})
+                  {"metric": args.metric, "rows": rows, "skipped": p["skipped"], "judgeErrors": p["judgeErrors"],
+                   "callsMade": calls, "plannedCalls": n, "unknown": unknown, "errors": errors,
+                   "flips": len(flipped_rows), "flipsWithContaminatedInput": len(with_evidence)})
     return 0
 
 

@@ -217,7 +217,9 @@ promise.
    on `responseText` and 0.2 on `answerText`, with reasons citing "logs, tool
    calls, raw data". Apply the instrument-check rule in
    `references/evaluations.md`, "Instrument check": an artifact is reported,
-   never tuned against.
+   never tuned against. A flip on the clean re-score counts as artifact
+   evidence only when `responseText != answerText`; judge variability alone
+   can produce a flip.
 2. `algobot evals runs judgments <expId> <runId> --limit 200` (page with
    `--offset`) and cluster the judge `reason` fields into failure themes with
    counts, or `python3 "$SKILL_DIR/scripts/cluster_failures.py" <dirA>`.

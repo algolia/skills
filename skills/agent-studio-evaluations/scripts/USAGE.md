@@ -30,6 +30,11 @@ page adds no new judgment id, and after 200 pages) and
 thread pool, reused when already on disk; ids that need sanitizing get a short
 hash suffix). Default folder: `./run-<runId>`.
 
+Before any write the folder's identity is checked: a `meta.json` for a
+different experiment/run, or fetched files with no readable `meta.json`,
+abort the fetch with exit 2, so cached cases of another run are never mixed
+into the new fetch. Use one `--out` per run.
+
 ```bash
 python3 fetch_run.py <EXPERIMENT_ID> <RUN_ID> --out runs/baseline --profile <PROFILE>
 ```
@@ -75,10 +80,15 @@ python3 compare_runs.py runs/baseline runs/candidate
 
 Re-judges `completion.responseText` of failing cases with `algobot evals
 judge` (nothing stored, but each call is a paid judge call). Without `--yes`
-it prints the planned judge-call count and exits 0. `--limit N` caps the
-cases re-judged. A judge call is never retried: a timeout is reported as
+it prints the planned judge-call count and exits 0. A case with several
+stored iterations is re-judged once (stored verdict aggregated: mean score,
+majority passed), so `--limit N` caps DISTINCT cases. Judgments with
+`passed: null` (judge error) are never re-judged and never count as
+failures. A judge call is never retried: a timeout is reported as
 unknown and counted, so calls made never exceed the plan. Writes
-`DIR/rescore-<metric>.json`.
+`DIR/rescore-<metric>.json`. A stored failure that passes the clean re-judge
+(a "flip") is reported for investigation: it counts as evidence of an
+instrument artifact only when `responseText != answerText` for that case.
 
 ```bash
 python3 rescore_clean.py runs/baseline --metric tone            # plan only
@@ -152,6 +162,9 @@ python3 audit_agent.py agent-config.json --strict
 
 KIND: `source-agent`, `clone`, `snapshot`, `dataset`, `experiment`, `run`.
 Datasets are recorded as `created` by the loop unless `--reused` is passed.
+Re-adding a dataset reconciles its origin: a later `--reused` corrects a
+`created` entry, and a `reused` origin is never downgraded to `created`
+(a shared dataset can therefore never enter the cleanup plan).
 `cleanup-plan` prints shell-quoted delete commands in a safe order
 (experiments, then created datasets, then the clone), lists reused datasets
 under "left alone", prints the clone delete only when a source agent is

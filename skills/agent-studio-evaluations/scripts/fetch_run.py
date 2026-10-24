@@ -10,6 +10,10 @@ Writes, under --out (default ./run-<runId>):
   cases/<evalCaseId>.json  `algobot evals runs case ...` per distinct case
 
 Case files already on disk are reused (cache); pass --refresh to refetch.
+Before writing anything into --out, the folder's identity is checked: a
+meta.json for a different experiment/run, or fetched files without a
+readable meta.json, abort the fetch (exit 2) so cached cases and judgments
+from another run are never mixed with the new one.
 Read only: nothing remote is created, changed or deleted.
 """
 
@@ -25,6 +29,36 @@ import _algobot as ab  # noqa: E402
 
 PAGE_SIZE = 200  # observed maximum for `runs judgments --limit` on 2.1.0
 MAX_PAGES = 200  # guard: 40,000 judgments
+
+
+def check_out_identity(out: str, experiment_id: str, run_id: str) -> Optional[str]:
+    """Return an error message when the --out folder holds cached content from
+    another run, or whose run identity cannot be verified. Rerunning
+    fetch_run.py with a different run into the same folder would otherwise
+    overwrite judgments and meta.json while keeping the previous run's cached
+    case files."""
+    meta_path = os.path.join(out, "meta.json")
+    if os.path.exists(meta_path):
+        try:
+            prev = ab.load_json(meta_path)
+        except (ValueError, OSError) as exc:
+            return ("refusing to write into %s: meta.json is unreadable (%s). "
+                    "Use a different --out or delete the folder." % (out, exc))
+        if not isinstance(prev, dict):
+            return "refusing to write into %s: meta.json is not an object. Use a different --out or delete the folder." % out
+        if prev.get("experimentId") != experiment_id or prev.get("runId") != run_id:
+            return ("refusing to write into %s: it holds a fetch of experiment %s run %s, not experiment %s run %s. "
+                    "Cached case files of the old run would be reused for this one. Use a different --out, or delete "
+                    "the folder if you no longer need it." % (out, prev.get("experimentId"), prev.get("runId"),
+                                                              experiment_id, run_id))
+        return None
+    traces = [p for p in ("experiment.json", "judgments.json", "summary.json", "cases")
+              if os.path.exists(os.path.join(out, p))]
+    if traces:
+        return ("refusing to write into %s: it already contains fetched files (%s) but no meta.json, so its "
+                "experiment/run identity cannot be verified. Use a different --out, or delete the folder."
+                % (out, ", ".join(sorted(traces))))
+    return None
 
 
 def find_key(value: Any, key: str) -> Optional[Any]:
@@ -94,6 +128,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     out = args.out or "run-%s" % ab.safe_name(args.run_id)
+    identity_error = check_out_identity(out, args.experiment_id, args.run_id)
+    if identity_error:
+        ab.eprint(identity_error)
+        return 2
     cases_dir = os.path.join(out, "cases")
     os.makedirs(cases_dir, exist_ok=True)
 

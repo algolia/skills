@@ -4,7 +4,8 @@
 Polls `algobot evals experiments get <id>` for every id in parallel each
 --interval seconds until each one is completed, failed, cancelled or
 awaiting_review, or until --timeout seconds have passed (a hard cap: each
-call's own timeout never exceeds the remaining wait). The CLI timeout message
+call's own timeout never exceeds the remaining wait, computed when the call
+starts, and a call whose turn comes after the deadline is skipped). The CLI timeout message
 ("operation was aborted due to timeout") is retried on the next poll. After 3
 consecutive other failures for an id (404, 401, bad id, unparseable output)
 that id is marked `error` and no longer polled. An unrecognized status is
@@ -49,8 +50,17 @@ def status_of(doc: Any) -> Optional[str]:
     return None
 
 
-def poll_one(exp_id: str, profile: Optional[str], call_timeout: float) -> Tuple[str, str]:
-    """Return ("ok", status), ("timeout", message) or ("fail", message)."""
+def poll_one(exp_id: str, profile: Optional[str], deadline: float) -> Tuple[str, str]:
+    """Return ("ok", status), ("timeout", message) or ("fail", message).
+
+    The call timeout is computed HERE, from the remaining wait: with more ids
+    than poll workers, a second batch of the same round would otherwise start
+    with a timeout computed before the first batch ran and blow past the
+    deadline. A call whose turn comes after the deadline is skipped, not sent."""
+    remaining = deadline - CLOCK()
+    if remaining <= 0:
+        return "timeout", "wait deadline already passed before this poll started"
+    call_timeout = min(MAX_CALL_TIMEOUT, remaining)
     try:
         doc = ab.call(["evals", "experiments", "get", exp_id], profile=profile, retries=0, timeout=call_timeout)
     except ab.AlgobotError as exc:
@@ -72,9 +82,7 @@ def wait(ids: List[str], timeout: float, interval: float, profile: Optional[str]
     with ThreadPoolExecutor(max_workers=min(8, max(1, len(ids)))) as pool:
         while True:
             pending = [i for i in ids if statuses[i] not in STOP_STATES and statuses[i] != "error"]
-            remaining = max(1.0, deadline - CLOCK())
-            call_timeout = min(MAX_CALL_TIMEOUT, remaining)
-            results = list(pool.map(lambda i: poll_one(i, profile, call_timeout), pending))
+            results = list(pool.map(lambda i: poll_one(i, profile, deadline), pending))
             for exp_id, (kind, value) in zip(pending, results):
                 if kind == "timeout":
                     ab.eprint("%s: CLI timeout, will retry" % exp_id)

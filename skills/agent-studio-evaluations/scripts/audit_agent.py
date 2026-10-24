@@ -10,7 +10,10 @@ Checks, ranked high to low in a markdown fix list:
   `algolia_` or sits right next to the noun "tool" or "index" ("the `x`
   index", "tool `x`"), or is snake_case right after a search verb ("search
   `x`", "query the `x`"); otherwise LOW (often a record attribute). Identifiers
-  followed by "attribute" or "field" are skipped;
+  followed by "attribute" or "field" are skipped. When a saved config file
+  stores a filename in `instructions` (the `agents scaffold` convention,
+  for example "PROMPT.md"), the referenced Markdown is audited instead and a
+  missing file is a hard error;
 - display-tool name mismatch (the prompt uses a display-tool alias such as
   `display_results` that is not the attached display tool's name);
 - Search tool indices with null or missing `searchParameters`, and null
@@ -189,6 +192,27 @@ def render(agent: Dict[str, Any], findings: List[Dict[str, str]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def resolve_instructions(agent: Dict[str, Any], config_dir: Optional[str]) -> Dict[str, Any]:
+    """Scaffolded agent configs store `"instructions": "PROMPT.md"`, a filename
+    reference rather than the prompt text. Audit the referenced Markdown (read
+    relative to the config file), not the filename; fail explicitly when it
+    cannot be read. Remote `agents get` output carries prompt text and is
+    returned unchanged."""
+    text = agent.get("instructions")
+    if not isinstance(text, str) or not text.strip().lower().endswith(".md"):
+        return agent
+    if config_dir is None:
+        return agent
+    path = os.path.join(config_dir, text.strip())
+    if not os.path.isfile(path):
+        raise SystemExit("instructions reference the file %r but %s does not exist. Scaffolded configs store a "
+                         "filename in `instructions`: run the audit next to the config, or restore the referenced "
+                         "Markdown file." % (text.strip(), path))
+    with open(path, "r", encoding="utf-8") as fh:
+        agent["instructions"] = fh.read()
+    return agent
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("target", metavar="agent-id-or-json-file", help="agent id, or a saved agent JSON file")
@@ -201,6 +225,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         doc = ab.call(["agents", "get", args.target], profile=args.profile)
     agent = unwrap(doc)
+    agent = resolve_instructions(agent, os.path.dirname(os.path.abspath(args.target)) if os.path.isfile(args.target) else None)
     findings = audit(agent)
     if args.json:
         print(json.dumps({"findings": findings}, indent=2, sort_keys=True))
