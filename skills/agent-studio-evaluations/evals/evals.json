@@ -38,6 +38,32 @@
         "Uses datasets import with --validate-only first, then the atomic import",
         "Warns to paginate with the long-form --page flag, not -p"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I ran a baseline eval on Agent A and then on Agent B (same index) with tone, faithfulness and relevance. Agent B scored 0 on tone even though its prompt asks for an energetic voice. I want 100 cases per metric for the next round. What should I run, and can I compare the two runs?",
+      "expected_output": "Explains that --num-cases is a TOTAL split evenly across metrics, so 3 metrics x 100 each means --num-cases 300. Applies the dataset provenance gate: without --dataset-id, experiments create was observed to resolve to an existing dataset for the same index built for another agent, so Agent B likely inherited Agent A's tone contract. Prints a run card (dataset id, agentProfileId, indexProfileId, cases per metric, distinct tone contracts), reviews the tone contracts against Agent B's voice, always passes --dataset-id, and refuses to compare runs on different datasets.",
+      "files": [],
+      "assertions": [
+        "States that --num-cases is a total across metrics and gives --num-cases 300 for 3 metrics x 100",
+        "Identifies the missing --dataset-id / resolve-or-create dataset as the likely cause of the tone score",
+        "Prints or asks for a run card with dataset id, agent and index profile ids, cases per metric and tone contracts",
+        "Reviews the tone contract against the agent's voice instructions before trusting the tone score",
+        "Refuses to compare runs from different datasets and passes --dataset-id on every compared run"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My agent fails the tone metric on most cases and the judge reasons say the answer contains logs, tool calls and raw data. The agent ends its turn with a display tool that shows grouped product results. Should I rewrite the OUTPUT STYLE section of the prompt?",
+      "expected_output": "Runs the instrument check before touching the prompt: takes 2 failing cases from runs case, compares completion.responseText (what the user reads) with completion.answerText (observed in runs case output to also carry display-tool argument values), and re-judges the clean responseText with algobot evals judge (nothing stored). If the clean text passes, treats the failures as an instrument artifact rather than an agent defect, does not tune prompts against it, and reports it. Notes relevance appeared to grade displayed values by design (observed) and that skew on other metrics is not measured.",
+      "files": [],
+      "assertions": [
+        "Does NOT immediately rewrite the prompt; runs the instrument check first",
+        "Compares completion.responseText with completion.answerText from runs case",
+        "Re-judges the clean text with algobot evals judge --metric-slug tone",
+        "Classifies log/tool-call/raw-data reasons with a clean visible answer as an instrument artifact, not an agent defect",
+        "Labels the behavior as observed (experimental endpoints), not a guaranteed property of the service"
+      ]
     }
   ]
 }
