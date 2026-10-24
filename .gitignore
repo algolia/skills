@@ -12,3 +12,7 @@ node_modules/
 
 # Skill eval workspaces
 *-workspace/
+
+# Python bytecode (embeds local paths)
+__pycache__/
+*.pyc

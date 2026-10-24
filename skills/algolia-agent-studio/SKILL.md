@@ -28,7 +28,7 @@ Use this skill for Agent Studio work after confirming the product goal and the q
 - Use official `algobot-cli` for Agent Studio setup, agent config-as-code, tools, memory, conversations, dry runs, and deploy/publish workflows.
 - Use official `algolia-mcp` for live search, analytics, recommendations, and index inspection that inform the agent's tools.
 - Use official `algolia-cli` for index, settings, rules, synonyms, or record changes the agent depends on.
-- For eval-driven tuning (run Agent Studio evaluations, analyze failing cases, adjust agent settings, re-measure), use the official `agent-studio-evaluations` skill and its `/improve-agent` command; use this skill to interpret what the eval deltas mean for the agent contract and launch readiness.
+- For eval-driven tuning (run Agent Studio evaluations, analyze failing cases, adjust agent settings, re-measure), use the official `agent-studio-evaluations` skill and its `/improve-agent` command; use this skill to interpret what the eval deltas mean for the agent contract and launch readiness. The Anti-Patterns below feed the zero-cost static audit in `commands/audit-agent.md` (repo root), which checks an agent config for them before any paid eval.
 - Use this skill after the official tool call to produce the agent contract, readiness gates, security checks, event/feedback plan, and launch recommendation.
 
 ## Source-Of-Truth Rules

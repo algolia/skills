@@ -17,7 +17,7 @@ description: >-
 license: MIT
 metadata:
   author: algolia
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Agent Studio Evaluations
@@ -39,7 +39,17 @@ An evaluation measures an agent against a dataset of cases using judged metrics 
 
 For the real conversation history recipe (export -> transform -> PII scrub -> profiles -> atomic import -> pilot), the required `expected` keys per metric, and every pitfall (100-conversation pagination cap with the long-form `--page` flag, `--jq` quoted output stripping, ANSI/NO_COLOR piping on `conversations list --json`, filtering `evalcase-` / `eval-experiment_run_*` artifacts out of the history, `parts[]` to content flattening), read [references/evaluations.md](references/evaluations.md), section "Real conversation history datasets (import)".
 
+Before any paid run, print a run card ([templates/run-card.md](templates/run-card.md)): dataset id, `agentProfileId`, `indexProfileId`, cases per metric, distinct tone contracts. Always pass `--dataset-id` for runs you will compare: resolve-or-create was observed to pick another agent's dataset for the same index. Review generated tone contracts against the agent's voice before trusting a tone score ([templates/brand-voice-tone-contract.json](templates/brand-voice-tone-contract.json)).
+
 Reading results: `runs summary` (per-metric pass rates, mean, CI, `underpowered`), `runs judgments` (verdict + judge reason per case; cluster reasons into failure themes), `runs case` (single-case drilldown). Trust rules and the failure-theme -> knob mapping are in [references/evaluations.md](references/evaluations.md).
+
+## Instrument check (before analyzing failures)
+
+Before clustering failures, compare `completion.responseText` (what the user reads) with `completion.answerText` (observed in `runs case` output to also carry display-tool argument values) on 2 failing cases and re-judge the clean text. Judge reasons about logs, tool calls or raw data on a clean visible answer point to an instrument artifact, not an agent defect. Procedure and rule: [references/evaluations.md](references/evaluations.md), "Instrument check".
+
+## Statistics and promotion gate
+
+Headroom, shared-case comparison, sample size and CI rules: [references/evaluations.md](references/evaluations.md), "Statistics rules". Recommend promotion only when the gate in "Promotion gate" of the same file is met, always with the instructions/tools diff and the rollback snapshot path. Report with [templates/eval-report.md](templates/eval-report.md).
 
 ## Workflow 2: Eval-driven agent improvement
 
@@ -48,7 +58,7 @@ The loop (fully scripted in the `/improve-agent` command at the repo root, `comm
 1. **Baseline eval** on the CURRENT agent config; record experiment, dataset, and run ids.
 2. **Analyze failing cases**: cluster judge `reason` fields, drill into representative cases, map themes to knobs (tone -> OUTPUT STYLE instructions; faithfulness -> ACCURACY instructions or tool returned fields; relevance -> index settings via the algolia-cli skill; tool errors -> tool config).
 3. **Propose changes** and get user approval before touching anything.
-4. **DRAFT clone** via `agents scaffold` + `agents create` (`agents copy` refuses same-env copies); keep the clone in `draft` for the whole loop. Agents do NOT need to be published to be evaluated (a draft serves no traffic) but DO need a provider linked.
+4. **DRAFT clone** via `agents scaffold` + `agents create` (`agents copy` refuses same-env copies); keep the clone in `draft` for the whole loop. Agents do NOT need to be published to be evaluated (a draft serves no traffic) but DO need a provider linked. A draft cannot be chatted with (observed HTTP 422 from `algobot ask`), so smoke test it with a 3-case experiment on the shared dataset.
 5. **Re-eval on the SAME dataset** (`--dataset-id <baselineDatasetId>`) and `compare` (deltas are B - A). Keep dataset and num-cases constant; check `underpowered` before trusting small deltas.
 6. **Promote to the ORIGINAL agent only with explicit approval** (the frontend embeds the original agent id, so the clone cannot be swapped in): snapshot the original config, build the patch from tuned fields only (`instructions`, `config`, `tools` - never `name`, `id`, `status`, `providerId`, timestamps), show the diff, warn publishing is immediately live, then patch + publish. Rollback = re-apply the snapshot and publish again.
 
@@ -64,7 +74,9 @@ A `published` agent named `... [eval-tuning <date>]` is treated like any other p
 
 ## Cost rule
 
-Every case is a real completion plus judge calls. Generated dataset: `num-cases` cases per metric. Imported dataset: one metric per case. Announce the approximate cost before launching large runs; prefer n >= 50 per metric for tuning decisions.
+Every case is a real completion plus judge calls. `--num-cases` is a TOTAL split across the selected metrics (3 metrics x 100 each = `--num-cases 300`). Imported dataset: one metric per case. Announce the approximate cost before launching large runs; size tuning runs per the sample-size rule in "Statistics rules". Report tokens and duration per case beside pass rates (see "Efficiency" in [references/evaluations.md](references/evaluations.md)).
+
+Zero-cost first: run the static audit (`commands/audit-agent.md`) before any paid eval; it catches prompt/tool name mismatches and unset retrieval limits.
 
 ## Gotchas
 
@@ -76,6 +88,10 @@ Every case is a real completion plus judge calls. Generated dataset: `num-cases`
   `providerId` in the config and `agents create` forwards it; otherwise run
   `algobot agents patch <id> --json patch.json` with
   `{"providerId": "<uuid>"}` after create, then publish.
+
+## Helper scripts and limits
+
+Stdlib Python helpers live in the `scripts/` folder of this skill's directory; call them as `python3 "$SKILL_DIR/scripts/<name>.py"`, where `SKILL_DIR` is the directory containing this `SKILL.md` (run any with `--help`): `fetch_run.py`, `cluster_failures.py`, `compare_runs.py`, `rescore_clean.py`, `build_history_dataset.py`, `size_payload.py`, `audit_agent.py`, `lineage.py`, `wait_experiments.py`. Observed CLI limits and quirks: [references/known-limits.md](references/known-limits.md).
 
 ## Shareable prompt (no skills needed)
 
