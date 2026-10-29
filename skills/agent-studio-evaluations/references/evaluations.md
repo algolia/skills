@@ -414,11 +414,14 @@ Transform rules:
   run executor replays it verbatim into the completion request ahead of the
   query, so cases written on a page/cart/UI context are judged in context.
   `build_history_dataset.py` carries it from each user turn's flat
-  `turnContext` field (or `metadata.turnContext`), includes it in the dedupe
-  key (same history + query but a different context are different rows),
-  skips contexts over the server's 20k canonical-JSON budget (counted in
-  `turnContextOversized`), and reports coverage in `turnContextRows`. Check
-  both counters in the stats before trusting a "with context" claim.
+  `turnContext` field (or `metadata.turnContext`), redacts string leaves
+  recursively (PII applies to contexts too), includes it in the dedupe key
+  (same history + query but a different context are different rows), and
+  measures it against the server's canonical-JSON serialization: a context
+  over the 20k canonical budget is dropped before dedupe (counted in
+  `turnContextOversized`), so oversized rows cannot become duplicate cases.
+  Report coverage in `turnContextRows`. Check both counters in the stats
+  before trusting a "with context" claim.
 - Delete the raw export and `rows.jsonl` after the import.
 
 `python3 "$SKILL_DIR/scripts/build_history_dataset.py" --from-json export.json --out DIR` writes
