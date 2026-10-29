@@ -82,6 +82,24 @@ def message_text(message: Dict[str, Any]) -> str:
     return content.strip() if isinstance(content, str) else ""
 
 
+# Matches MAX_TURN_CONTEXT_CHARS in conversational-ai
+# (common/data/external_evals/importing.py): the import rejects a row whose
+# turnContext serializes to more canonical-JSON characters than this budget.
+TURN_CONTEXT_MAX_CHARS = 20_000
+
+
+def message_turn_context(message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Extract the turnContext the agent saw when this user turn was asked.
+
+    GET /conversations returns it as a flat parsed object on user messages;
+    some exports nest it under metadata. Returns None when absent (never {}).
+    """
+    raw = message.get("turnContext")
+    if raw is None and isinstance(message.get("metadata"), dict):
+        raw = message["metadata"].get("turnContext")
+    return raw if isinstance(raw, dict) and raw else None
+
+
 def is_eval_artifact(conv: Dict[str, Any]) -> bool:
     cid = str(conv.get("id") or conv.get("conversationId") or "")
     if cid.startswith("eval-experiment_run_"):
@@ -223,7 +241,7 @@ def triage(convs: List[Dict[str, Any]]) -> Dict[str, Any]:
 def build_rows(convs: List[Dict[str, Any]], tone: Optional[Dict[str, Any]], language: str) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
     rows: List[Dict[str, Any]] = []
     seen = set()
-    stats = {"userTurns": 0, "duplicates": 0, "piiRedactions": 0, "fallbackFactType": 0, "trimmedUserTurns": 0}
+    stats = {"userTurns": 0, "duplicates": 0, "piiRedactions": 0, "fallbackFactType": 0, "trimmedUserTurns": 0, "turnContextRows": 0, "turnContextOversized": 0}
     for conv in convs:
         history: List[Dict[str, str]] = []
         for m in conv.get("messages") or []:
@@ -236,11 +254,12 @@ def build_rows(convs: List[Dict[str, Any]], tone: Optional[Dict[str, Any]], lang
                 continue
             if role == "user":
                 stats["userTurns"] += 1
+                turn_context = message_turn_context(m)
                 prior = list(history)
                 while prior and prior[-1]["role"] == "user":
                     prior.pop()
                     stats["trimmedUserTurns"] += 1
-                key = (json.dumps(prior, sort_keys=True), text)
+                key = (json.dumps(prior, sort_keys=True), text, json.dumps(turn_context, sort_keys=True))
                 if key in seen:
                     stats["duplicates"] += 1
                 else:
@@ -255,6 +274,12 @@ def build_rows(convs: List[Dict[str, Any]], tone: Optional[Dict[str, Any]], lang
                     row: Dict[str, Any] = {"query": text, "metrics": metrics, "difficulty": "medium", "language": language}
                     if prior:
                         row["messages"] = prior
+                    if turn_context is not None:
+                        if len(json.dumps(turn_context, sort_keys=True)) <= TURN_CONTEXT_MAX_CHARS:
+                            row["turnContext"] = turn_context
+                            stats["turnContextRows"] += 1
+                        else:
+                            stats["turnContextOversized"] += 1
                     rows.append(row)
             history.append({"role": role, "content": text})
     return rows, stats
