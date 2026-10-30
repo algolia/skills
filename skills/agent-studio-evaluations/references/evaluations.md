@@ -403,12 +403,25 @@ script. Ask the user before using scripted traffic as "real history".
 
 Transform rules:
 
-- Dedupe by (frozen history, query).
+- Dedupe by (frozen history, query, turnContext).
 - Trim trailing user turns from `messages` (observed: import rejects a row
   whose history ends on a user turn that differs from the query).
 - Scan for PII and scrub it before anything leaves the machine.
 - Wide rows (several metrics per row) multiply the case count: disclose the
   exploded count and its cost.
+- `turnContext`: since conversational-ai PR #1871 (merged 2026-10-26), the
+  import contract accepts an optional `turnContext` object per row, and the
+  run executor replays it verbatim into the completion request ahead of the
+  query, so cases written on a page/cart/UI context are judged in context.
+  `build_history_dataset.py` carries it from each user turn's flat
+  `turnContext` field (or `metadata.turnContext`), redacts string leaves
+  recursively (PII applies to contexts too), includes it in the dedupe key
+  (same history + query but a different context are different rows), and
+  measures it against the server's canonical-JSON serialization: a context
+  over the 20k canonical budget is dropped before dedupe (counted in
+  `turnContextOversized`), so oversized rows cannot become duplicate cases.
+  Report coverage in `turnContextRows`. Check both counters in the stats
+  before trusting a "with context" claim.
 - Delete the raw export and `rows.jsonl` after the import.
 
 `python3 "$SKILL_DIR/scripts/build_history_dataset.py" --from-json export.json --out DIR` writes
