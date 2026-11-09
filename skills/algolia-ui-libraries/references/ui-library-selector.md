@@ -136,8 +136,7 @@ status in official docs before recommending either, and do not make them the def
 Also relevant when scoping: **Compositions** change how queries are issued and carry hard
 constraints — the `index` widget is unsupported and Composition calls cannot be mixed with
 Search/Recommend calls on the same page. Verify current Composition docs before designing a
-UI around it. DocSearch has moved well past v3, so confirm the current major before quoting
-setup steps for documentation search.
+UI around it. For documentation search, evaluate DocSearch as a dedicated option and verify the current major before quoting setup steps. DocSearch v5 uses Agent Studio for Ask AI and has breaking changes from v4; consult https://docsearch.algolia.com/docs/v5-breaking-changes/ when migrating.
 
 There is no official Algolia web-components, Svelte, Astro, or Angular library. If a team
 asks for one, the answer is InstantSearch.js with connectors.

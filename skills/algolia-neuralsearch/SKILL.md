@@ -73,6 +73,7 @@ Use this skill when adding or optimizing NeuralSearch. Neural relevance depends 
 - Select a small, meaningful semantic attribute set and justify the priority of each field; do not let IDs, supplier boilerplate, internal notes, or duplicated text dilute semantic meaning.
 - Compare hybrid behavior by result origin where current diagnostics expose it: keyword match, semantic match, or both. Use this evidence to diagnose rather than guessing from a result list.
 - Change one meaningful variable per evaluation round: semantic fields or priority, blend behavior, business rule, or ranking context. Keep the before/after query set and decision record together.
+- When capitalization or accents cause inconsistent semantic results, consider the opt-in `normalizeVectorQuery` setting as a customer-specific experiment, not a general relevance upgrade. Verify current availability and API details; compare on and off by language before recommending production use. See `references/neuralsearch-guide.md`.
 
 ## Anti-Patterns
 
@@ -82,6 +83,7 @@ Use this skill when adding or optimizing NeuralSearch. Neural relevance depends 
 - Claiming events are required to activate NeuralSearch, or skipping event readiness entirely because activation does not require events; events still gate Adaptive Intent, retraining, and trustworthy measurement.
 - Promising Adaptive Intent or model-training behavior without checking current docs and event readiness.
 - Treating semantic configuration as a one-time activation choice instead of a testable, reversible relevance decision.
+- Assuming query normalization improves relevance for every language or replaces synonym, plural, or decompounding handling.
 - Diagnosing a surprising result by changing multiple fields, ranking rules, and merchandising settings at once.
 
 ## Academy And Customer Education Alignment

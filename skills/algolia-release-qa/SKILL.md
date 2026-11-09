@@ -58,7 +58,7 @@ Use this skill before launching or after a risky change. Prioritize defects that
 - UI: routing, pagination, empty states, loading/errors, mobile filters, accessibility, analytics attribution.
 - Events: userToken consistency, queryID propagation, positions, conversion taxonomy, duplicate-event risk.
 - Security and operations: API key exposure, secured API keys, environments, settings backup, rollback.
-- AI surfaces: NeuralSearch event prerequisites, semantic/evaluation query regressions, Agent Studio tool authority, memory, guardrails, and feedback loops.
+- AI surfaces: NeuralSearch event readiness and requirements for the chosen capabilities, semantic/evaluation query regressions, Agent Studio tool authority, memory, guardrails, and feedback loops. Events are not required for NeuralSearch activation in current public guidance.
 
 ## Algolia Search Readiness Signposts
 
@@ -112,7 +112,7 @@ When source-backed guidance is needed, search public Academy sources for launch 
 - Beginner implementation: focus on whether the basic data, settings, UI, and event paths work at all.
 - Production readiness: lead with launch blockers, evidence matrix, security, rollback, attribution chain, mobile UX, and indexing reliability.
 - Optimization: test representative queries, analytics quality, A/B readiness and confidence, merchandising behavior, and regression risk.
-- AI readiness: verify NeuralSearch event prerequisites and evaluation queries plus Agent Studio data, permissions, tool authority, guardrails, feedback loops, and readiness gates.
+- AI readiness: verify NeuralSearch event readiness and evaluation queries plus Agent Studio data, permissions, tool authority, guardrails, feedback loops, and readiness gates; distinguish activation from capabilities that require engagement data.
 
 ## Output Contract
 
