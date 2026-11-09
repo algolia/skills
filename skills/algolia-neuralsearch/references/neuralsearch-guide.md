@@ -97,6 +97,14 @@ Include:
 
 For each query, record expected good results, unacceptable results, filters, and business constraints.
 
+## Semantic Query Normalization
+
+`normalizeVectorQuery` is an opt-in semantic setting, off by default, that normalizes query text before vectorization. It can make variants such as `Café` and `cafe` produce the same embedding. It does not handle synonyms, plurals, or decompounding. Normalization is language-sensitive, and should not be described as a guaranteed relevance improvement. Verify the setting's current availability, API syntax, and behavior before advising implementation; do not infer that all special characters are simply removed.
+
+Consider testing it when capitalization or accents cause inconsistent semantic results. Compare the setting off and on with the same representative traffic and index configuration, including case and accent variants, language-specific letters, symbols, exact and branded queries, and queries expected to remain unchanged. Review top results and zero-result regressions by language, then validate promising changes against customer outcomes where practical. Record the decision and rollback path before enabling it in production.
+
+Supplied internal experiments reported mixed results: French benefited in one evaluation, while Swedish, Latvian, and Icelandic showed risks. Across the main evaluated indexes, the top 10 changed for roughly 30%–54% of affected searches; this is not the share of all searches and is not a universal prediction. An automated relevance screen is not proof of improved shopper outcomes. Treat these findings as a reason to test each customer and language, not as a performance promise.
+
 ## Data And Events Dependencies
 
 NeuralSearch quality often depends on the same foundations as other AI relevance features:

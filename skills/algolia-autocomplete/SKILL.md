@@ -85,6 +85,7 @@ Use this skill for search-as-you-type experiences where the user has not committ
 - Start with a small source set and add groups only when they pass the helpful, clear, and focused test; do not let a new source displace the best guidance.
 - On mobile, preserve a top search input, distinct clear and close actions, tap-friendly rows, visible primary guidance above the keyboard, and a clear path to all results.
 - Keep category scope sparse and visually distinct. Use it to narrow a genuinely ambiguous query, not as a duplicate list of category labels.
+- For search within a selected category or other scope, assess Query Suggestions' browsing-facet support and verify the current configuration; test that suggestions and the subsequent search respect the selected scope. https://changelog.algolia.com/date/2026/10
 
 ## Anti-Patterns
 

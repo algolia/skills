@@ -91,6 +91,7 @@ Ask the smallest useful subset:
 
 - Treat `objectID` as a stable contract. Do not derive it from mutable display fields.
 - Make variant modeling explicit. Do not accidentally index one source row per SKU if users expect one product result, and do not collapse variants if color, size, availability, price, region, or permissions materially change search behavior.
+- When Dynamic Re-Ranking and Distinct group variant records, evaluate the option to combine click and conversion signals across the group. Verify availability and compare product-level ranking and variant-level attribution before adopting it. https://changelog.algolia.com/rank-grouped-records-using-combined-engagement-signals-27yx5C
 - Keep record size intentional: include fields needed for retrieval, ranking, faceting, display, analytics context, and event attribution.
 - Separate production, staging, and development indices. Do not test destructive indexing against production.
 - Use replicas for alternate sort orders and virtual replicas for relevant sorting when appropriate.

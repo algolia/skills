@@ -167,8 +167,14 @@ Verified against the completions endpoint and Conversations view in October 2026
 - **Message ids must be stable.** When a client replays history, send each message with the id it was first sent with (prefix `alg_msg_`). A replay with new ids duplicates turns; a replay with the same ids updates them.
 - **Titles come from the first user message** (up to 60 characters). Put the user's question first in that message and any serialized context after it.
 - **Request-time search parameters are a whitelist.** `algolia.searchParameters[index]` accepts only filtering and personalization keys (for example `filters`, `facet_filters`, `optional_filters`, `distinct`, `attributes_to_retrieve`, `user_token`). `hitsPerPage`, `attributesToHighlight` and `attributesToSnippet` return HTTP 422 there. Set them on the Search tool's index configuration instead.
-- **Default retrieval is large.** Unset, each search returns 20 hits with full records plus `_highlightResult` and `_snippetResult`; on one text-heavy index the markup was half the payload. For answer generation, set `hitsPerPage`, `attributesToRetrieve`, and empty `attributesToHighlight` and `attributesToSnippet` on the tool.
+- **Inspect retrieval defaults.** Older configurations may return 20 full hits with highlight and snippet markup, but defaults vary with Search tool version and index configuration. Inspect actual responses; for answer generation, tune `hitsPerPage`, `attributesToRetrieve`, and highlighting or snippets on the tool where supported, then evaluate answer quality and latency.
 - **The Conversations list loads after the page.** It shows "No conversations found" until its request returns, which can take well over ten seconds. Wait for it before concluding anything.
+
+## Recent Integration And Evaluation Options
+
+- Agent Studio supports automated evaluations with index-generated test cases and scores for relevance, faithfulness, and tone. Compare runs after changes, but supplement generated cases and scores with representative customer tasks, safety cases, and human review. https://changelog.algolia.com/evaluate-and-improve-agent-performance-in-agent-studio-2Euhe8
+- A2A lets compatible external agents discover and interact with Agent Studio agents using agent cards. Define authentication, permissions, exposed capabilities, and delegation boundaries before integrating; check current documentation for implementation details. https://changelog.algolia.com/connect-agent-studio-agents-to-multi-agent-workflows-with-a2a-2FCFKo
+- For DocSearch v5, Ask AI uses Agent Studio; the v4 `askAi.agentStudio` switch is removed and search parameter overrides are keyed by index. Review the migration guide and key permissions before upgrading: https://docsearch.algolia.com/docs/v5-breaking-changes/
 
 ## Latency
 
