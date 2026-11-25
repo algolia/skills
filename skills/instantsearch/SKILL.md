@@ -1,16 +1,18 @@
 ---
 name: instantsearch
 description: >-
-  Build production-quality search experiences (autocomplete, search results pages, faceted search) using InstantSearch.
-  Use when user asks to add search, autocomplete, search-as-you-type, faceted filtering, or a search results page
-  to a React, Vue, or vanilla JS application, or mentions Algolia, InstantSearch, or react-instantsearch.
+  Set up and build production-quality search experiences (autocomplete, search results pages, faceted search) using InstantSearch.
+  Use when the user wants to integrate, set up, or get started with Algolia search or InstantSearch in an app
+  ("we signed with Algolia", "integrate instantsearch", "add a search bar"), or asks to add search, autocomplete,
+  search-as-you-type, faceted filtering, or a search results page to a React, Vue, or vanilla JS application,
+  or mentions Algolia, InstantSearch, or react-instantsearch.
   Do NOT use for backend index operations (records, synonyms, settings, API keys), use algolia-cli instead.
   Do NOT use for analytics, recommendations, or MCP server queries, use algolia-mcp instead.
   Do NOT use for AI/agent/conversational search, use algobot-cli instead.
 license: MIT
 metadata:
   author: algolia
-  version: '1.2'
+  version: '1.3'
 ---
 
 # InstantSearch
@@ -36,15 +38,24 @@ Once identified, use the matching reference directory (e.g., `references/react/`
 
 ## Workflow
 
+### 0. Set up (new integrations)
+
+When the project has no InstantSearch code yet ("integrate Algolia", "we just signed with Algolia", "add search to this app"), set it up with Create InstantSearch App. It generates new apps, and its `init`, `introspect`, and `agents-md` commands work in existing ones. Check that `npx create-instantsearch-app --help` lists `init`. If it doesn't, the version predates these commands: do the same work by hand in Discover and Build.
+
+1. **Existing app**: run `npx create-instantsearch-app init --json` in the app root. It detects the framework, reads credentials from the project env, installs the packages, writes the search client and provider, and returns `nextSteps`. Follow them.
+2. **Empty folder**: `init` returns `no_app_detected`. Run `npx create-instantsearch-app introspect --json`, then run the `data.createInstantSearchAppCommand` it returns. It generates the app with display, image, and facet attributes from the index, and with Insights on.
+3. **Plan the UI**: `npx create-instantsearch-app introspect --json` returns the searchable attributes, facets, image field, and `data.widgetPlan`. Use it as the schema in Discover and build the rendering options from it.
+4. **After building**: run `npx create-instantsearch-app agents-md` so later sessions know the installed version and file layout, then verify as described in Review.
+
 ### 1. Discover
 
 Before writing any code, gather context. First check if InstantSearch is already set up in the codebase (search client, provider, existing widgets). If so, read the existing configuration instead of re-asking.
 
 If starting fresh, go step by step, waiting for the user's answer before moving on.
 
-- **Credentials**: Ask the user for their Algolia app ID, search-only API key, and index name.
+- **Credentials**: Look in the project env first (`.env`, `.env.local`, and the process environment): `ALGOLIA_APP_ID` or `ALGOLIA_APPLICATION_ID`, `ALGOLIA_SEARCH_API_KEY`, and `ALGOLIA_INDEX_NAME`, with or without a framework prefix such as `NEXT_PUBLIC_` or `VITE_`. Provisioning through Stripe Projects or the Vercel Marketplace writes them there. Ask the user only for what's missing. Only the app ID and the search-only key may reach the browser; never put a write or admin key (`ALGOLIA_WRITE_API_KEY`) in client code.
 - **Query Suggestions**: Ask the user if they have a Query Suggestions index.
-- **Schema**: Once you have credentials, fetch a few records from the main index to discover the available attributes and their shape. Confirm with the user rather than asking them to list everything. The schema is needed before you can propose rendering options. No need to fetch from the Query Suggestions index: its shape is standard and handled by the widget.
+- **Schema**: Once you have credentials, fetch a few records from the main index to discover the available attributes and their shape (`npx create-instantsearch-app introspect --json` does this and suggests widgets). Confirm with the user rather than asking them to list everything. The schema is needed before you can propose rendering options. No need to fetch from the Query Suggestions index: its shape is standard and handled by the widget.
 
   ```bash
   curl -s -X POST \
@@ -133,3 +144,8 @@ Follow the library's styling guide step by step, then apply the pattern-specific
 ### 5. Review
 
 Review your work against the library's anti-patterns, the pattern-specific anti-patterns, and the features checklist. Fix any violations.
+
+Then verify before reporting success. Reading your edits is not verification:
+
+1. Run the production build (`npm run build` or the project's equivalent). It catches SSR and prerender errors the dev server hides, such as `InstantSearchNext` under Next.js `cacheComponents` (see [ssr.md](references/react/ssr.md)).
+2. Start the app, open the search page, type a query, and apply a refinement. Confirm the results change and the console has no errors.
