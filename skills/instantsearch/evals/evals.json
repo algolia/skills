@@ -181,6 +181,36 @@
         "Targets ais-Autocomplete* classes (or an instantsearch.css theme) for styling, not aa-* classes",
         "If the answer covers teardown, it uses search.removeWidgets(...) or search.dispose(), not an autocomplete-js destroy() call"
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "my company just signed the contract with algolia, and now I need to integrate instantsearch. let's do it",
+      "expected_output": "Credentials found in the project env, setup in the existing app with `create-instantsearch-app init`, UI options from the index schema, a working search page verified with a production build",
+      "files": [],
+      "expectations": [
+        "Reads ALGOLIA_* variables from .env/.env.local before asking the user for credentials",
+        "Runs `npx create-instantsearch-app init --json` in the existing app and follows its nextSteps",
+        "Uses `npx create-instantsearch-app introspect --json` (or a sample query) to learn the schema before proposing rendering options",
+        "Offers concrete UI options based on the real facets and attributes",
+        "Never exposes ALGOLIA_WRITE_API_KEY to client code or browser-prefixed env variables",
+        "Uses react-instantsearch v7 and algoliasearch v5 (liteClient), never react-instantsearch-dom or react-instantsearch-hooks-web",
+        "On Next.js with cacheComponents, renders InstantSearchNext under a server component that awaits connection() inside Suspense",
+        "Runs the production build and checks the page in a browser before reporting success",
+        "Runs `npx create-instantsearch-app agents-md` after the integration"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "We're on Algolia now. There's no app yet, just this folder with our .env.local. Set up InstantSearch.",
+      "expected_output": "A new app generated with Create InstantSearch App, with attributes from the index and Insights enabled",
+      "files": [],
+      "expectations": [
+        "Recognizes there is no existing app (init returns no_app_detected) instead of forcing InstantSearch into an empty package.json",
+        "Generates the app with create-instantsearch-app non-interactively, using credentials from .env.local",
+        "Passes display, image, and facet attributes from the index (introspect's createInstantSearchAppCommand)",
+        "Enables the insights option in the generated app (`--enable-insights`)",
+        "Builds the generated app and checks it in a browser"
+      ]
     }
   ]
 }

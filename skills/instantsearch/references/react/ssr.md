@@ -46,6 +46,33 @@ Do not call `getServerState` from a server component or page. Do not wrap childr
 
 For prop details specific to App Router, read `node_modules/react-instantsearch-nextjs/dist/es/InstantSearchNext.d.ts`.
 
+### Next.js 16+ with `cacheComponents`
+
+`create-next-app` turns on `cacheComponents` by default since Next.js 16. `<InstantSearchNext>` reads request headers while it renders on the server, which Next.js only allows in a dynamic subtree. The layout example above then fails `next build` with "`headers` must not be used within a client component". Check `next.config.*` for `cacheComponents: true`. If it's on, keep the provider in a `"use client"` component and render it under a server component that awaits `connection()`, inside `<Suspense>`:
+
+```tsx
+// app/search/page.tsx
+import { Suspense } from "react";
+import { connection } from "next/server";
+
+import { Search } from "@/components/search"; // "use client"; renders <InstantSearchNext> and the widgets
+
+async function DynamicSearch() {
+  await connection();
+  return <Search />;
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <DynamicSearch />
+    </Suspense>
+  );
+}
+```
+
+The route becomes a partial prerender: a static shell, with search results rendered per request. For a provider in a layout (for example, header autocomplete on every page), wrap that subtree the same way. Don't use `export const dynamic = "force-dynamic"`, which `cacheComponents` doesn't allow. Run `next build` to confirm.
+
 ## Path B: Pages Router, Remix, vanilla React SSR
 
 Use `getServerState` to walk the tree and pre-fetch results, pass the result via `<InstantSearchSSRProvider>`. The `<InstantSearch>` provider stays as the inner provider.
